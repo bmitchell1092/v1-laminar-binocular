@@ -145,3 +145,13 @@ def test_registration_recovers_shift():
     mov = {k: v[2:34] + rng.normal(0, 0.02, 32) for k, v in tissue.items()}        # 6 contacts shallower earlier
     r = register(mov, ref)
     assert r.shift == -6 and r.score > 0.9 and r.margin > 0.1
+
+
+def test_dominant_early_sink_ignores_weak_early_blip():
+    from v1lb.evp import dominant_early_sink
+    t = np.arange(-50, 150).astype(float)
+    c = np.zeros((t.size, 16))
+    c[(t >= 22) & (t < 30), 2] = -1.0               # weak early blip (an onset detector picks this)
+    c[(t >= 38) & (t < 70), 9:12] = -5.0            # dominant layer-4 sink
+    peak, top, bottom, _ = dominant_early_sink(c, t)
+    assert (top, bottom) == (9, 11) and peak in (9, 10, 11)

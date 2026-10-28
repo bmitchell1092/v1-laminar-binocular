@@ -83,3 +83,22 @@ def flash_csd(session: str, recording: str, bank: str, orientation: str, window_
         top = bottom = -1
         on = float("nan")
     return FlashCSD(recording, len(onsets), t_ms, contacts, lfp, csd, mua, first, on, top, bottom)
+
+
+def dominant_early_sink(csd: np.ndarray, t_ms: np.ndarray, window_ms=(35.0, 65.0), rel: float = 0.5
+                        ) -> tuple[int, int, int, float]:
+    """The strongest sink of the mean CSD in `window_ms` (the classic layer-4 sink to flashes),
+    and its contiguous extent (channels whose window mean is <= `rel` x the peak).
+    More robust than onset-based detection, which latches onto weak early blips.
+    Returns (peak index, top index, bottom index, peak value); indices in the CSD's channel order."""
+    w = (t_ms >= window_ms[0]) & (t_ms <= window_ms[1])
+    m = np.nanmean(csd[w], axis=0)
+    if not np.isfinite(m).any() or np.nanmin(m) >= 0:
+        return -1, -1, -1, float("nan")
+    peak = int(np.nanargmin(m))
+    top = bottom = peak
+    while top - 1 >= 0 and np.isfinite(m[top - 1]) and m[top - 1] <= rel * m[peak]:
+        top -= 1
+    while bottom + 1 < m.size and np.isfinite(m[bottom + 1]) and m[bottom + 1] <= rel * m[peak]:
+        bottom += 1
+    return peak, top, bottom, float(m[peak])
