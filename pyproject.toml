@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "v1lb"
+version = "0.1.0"
+description = "Laminar V1 binocular-contrast pipeline (Blackrock + MonkeyLogic 2)"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5",
+    "scipy>=1.18",
+    "pandas>=3.1",
+    "pyarrow>=26",
+    "h5py>=3.16",
+    "xarray>=2026.9",
+    "h5netcdf>=1.8",
+    "matplotlib>=3.11",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.2", "neo>=0.14.6", "openpyxl>=3.1", "ipykernel"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["raw: needs the raw data drive (V1LB_RAW_ROOT, default D:\\NEUROPHYS DATA\\2021)"]

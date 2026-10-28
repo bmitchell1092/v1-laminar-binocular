@@ -9,7 +9,8 @@ results are corrected wherever they turn out to be wrong.
 | topic | decision |
 |---|---|
 | language | **Python** (changed from MATLAB on 2026-10-28: the institutional license couldn't be set up on this machine). Project venv `.venv`, `requirements.txt` |
-| storage | proposed: per-penetration HDF5/NetCDF (xarray, labelled dims) + Parquet/CSV tables; still openable in MATLAB. *Pending confirmation* (the earlier .mat choice assumed MATLAB) |
+| storage | per-penetration HDF5/NetCDF (xarray, labelled dims) + Parquet/CSV tables; still openable in MATLAB; NWB export at publication |
+| workflow | commit straight to `main`, small commits with passing tests |
 | clock | fix the NEV↔NSx offset: every stream is read by NSP timestamp |
 | photodiode | t = 0 = first backlight flash at the photodiode, per presentation, NSP clock; the scan offset to the stimulus row is stored per session but not applied (backlight mode unknown; see 05 A2b) |
 | layers | **spike-phase coupling**, following Davis et al. 2023 (SPI, i.e. mean resultant length, and preferred phase), plus PPC; replaces by-eye CSD calls and spectrolaminar crossings (CSD kept only as a cross-check) |
@@ -85,3 +86,9 @@ with equal N and held-out data.
 ## To-do (non-critical)
 * Locate the 2022 B sessions (`220202_B`, `220302_B`).
 * Locate the final 2021–22 DataLog.xlsx (its contents are mostly recovered already).
+
+## Progress log
+* 2026-10-28: `v1lb` package started: NSx/NEV readers on the NSP clock (identical to
+  neo, sample for sample), stimulus-file reader, event-code trial and
+  presentation parsing, and timestamp-based trial matching (detects the
+  211009_B one-trial shift). 16 tests pass, including raw-data cross-checks.

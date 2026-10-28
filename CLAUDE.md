@@ -6,7 +6,7 @@ Blake Mitchell's rebuild of his PhD pipeline (laminar V1, binocular contrast).
 
 ## Decisions
 - **Python** for all pipeline code (2026-10-28; MATLAB could not be licensed on this machine).
-- Storage: per-penetration files readable without this code. Proposed: labelled arrays as HDF5/NetCDF via xarray (MATLAB can still open them with `ncread`/`h5read`), plus Parquet/CSV tables. *Awaiting Blake's confirmation.*
+- Storage (confirmed): per-penetration labelled arrays as HDF5/NetCDF via xarray (MATLAB can still open them with `ncread`/`h5read`), plus Parquet/CSV tables. NWB export only at publication time.
 - Read every stream by **NSP timestamp**. `.ns6` data start at NSP sample 102 and `.ns2` at 0 (neo agrees). The legacy reads were offset by this.
 - Trials are matched to stimulus-file rows **by timestamp**, never by index (see 05 B1: 211009_B).
 - Photodiode: t = 0 is the first backlight flash at the photodiode, detected per presentation on the NSP clock (~20.8 ms after the event code, but sometimes one frame earlier or later; see 05 A2c). The ViewPixx backlight mode is unknown, so the scan offset to the stimulus row (≈2.6–3.4 ms if the backlight scans) is stored per session and **not** applied by default.
@@ -31,8 +31,9 @@ Blake Mitchell's rebuild of his PhD pipeline (laminar V1, binocular contrast).
 ## Environment
 - Project venv: `.venv\Scripts\python.exe` (Python 3.14, packages in `requirements.txt`). Use it for all repo code and tests.
 - The system Python (3.14, user site-packages) is fine for throwaway checks; `python -I` hides its packages.
-- MATLAB R2026b sits unactivated at `C:\Users\bmitc\AppData\Local\Programs\MATLAB\R2026b` and is not used.
+- Install/test: `.venv\Scripts\python -m pip install -e ".[dev]"`, then `.venv\Scripts\python -m pytest`. Tests marked `raw` read `D:` and are skipped when it is absent.
+- No MATLAB on this machine (R2026b was installed, couldn't be licensed, and was removed).
 - Scratch scripts go in the session scratchpad, never in this repo or on D:.
 
 ## Git
-- Private repo, default branch `main`. Commit and push routine doc updates without asking. Ask before pushing code changes until a code workflow is agreed. Never force-push.
+- Private repo, default branch `main`. Commit pipeline code and docs straight to `main` in small commits, each with passing tests, and push (agreed with Blake, 2026-10-28). Never force-push.
