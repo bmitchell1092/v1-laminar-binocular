@@ -83,11 +83,19 @@ Fix `importPhy`: all good units, every sorted file, NaN for unsorted files.
 * Plan: sort 2 sessions with KS4, compare yield and quality with the 2023
   curation, then decide.
 
-## Phase 5 — Science (later)
-Redo the LMN paper on the new data: laminar CRFs, NRM vs LSM, NDE weight,
-supersaturation by layer as a test of SSN predictions, laminar timing.
-Hierarchical statistics with penetration as a random effect; model comparison
-with equal N and held-out data.
+## Phase 5 — Science (priorities set by Blake, 2026-10-28)
+Not a full redo of the old LMN paper.
+1. **Supersaturation as a function of depth and/or laminar compartment** (the
+   paper). Start with the best days and assess power first (per-channel
+   reliability of supersaturation, between-penetration variance, simulated
+   power for a depth or compartment effect with penetration as a random effect).
+   If laminar assignment leaves it underpowered, fall back to **depth from the
+   top of cortex**, with V1 channels defined by dotmapping receptive fields (no
+   layer labels).
+2. **Gap-filling analyses** chosen after a dense, up-to-date literature sweep.
+3. **Dual-probe days** (7 J sessions, eA + eB recorded together): response
+   delays between columns, and traveling waves across V1.
+Statistics: hierarchical, with penetration (and monkey) as random effects.
 
 ## To-do (non-critical)
 * Locate the 2022 B sessions (`220202_B`, `220302_B`).
