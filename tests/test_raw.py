@@ -56,3 +56,19 @@ def test_211009_blackrock_missed_ml_trial_1():
     m = match_trials(tr, nev.origin_utc, read_stim_text(files[".gBMINTEROCGrating_di"]))
     assert m.shift == 1 and m.max_dev_s < 0.1
     assert m.table["ml_trial"].iloc[0] == 2
+
+
+def test_photodiode_211008():
+    from v1lb.events import presentations
+    from v1lb.photodiode import detect
+    files = recording_files("211008_B", "bminteroc003")
+    nev = NevFile(files[".nev"])
+    t, v, _ = nev.digital_events()
+    codes = ml_codes(v)
+    p = presentations(codes, t, split_trials(codes, t))
+    res, lv = detect(NsxFile(files[".ns6"]), p)
+    done = res[res.completed]
+    assert len(done) == 398 and (done.pd_flag == "").all()
+    assert lv.frame_ticks == 250 and lv.polarity == -1
+    assert done.pd_n_frames.mode()[0] == 26                       # 216.7 ms stimuli on 211008
+    assert abs(done.pd_on_lat_ms.median() - 20.9) < 0.2

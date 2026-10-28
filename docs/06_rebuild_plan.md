@@ -92,3 +92,6 @@ with equal N and held-out data.
   neo, sample for sample), stimulus-file reader, event-code trial and
   presentation parsing, and timestamp-based trial matching (detects the
   211009_B one-trial shift). 16 tests pass, including raw-data cross-checks.
+* 2026-10-28: `v1lb.photodiode`: per-presentation flash onset, frame count and
+  offset (first missing flash). Validated on all 35 bminteroc files (37,167
+  completed presentations, none missed). 19 tests pass.
