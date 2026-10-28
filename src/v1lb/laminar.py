@@ -138,3 +138,114 @@ def earliest_sink(csd_avg: np.ndarray, t_ms: np.ndarray, window_ms: tuple[float,
         hit = np.flatnonzero(csd_avg[win, c] <= onset_frac * peak[c])
         onset[c] = t_ms[win[hit[0]]]
     return onset, int(np.nanargmin(onset)) if np.isfinite(onset).any() else -1
+
+
+# ------------------------------------------------------------- template fitting
+_TEMPLATE_BOUNDARY = 32.5  # reversal of the Davis et al. average phase profile (between indices 32 and 33)
+
+
+def davis_templates() -> dict[str, np.ndarray]:
+    """Average laminar profiles from Davis et al. 2023 (index increases with depth); see data/ provenance."""
+    from importlib.resources import files
+    with np.load(files("v1lb") / "data" / "davis2023_templates.npz") as d:
+        return {k: d[k] for k in d.files}
+
+
+def phase_profile(sp: SpikePhase, min_spikes: int = 500) -> np.ndarray:
+    """Preferred phase per LFP channel: SPI-weighted circular mean over spike channels with enough spikes."""
+    good = sp.n >= min_spikes
+    if not good.any():
+        return np.full(sp.theta.shape[1], np.nan)
+    return np.angle(np.nansum(np.exp(1j * sp.theta[good]) * sp.spi[good], axis=0))
+
+
+@dataclass
+class TemplateFit:
+    orientation: str      # 'ascending' = contact number increases with depth
+    shift: int
+    score: float          # best score (mean cos for phase, Pearson r for power)
+    score_other: float    # best score with the opposite orientation
+    boundary: float       # contact number (1-based) of the template boundary; may lie off the probe
+    n_overlap: int
+
+    @property
+    def margin(self) -> float:
+        return self.score - self.score_other
+
+
+def fit_template(profile: np.ndarray, template: np.ndarray, kind: str = "phase",
+                 weight: np.ndarray | None = None, boundary_index: float = _TEMPLATE_BOUNDARY,
+                 min_overlap: int = 12, edge_weight: float = 0.5) -> TemplateFit:
+    """Slide a depth template along a probe profile in both orientations.
+
+    kind='phase': score = weighted mean cos(profile - template) (absolute phase convention,
+    validated against Davis et al. 2023). kind='linear': Pearson r (e.g. gamma - alpha power).
+    Every finite profile channel must land on the template; the template's end plateaus are
+    extended (weight x `edge_weight`) so the boundary may fall anywhere along the probe.
+    """
+    profile = np.asarray(profile, float)
+    n = profile.size
+    w_t = np.ones(template.size) if weight is None else np.asarray(weight, float)
+    good = np.isfinite(template) & (w_t > 0)
+    lo, hi = np.flatnonzero(good)[[0, -1]]
+    # extend the template's end plateaus (at reduced weight) so the boundary can sit anywhere on the probe
+    core_t = np.where(good[lo:hi + 1], template[lo:hi + 1], 0.0)
+    core_w = np.where(good[lo:hi + 1], w_t[lo:hi + 1], 0.0)
+    template = np.r_[np.full(n, core_t[0]), core_t, np.full(n, core_t[-1])]
+    w_t = np.r_[np.full(n, core_w[0] * edge_weight), core_w, np.full(n, core_w[-1] * edge_weight)]
+    boundary_index = boundary_index - lo + n
+    m = template.size
+    usable = w_t > 0
+    c = np.flatnonzero(np.isfinite(profile))   # every usable probe channel must land on the template
+    if c.size < min_overlap:
+        raise ValueError("profile has too few finite channels for template fitting")
+    best = {}
+    for orient in ("ascending", "descending"):
+        for s in range(-n, m + n):
+            k = s + c if orient == "ascending" else s - c
+            if k.min() < 0 or k.max() >= m or not usable[k].all():
+                continue
+            ok = c
+            p, t, w = profile[ok], template[k], w_t[k]
+            if kind == "phase":
+                score = float(np.sum(w * np.cos(p - t)) / np.sum(w))
+            else:
+                if np.std(p) == 0 or np.std(t) == 0:
+                    continue
+                score = float(np.corrcoef(p, t)[0, 1])
+            if orient not in best or score > best[orient][0]:
+                best[orient] = (score, s, int(ok.size))
+    if not best:
+        raise ValueError("profile too short or too sparse for template fitting")
+    orient = max(best, key=lambda o: best[o][0])
+    other = "descending" if orient == "ascending" else "ascending"
+    score, s, n_ok = best[orient]
+    boundary = (boundary_index - s + 1) if orient == "ascending" else (s - boundary_index + 1)
+    return TemplateFit(orient, s, score, best[other][0] if other in best else float("nan"), boundary, n_ok)
+
+
+@dataclass
+class SpectralCrossing:
+    orientation: str   # 'ascending' if the gamma peak lies at a lower contact number than the alpha-beta peak
+    gamma_peak: int    # contact numbers (1-based)
+    alpha_peak: int
+    crossing: float    # contact position where (gamma - alpha) changes sign between the peaks (NaN if none)
+
+
+def spectral_crossing(alpha_beta: np.ndarray, gamma: np.ndarray, smooth: int = 3) -> SpectralCrossing:
+    """Spectrolaminar motif (Mendoza-Halliday et al. 2024): gamma relative power peaks superficially,
+    alpha-beta deep; their crossing marks layer 4. Peak-based, so it does not depend on LFP polarity."""
+    k = np.ones(smooth) / smooth
+    a = np.convolve(np.asarray(alpha_beta, float), k, mode="same")
+    g = np.convolve(np.asarray(gamma, float), k, mode="same")
+    ga, aa = int(np.argmax(g)), int(np.argmax(a))
+    orient = "ascending" if ga < aa else "descending"
+    lo, hi = sorted((ga, aa))
+    d = g[lo:hi + 1] - a[lo:hi + 1]
+    s = np.flatnonzero(np.sign(d[:-1]) != np.sign(d[1:]))
+    if s.size:
+        i = s[np.argmin(np.abs(s + 0.5 - (hi - lo) / 2))]          # sign change nearest the midpoint
+        crossing = lo + i + d[i] / (d[i] - d[i + 1]) + 1             # linear interpolation, 1-based
+    else:
+        crossing = float("nan")
+    return SpectralCrossing(orient, ga + 1, aa + 1, float(crossing))

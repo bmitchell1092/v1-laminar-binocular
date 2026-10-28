@@ -54,3 +54,37 @@ def test_earliest_sink():
     x[t >= 25, 4] -= 1                            # earlier but weak: not a qualifying sink
     onset, first = earliest_sink(x, t)
     assert first == 2 and onset[2] == 35 and onset[3] == 50 and np.isnan(onset[4])
+
+
+def test_template_fit_recovers_orientation_and_boundary():
+    from v1lb.laminar import davis_templates, fit_template
+    T = davis_templates()
+    tmpl, w = T["phase"], (T["n_phase"] >= 10).astype(float)
+    # an ascending probe: contact 1 sits at template index 18 -> boundary (32.5) at contact 15.5
+    prof = tmpl[18:50].copy()
+    fit = fit_template(prof, tmpl, "phase", w)
+    assert fit.orientation == "ascending" and fit.boundary == pytest.approx(15.5) and fit.margin > 0.2
+    # the same probe wired the other way round
+    fit = fit_template(prof[::-1], tmpl, "phase", w)
+    assert fit.orientation == "descending" and fit.boundary == pytest.approx(32 - 15.5 + 1)
+    # boundary near the deep end of the probe (contact 27.5): needs the extended plateau
+    padded = np.r_[np.full(20, tmpl[14]), tmpl[14:52]]   # template index i -> padded index i + 6
+    prof = padded[12:44]                                  # boundary (padded 38.5) at contact 27.5
+    fit = fit_template(prof, tmpl, "phase", w)
+    # only 5 contacts below the boundary, so orientation confidence (margin) is lower but still positive
+    assert fit.orientation == "ascending" and fit.boundary == pytest.approx(27.5) and fit.margin > 0.1
+    # spectrolaminar template, polarity-free
+    g = T["gamma_minus_alpha"]
+    fit = fit_template(g[10:42][::-1], g, "linear")
+    assert fit.orientation == "descending"
+
+
+def test_spectral_crossing():
+    from v1lb.laminar import spectral_crossing
+    z = np.arange(32)
+    gamma = np.exp(-((z - 10) / 5) ** 2)
+    alpha = np.exp(-((z - 26) / 5) ** 2)
+    c = spectral_crossing(alpha, gamma)
+    assert c.orientation == "ascending" and c.gamma_peak == 11 and c.alpha_peak == 27
+    assert c.crossing == pytest.approx(19.0, abs=0.6)
+    assert spectral_crossing(alpha[::-1], gamma[::-1]).orientation == "descending"

@@ -111,3 +111,10 @@ with equal N and held-out data.
   and `v1lb.laminar` (generalized phase port, SPI/preferred phase/PPC matrix,
   spectrolaminar relative power, CSD + amplitude-based earliest sink). Pilot on
   211008_B_eA, 211012_B_eA and 221206_J_eB (results in 05 C8). 26 tests pass.
+* 2026-10-28: phase convention validated against Davis et al.'s published
+  outputs (supra/input ~ ±π, deep ~ −1.2 rad); their average phase and
+  gamma−alpha profiles saved as templates (`src/v1lb/data`, with provenance).
+  Added `fit_template` (both orientations, full-probe overlap) and peak-based
+  `spectral_crossing`. Their code calls generalized phase with a 0 Hz cutoff,
+  which we match. V1 profiles can show two phase steps, so the boundary rule
+  needs review (05 C8). 28 tests pass.
