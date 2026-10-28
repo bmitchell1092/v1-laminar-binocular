@@ -16,7 +16,7 @@ import pandas as pd
 
 from . import photodiode
 from .config import recording_files
-from .events import ml_codes, presentations, split_trials
+from .events import ml_events, presentations, split_trials
 from .io import NevFile, NsxFile, read_stim_text
 from .trials import match_trials
 
@@ -58,7 +58,7 @@ def presentation_table(session: str, recording: str) -> tuple[pd.DataFrame, dict
     files = recording_files(session, recording)
     nev = NevFile(files[".nev"])
     ticks, values, _ = nev.digital_events()
-    codes = ml_codes(values)
+    ticks, codes, _ = ml_events(ticks, values)
     trials = split_trials(codes, ticks)
     pres = presentations(codes, ticks, trials)
     pres, levels = photodiode.detect(NsxFile(files[".ns6"]), pres)

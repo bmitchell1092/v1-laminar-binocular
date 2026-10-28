@@ -124,3 +124,24 @@ def test_mua_gap():
     from v1lb.laminar import mua_gap
     rate = np.r_[np.full(15, 20.0), [1.0, 1.2, 0.9], np.full(14, 20.0)]
     assert mua_gap(rate, 10.5, 22.5) and not mua_gap(rate, 2.5, 12.5)
+
+
+def test_initial_sink_extent():
+    from v1lb.evp import initial_sink_extent
+    t = np.arange(-50, 150).astype(float)
+    c = np.zeros((t.size, 12))
+    c[(t >= 35) & (t < 60), 5:9] = -4.0            # sink spanning channels 5-8
+    c[(t >= 35) & (t < 60), 9] = -1.0              # weak tail: not part of the sink
+    assert initial_sink_extent(c, t, 35.0, seed=6) == (5, 8)
+
+
+def test_registration_recovers_shift():
+    from v1lb.registration import register
+    rng = np.random.default_rng(3)
+    z = np.arange(48)
+    tissue = {"log_rate": np.where((z > 8) & (z < 34), 1.2, 0.0) + 0.3 * np.sin(z / 3),
+              "gamma": np.exp(-((z - 16) / 5) ** 2), "alpha_beta": np.exp(-((z - 28) / 6) ** 2)}
+    ref = {k: v[8:40] + rng.normal(0, 0.02, 32) for k, v in tissue.items()}        # probe at final depth
+    mov = {k: v[2:34] + rng.normal(0, 0.02, 32) for k, v in tissue.items()}        # 6 contacts shallower earlier
+    r = register(mov, ref)
+    assert r.shift == -6 and r.score > 0.9 and r.margin > 0.1

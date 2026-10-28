@@ -161,3 +161,15 @@ with equal N and held-out data.
   total). Physiology check (`docs/qc/dataset_check_2026-10-28.csv`): MUA latency
   consistent; earliest-sink cross-check from bminteroc is unstable (05 C9).
   Next: evp flash CSD as the proper CSD check of alignment v1.
+* 2026-10-28: flash-evoked CSD (`v1lb.evp`, `scripts/run_flash_csd.py`,
+  `scripts/compare_flash_csd.py`) for every evp file. First comparison with
+  alignment v1 was confounded: the evp files were recorded 1–3 h before
+  bminteroc while the probe was still being lowered (221119: flash sink moves
+  ~22 contacts between two evps 27 min apart; 211008 drifts +20 → +17 → +6 → +1
+  over the day). Clean agreements: 211008 (+1), 221202_J_eB (+2). 211208 is stable
+  across 4 evps and puts the sink bottom 5 contacts deeper than the override,
+  matching the original 2022 value (18). Added `v1lb.registration` (log MUA rate +
+  gamma/alpha relative-power profiles) to register each evp to the bminteroc
+  recording before comparing (`scripts/register_flash_csd.py`).
+  `events.ml_events` drops non-strobe port lines (stray 2048 events in
+  211008_B_evp002).

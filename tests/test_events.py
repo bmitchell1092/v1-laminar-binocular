@@ -43,3 +43,9 @@ def test_presentations_completion():
         (2, 1, True), (2, 2, False)]
     third = p[(p.nev_trial == 1) & (p.pres == 3)].iloc[0]
     assert third.off_code == 32                        # bminteroc ends stimulus 3 with 32, not 28
+
+
+def test_ml_events_drops_non_strobe_lines():
+    from v1lb.events import ml_events
+    t, c, dropped = ml_events(np.array([10, 20, 30, 40]), np.array([137, 2048, 2048 + 151, 146]))
+    assert t.tolist() == [10, 30, 40] and c.tolist() == [9, 23, 18] and dropped == 1

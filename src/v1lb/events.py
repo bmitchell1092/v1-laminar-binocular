@@ -28,6 +28,15 @@ def ml_codes(values: np.ndarray) -> np.ndarray:
     return values.astype(np.int64) - 128
 
 
+def ml_events(ticks: np.ndarray, values: np.ndarray) -> tuple[np.ndarray, np.ndarray, int]:
+    """(ticks, codes, n_dropped): keep only digital events with the strobe bit (bit 7) set and
+    read the code from the low byte. Other port lines can toggle independently (e.g. 13 events
+    of value 2048 in 211008_B_evp002); those events are dropped and counted."""
+    values = np.asarray(values).astype(np.int64)
+    keep = (values & 0x80) != 0
+    return np.asarray(ticks)[keep], (values[keep] & 0xFF) - 128, int((~keep).sum())
+
+
 def _runs(codes: np.ndarray, value: int) -> list[tuple[int, int]]:
     """(first index, run length) of consecutive runs of `value`."""
     idx = np.flatnonzero(codes == value)
