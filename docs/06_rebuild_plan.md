@@ -148,3 +148,12 @@ with equal N and held-out data.
   l45 − c, descending c − l45. `spiking_bottom` is advisory only (small-spike J
   probes under-threshold deep layers); `deep_limit` is set only for confirmed
   second folds. Verdicts mirrored on the review page (keep / unsure).
+* 2026-10-28: `v1lb.dataset` builds one xarray/NetCDF file per penetration
+  (`output/datasets/<pen>.nc` + `_presentations.parquet`): lfp, csd, mua
+  (analog envelope), spikes (threshold-crossing counts), presentation × time
+  (−200…499 ms, 0 = photodiode flash, 1 kHz) × channel (superficial → deep),
+  with the full trial table and depth relative to L4/5 as coordinates.
+  `open_penetration(pen)` loads lazily. Sanity check on 211008: MUA onset
+  35–37 ms at +3…+12 contacts above L4/5, initial sink at +2…+4, CRFs show
+  binocular summation at low contrast and suppression at high contrast.
+  Built by `scripts/build_datasets.py` for the 11 included penetrations.

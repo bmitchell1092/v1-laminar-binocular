@@ -51,3 +51,8 @@ def out_root() -> Path:
     """Where pipeline outputs go (never inside the raw tree). Override with V1LB_OUT_ROOT."""
     default = Path(__file__).resolve().parents[2] / "output"
     return Path(os.environ.get("V1LB_OUT_ROOT", default))
+
+
+def metadata_dir() -> Path:
+    """Version-controlled metadata tables (penetrations, laminar alignment)."""
+    return Path(__file__).resolve().parents[2] / "metadata"

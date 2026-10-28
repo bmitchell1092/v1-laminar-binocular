@@ -101,3 +101,22 @@ def test_bminteroc_table_fixes_211009_labels():
     assert (M._merge == "both").all() and m["trial_shift"] == 1
     agree = np.isclose(M.contrast_1, M.contrast_L) & np.isclose(M.contrast_2, M.contrast_R)
     assert agree.mean() < 0.05                                             # legacy labels were wrong
+
+
+def test_dataset_layout_and_depths():
+    from v1lb.dataset import build_penetration
+    ds = build_penetration("211008_B_eA", max_presentations=6, write=False)
+    assert ds.lfp.dims == ("presentation", "time", "channel") and ds.lfp.shape == (6, 700, 32)
+    assert ds.time.values[0] == -200 and ds.time.values[-1] == 499
+    assert ds.channel.values[0] == "eA01" and ds.depth_l45.values[0] == 22.5      # ascending, L4/5 at 23.5
+    assert ds.depth_l45.values[-1] == -8.5 and not ds.in_cortex.values[1] and ds.in_cortex.values[2]
+    assert np.isnan(ds.csd.values[:, :, 0]).all() and np.isfinite(ds.csd.values[:, :, 1]).all()
+    assert ds.spikes.sum() > 0 and ds.attrs["orientation"] == "ascending"
+    assert set(ds.condition.values) <= {"blank", "mono_contra", "mono_ipsi", "dioptic", "dichoptic"}
+
+
+def test_dataset_descending_probe_is_reordered():
+    from v1lb.dataset import build_penetration
+    ds = build_penetration("211012_B_eA", max_presentations=3, write=False)
+    assert ds.channel.values[0] == "eA32" and ds.channel.values[-1] == "eA01"          # superficial first
+    assert ds.depth_l45.values[0] == 6.5 and (np.diff(ds.depth_l45.values) == -1).all()
