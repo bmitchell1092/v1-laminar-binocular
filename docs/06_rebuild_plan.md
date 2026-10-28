@@ -60,8 +60,14 @@ doi:10.5061/dryad.3r2280gmm) before using it on ours:
   circular separation of θ above vs below) and keep a manual review step.
 * Data: ≥1 min continuous recording (darkrest, fixation, or full task files);
   one estimate per file gives a drift check within a session.
-* Probe orientation for flagged sessions (05 C3, C4) is settled first, from
-  the MUA/LFP profile at the cortex edges and from the CSD sink–source order.
+* **Marker hierarchy (Blake, 2026-10-28).** SPI as a function of depth is the
+  final arbiter of **probe orientation** and the input/deep boundary. The
+  bottom of L4 (L4/L5 boundary) is harder to read from PPC alone, so it is
+  cross-checked with two supporting markers: the **spectrolaminar
+  crossing** (alpha-beta vs gamma relative power; Mendoza-Halliday et al.
+  2024) and the **earliest CSD sink** (stimulus-evoked).
+* Orientation for the flagged sessions (05 C3, C4) is settled first, by SPI
+  vs depth.
 * The clock fix matters here: a 3.4 ms spike-vs-LFP offset is a 12° phase error
   at 10 Hz and 61° at 50 Hz.
 
@@ -101,3 +107,7 @@ with equal N and held-out data.
   match all 30 legacy penetrations except the known errors (211009 labels;
   legacy t0 ~12 ms early, and 1-3 frames off on 7-29% of presentations in
   five B penetrations). 21 tests pass.
+* 2026-10-28: `v1lb.signals` (LFP read, threshold-crossing MUA per Davis et al.)
+  and `v1lb.laminar` (generalized phase port, SPI/preferred phase/PPC matrix,
+  spectrolaminar relative power, CSD + amplitude-based earliest sink). Pilot on
+  211008_B_eA, 211012_B_eA and 221206_J_eB (results in 05 C8). 26 tests pass.
