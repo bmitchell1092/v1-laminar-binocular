@@ -7,7 +7,7 @@ Blake Mitchell's rebuild of his PhD pipeline (laminar V1, binocular contrast).
 ## Decisions (2026-10-28)
 - MATLAB for all pipeline code. Per-session outputs are `.mat` files (v7.3 when large; use `matfile` for partial loads).
 - Read every stream by **NSP timestamp**. The legacy NSx reads were offset by the `.ns6` start timestamp (102 samples).
-- Photodiode correction: whatever the Phase 1 measurements support.
+- Photodiode: t = 0 is the first backlight flash at the photodiode, detected per presentation on the NSP clock (~20.0 ms after the event code). The ViewPixx backlight mode is unknown, so the scan offset to the stimulus row (≈2.6–3.4 ms if the backlight scans) is stored as a separate per-session field and **not** applied by default.
 - Laminar alignment: spike-phase coupling (Davis et al. 2023: SPI and preferred phase, plus PPC). CSD is only a cross-check.
 - Units: start from the 2023 phy curation with a fixed importer. A Kilosort 4 pilot is optional.
 - Correct legacy errors; don't reproduce old numbers for their own sake.
@@ -25,9 +25,9 @@ Blake Mitchell's rebuild of his PhD pipeline (laminar V1, binocular contrast).
 - Keep functions small and testable. Session-level functions take a penetration ID and return structs/tables; nothing depends on the base workspace.
 
 ## Environment
-- MATLAB not yet installed (in progress). Once installed, run headless with `matlab -batch "..."`.
+- MATLAB R2026b is installed at `C:\Users\bmitc\AppData\Local\Programs\MATLAB\R2026b` (via mpm, with Signal, Stats/ML, Curve Fitting, Optimization, Image Processing). It is **not activated yet**: it needs Salk's network license (`licenses\network.lic` or `MLM_LICENSE_FILE`). Once active, run headless with `"<root>\bin\matlab.exe" -batch "..."`.
 - Python 3.14 (numpy/scipy/pandas/openpyxl, user site, so don't use `python -I`) is fine for throwaway read-only checks.
 - Scratch scripts go in the session scratchpad, never in this repo or on D:.
 
 ## Git
-- Private repo, default branch `main`. Ask before pushing.
+- Private repo, default branch `main`. Commit and push routine doc updates without asking. Ask before pushing code changes until a code workflow is agreed. Never force-push.

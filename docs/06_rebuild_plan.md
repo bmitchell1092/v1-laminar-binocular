@@ -8,10 +8,10 @@ results are corrected wherever they turn out to be wrong.
 ## Decisions (Blake, 2026-10-28)
 | topic | decision |
 |---|---|
-| language | **MATLAB** (to be installed on this machine) |
+| language | **MATLAB** (R2026b installed; waiting on Salk network license) |
 | storage | **.mat files** (per session; v7.3 where large, read with `matfile` for partial loads) |
 | clock | fix the NEV↔NSx offset: every stream is read by NSP timestamp |
-| photodiode | use whichever correction the measurements support (Phase 1 §A) |
+| photodiode | t = 0 = first backlight flash at the photodiode, per presentation, NSP clock; the scan offset to the stimulus row is stored per session but not applied (backlight mode unknown; see 05 A2b) |
 | layers | **spike-phase coupling**, following Davis et al. 2023 (SPI, i.e. mean resultant length, and preferred phase), plus PPC; replaces by-eye CSD calls and spectrolaminar crossings (CSD kept only as a cross-check) |
 | units | keep the 2023 phy curation as the baseline and fix the importer; Kilosort 4 is a candidate (pilot first) |
 | paper | redo all analyses later on the new data |
