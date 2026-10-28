@@ -129,3 +129,11 @@ with equal N and held-out data.
   complexity label and a confidence tier (A/B/C) from 8 explicit checks, for
   ranking and possible exclusion. `metadata/penetrations.csv` lists the 30
   penetrations. 30 tests pass.
+* 2026-10-28: laminar reports for all 30 penetrations
+  (`docs/qc/laminar_calls_2026-10-28.csv`): 3 tier A, 12 B, 15 C; markers agree
+  on orientation in 22/30. In 5 penetrations both markers contradict the legacy
+  sort direction (211027_B, 221109_J, 221128_J, 221209_J_eA, 221214_J_eA);
+  these are likely second-fold cases that need manual review. Review page
+  (private): https://claude.ai/artifact/3td44k5uBfgQtTznuB3YQN. Verdicts are
+  stored in its db under `verdicts/<penetration>` ({verdict, note, updated}).
+  Built by `scripts/build_laminar_review.py`.
