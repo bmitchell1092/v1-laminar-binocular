@@ -110,10 +110,10 @@ def laminar_report(row: dict, out_dir: Path | None = None, max_minutes: float = 
         flags.append("no phase step found below the top of cortex")
     # evidence that the probe crossed a second fold of cortex (V1 or V2) below the first column
     reversed_steps = [s for s in steps if lam.step_kind(s[2]) == "reversed" and abs(s[2]) >= 0.8]
-    gaps = [(a[0], b[0]) for a, b in zip(steps[:-1], steps[1:]) if lam.mua_gap(rate, a[0], b[0])]
+    gaps = [(float(a[0]), float(b[0])) for a, b in zip(steps[:-1], steps[1:]) if lam.mua_gap(rate, a[0], b[0])]
     second_fold = bool(reversed_steps or gaps)
     if reversed_steps:
-        flags.append(f"reversed phase step(s) at {[s[0] for s in reversed_steps]}: possible second fold")
+        flags.append(f"reversed phase step(s) at {[float(s[0]) for s in reversed_steps]}: possible second fold")
     if gaps:
         flags.append(f"MUA gap between steps {gaps}: possible white matter / second fold")
     sink = sink_first + 1 if sink_first >= 0 else np.nan

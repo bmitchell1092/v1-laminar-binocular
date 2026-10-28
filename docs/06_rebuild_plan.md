@@ -137,3 +137,14 @@ with equal N and held-out data.
   (private): https://claude.ai/artifact/3td44k5uBfgQtTznuB3YQN. Verdicts are
   stored in its db under `verdicts/<penetration>` ({verdict, note, updated}).
   Built by `scripts/build_laminar_review.py`.
+* 2026-10-28: **laminar alignment v1 frozen** (`metadata/laminar_alignment_v1.csv`,
+  built by `scripts/freeze_laminar_alignment.py`). Blake: keep tiers A/B, set C
+  aside. Claude reviewed A/B and applied documented exceptions: 211208_B L4/5
+  overridden to 13.5 (second fold beyond contact 18); set aside 221128_J
+  (orientation conflicts with legacy, ambiguous depth), 211103_B (contradictory
+  candidates), 221209_J_eB (cross-checks match neither step), 221214_J_eB (L4/5
+  3.5 contacts below top of cortex). **Included: 11 penetrations (J 8, B 3).**
+  Depth of contact c relative to L4/5 (contacts, + = superficial): ascending
+  l45 − c, descending c − l45. `spiking_bottom` is advisory only (small-spike J
+  probes under-threshold deep layers); `deep_limit` is set only for confirmed
+  second folds. Verdicts mirrored on the review page (keep / unsure).
