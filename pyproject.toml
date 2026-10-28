@@ -27,3 +27,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["raw: needs the raw data drive (V1LB_RAW_ROOT, default D:\\NEUROPHYS DATA\\2021)"]
+
+[tool.setuptools.package-data]
+v1lb = ["data/*.npz"]
