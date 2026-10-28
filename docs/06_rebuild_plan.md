@@ -157,3 +157,7 @@ with equal N and held-out data.
   35–37 ms at +3…+12 contacts above L4/5, initial sink at +2…+4, CRFs show
   binocular summation at low contrast and suppression at high contrast.
   Built by `scripts/build_datasets.py` for the 11 included penetrations.
+* 2026-10-28: all 11 datasets built (723–1,313 presentations each, ~2.4 GB
+  total). Physiology check (`docs/qc/dataset_check_2026-10-28.csv`): MUA latency
+  consistent; earliest-sink cross-check from bminteroc is unstable (05 C9).
+  Next: evp flash CSD as the proper CSD check of alignment v1.
