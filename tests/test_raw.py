@@ -72,3 +72,32 @@ def test_photodiode_211008():
     assert lv.frame_ticks == 250 and lv.polarity == -1
     assert done.pd_n_frames.mode()[0] == 26                       # 216.7 ms stimuli on 211008
     assert abs(done.pd_on_lat_ms.median() - 20.9) < 0.2
+
+
+def _legacy_vs_new(pen, rec):
+    from v1lb.bminteroc import presentation_table
+    from v1lb.legacy import read_legacy_stim
+    from v1lb.config import raw_root
+    L, meta = read_legacy_stim(raw_root() / "STIM 2024 2" / f"{pen}.mat")
+    P, m = presentation_table(pen[:8], rec)
+    P = P[P.completed].copy()
+    P["trl"] = P.nev_trial + 1
+    M = L.merge(P, left_on=["trl", "prez"], right_on=["trl", "pres"], how="outer", indicator=True)
+    return M, m, meta
+
+
+def test_bminteroc_table_reproduces_legacy_211008():
+    M, m, meta = _legacy_vs_new("211008_B_eA", "bminteroc003")
+    assert (M._merge == "both").all() and len(M) == 398
+    assert (M.tp_sp_1 == M.on_tick).all()                                  # same event codes
+    assert np.allclose(M.contrast_1, M.contrast_L) and np.allclose(M.contrast_2, M.contrast_R)
+    assert meta["V1"] == m["hemisphere"] == "RV1"
+    d_ms = (M.tp_pt_1 - M.pd_on_tick) / 30                                # legacy t0 ~12 ms early
+    assert abs(np.median(d_ms) + 12.1) < 0.5
+
+
+def test_bminteroc_table_fixes_211009_labels():
+    M, m, _ = _legacy_vs_new("211009_B_eA", "bminteroc001")
+    assert (M._merge == "both").all() and m["trial_shift"] == 1
+    agree = np.isclose(M.contrast_1, M.contrast_L) & np.isclose(M.contrast_2, M.contrast_R)
+    assert agree.mean() < 0.05                                             # legacy labels were wrong

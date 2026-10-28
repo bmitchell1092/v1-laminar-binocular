@@ -95,3 +95,9 @@ with equal N and held-out data.
 * 2026-10-28: `v1lb.photodiode`: per-presentation flash onset, frame count and
   offset (first missing flash). Validated on all 35 bminteroc files (37,167
   completed presentations, none missed). 19 tests pass.
+* 2026-10-28: `v1lb.bminteroc.presentation_table` (events + photodiode +
+  timestamp matching + stimulus parameters + ipsi/contra labels + previous
+  presentation) and `v1lb.legacy` (reads legacy STIM v7.3). Rebuilt tables
+  match all 30 legacy penetrations except the known errors (211009 labels;
+  legacy t0 ~12 ms early, and 1-3 frames off on 7-29% of presentations in
+  five B penetrations). 21 tests pass.
