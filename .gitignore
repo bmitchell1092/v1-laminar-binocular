@@ -1,0 +1,35 @@
+# MATLAB
+*.asv
+*.m~
+*.mex*
+*.mat
+*.fig
+slprj/
+codegen/
+resources/project/
+
+# Data and outputs never go in git (keep raw/processed data outside the repo)
+*.ns[1-6]
+*.nev
+*.ccf
+*.bhv2
+*.ppnev
+*.dat
+*.npy
+output/
+figures/
+
+# Documents / images (exports)
+*.png
+*.jpg
+*.svg
+*.pdf
+*.docx
+*.pptx
+*.xls*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
