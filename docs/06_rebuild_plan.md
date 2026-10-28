@@ -8,8 +8,8 @@ results are corrected wherever they turn out to be wrong.
 ## Decisions (Blake, 2026-10-28)
 | topic | decision |
 |---|---|
-| language | **MATLAB** (R2026b installed; waiting on Salk network license) |
-| storage | **.mat files** (per session; v7.3 where large, read with `matfile` for partial loads) |
+| language | **Python** (changed from MATLAB on 2026-10-28: the institutional license couldn't be set up on this machine). Project venv `.venv`, `requirements.txt` |
+| storage | proposed: per-penetration HDF5/NetCDF (xarray, labelled dims) + Parquet/CSV tables; still openable in MATLAB. *Pending confirmation* (the earlier .mat choice assumed MATLAB) |
 | clock | fix the NEV↔NSx offset: every stream is read by NSP timestamp |
 | photodiode | t = 0 = first backlight flash at the photodiode, per presentation, NSP clock; the scan offset to the stimulus row is stored per session but not applied (backlight mode unknown; see 05 A2b) |
 | layers | **spike-phase coupling**, following Davis et al. 2023 (SPI, i.e. mean resultant length, and preferred phase), plus PPC; replaces by-eye CSD calls and spectrolaminar crossings (CSD kept only as a cross-check) |
@@ -27,7 +27,7 @@ Run 05 §A–§D. Deliverable: one QC page per session plus a summary table.
   measure true stimulus durations.
 * §B: independent trial table for every bminteroc file, diffed against `STIM 2024 2`.
 
-## Phase 2 — Session-level data model (MATLAB, .mat)
+## Phase 2 — Session-level data model (Python)
 Per penetration `YYMMDD_M_eX`:
 * `trials` table, one row per presentation: file, ML trial, presentation index,
   `contrast_L/R`, raw eye, ipsi/contra, orientation, SF, size, x/y, NEV on/off,
@@ -45,7 +45,9 @@ Per penetration `YYMMDD_M_eX`:
 ## Phase 3 — Laminar alignment by spike-phase coupling
 Method (Davis, Dotson, Franken, Muller & Reynolds, *eLife* 2023, 12:e84512;
 code: github.com/zwdsalk/LaminarPhaseCoupling, generalized phase:
-github.com/mullerlab/generalizedphase):
+github.com/mullerlab/generalizedphase). Their code is MATLAB, so we port it
+to Python and validate the port on their example data (Dryad
+doi:10.5061/dryad.3r2280gmm) before using it on ours:
 * MUA spikes: high-pass 500 Hz, threshold at 4 SD of a sliding 1 s window, per channel.
 * LFP: low-pass 300 Hz, 1 kHz, wideband 5–50 Hz (4th-order Butterworth,
   zero-phase), generalized phase; narrowband Hilbert (4–8, 8–14, 15–30, 30–50 Hz)

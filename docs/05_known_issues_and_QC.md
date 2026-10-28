@@ -71,7 +71,7 @@ reading code; not yet tested on data), *open* (unknown).
 
 | # | Issue |
 |---|---|
-| F1 | No working MATLAB on this machine (R2019b/R2021b folders lack `bin`). Python 3.14 + numpy/scipy/pandas/openpyxl are available; no h5py. |
+| F1 | No usable MATLAB on this machine. Old R2019b/R2021b folders lack `bin`; R2026b was installed via mpm but couldn't be licensed. The rebuild is in Python: project venv `.venv` (3.14; numpy, scipy, pandas, pyarrow, h5py, xarray, neo, …). h5py now reads the legacy MAT v7.3 files directly. |
 | F2 | External dependencies (MLAnalysisOnline, KiloSortUtils, npy-matlab, ML2) are unversioned copies under `D:\MATLAB`; `setup.m` expects them under `Documents\MATLAB`. |
 | F3 | LMN workspace (`OneDrive\...\workspaces\LMN Project`, ~25 GB) is mostly OneDrive cloud-only. `CSD_bminteroc.mat`, `MUA_bminteroc.mat` and `LFP_bminteroc*.mat` were downloaded on 2026-10-28 by a header read. |
 | F4 | B sessions in 2022 (`220202_B`, OD project "211008–220302") are referenced but not on `D:`. |

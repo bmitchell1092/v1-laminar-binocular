@@ -1,0 +1,14 @@
+# Core environment for v1-laminar-binocular (Python 3.14).
+# Create: python -m venv .venv && .venv\Scripts\python -m pip install -r requirements.txt
+numpy>=2.5
+scipy>=1.18
+pandas>=3.1
+pyarrow>=26
+h5py>=3.16
+xarray>=2026.9
+h5netcdf>=1.8
+matplotlib>=3.11
+neo>=0.14.6
+openpyxl>=3.1
+pytest>=9.2
+ipykernel
