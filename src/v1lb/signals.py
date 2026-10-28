@@ -73,3 +73,27 @@ def threshold_spikes(ns6: NsxFile, labels: list[str], start: int | None = None, 
                 out[c].append(tk[w * win + idx])
         t = t1
     return [np.concatenate(o) if o else np.empty(0, np.int64) for o in out]
+
+
+def analog_mua_epochs(ns6: NsxFile, labels: list[str], event_ticks: np.ndarray,
+                      pre_ms: float = 100, post_ms: float = 200, pad_ms: float = 50,
+                      band: tuple[float, float] = (500.0, 5000.0), lowpass_hz: float = 200.0) -> np.ndarray:
+    """Analog MUA envelope around events: [events, time (1 kHz, -pre..post-1 ms), channels], uV.
+
+    One documented chain (Super & Roelfsema 2005 style): 4th-order Butterworth band-pass
+    `band`, full-wave rectification, 4th-order low-pass `lowpass_hz`, all zero-phase,
+    then every 30th sample (1 kHz). Edges are padded by `pad_ms` before filtering.
+    """
+    fs = ns6.fs
+    per = ns6.period
+    bp = signal.butter(4, band, "bandpass", fs=fs, output="sos")
+    lp = signal.butter(4, lowpass_hz, "lowpass", fs=fs, output="sos")
+    step = int(round(fs / 1000))
+    pre, post, pad = (int(round(v * fs / 1000)) for v in (pre_ms, post_ms, pad_ms))
+    out = []
+    for t in np.asarray(event_ticks):
+        x, _ = ns6.read(t - (pre + pad) * per, t + (post + pad) * per, labels)
+        x = np.nan_to_num(x)
+        env = signal.sosfiltfilt(lp, np.abs(signal.sosfiltfilt(bp, x, axis=0)), axis=0)
+        out.append(env[pad:pad + pre + post:step])
+    return np.stack(out) if out else np.empty((0, (pre + post) // step, len(labels)))

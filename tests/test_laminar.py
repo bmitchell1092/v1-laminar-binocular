@@ -88,3 +88,39 @@ def test_spectral_crossing():
     assert c.orientation == "ascending" and c.gamma_peak == 11 and c.alpha_peak == 27
     assert c.crossing == pytest.approx(19.0, abs=0.6)
     assert spectral_crossing(alpha[::-1], gamma[::-1]).orientation == "descending"
+
+
+def test_top_of_cortex_and_steps_follow_orientation():
+    from v1lb.laminar import top_of_cortex, phase_steps, l45_from_steps
+    rate = np.r_[np.full(4, 1.0), np.full(28, 20.0)]           # contacts 1-4 silent (above cortex)
+    evoked = np.full(32, 20.0)                                   # volume-conducted: active everywhere
+    assert top_of_cortex(rate, evoked, "ascending") == (5, False, "spontaneous MUA")
+    assert top_of_cortex(rate[::-1], evoked, "descending") == (28, False, "spontaneous MUA")
+    assert top_of_cortex(np.full(32, 20.0), evoked, "ascending") == (1, True, "spontaneous MUA")
+    tiny = np.full(32, 1.0)                                      # spikes too small: fall back to evoked
+    assert top_of_cortex(tiny, np.r_[np.zeros(6), np.full(26, 20.0)], "ascending") == (7, False, "evoked MUA")
+    # two canonical steps below the top of cortex: +2.5 -> -2.0 at 8/9, -2.0 -> -0.6 at 23/24 (211008-like)
+    prof = np.r_[np.full(8, 2.5), np.full(15, -2.0), np.full(9, -0.6)]
+    steps = phase_steps(prof, "ascending", start_contact=3)
+    assert [s[0] for s in steps] == [8.5, 23.5] and all(s[2] > 0 for s in steps)
+    assert l45_from_steps(steps) == 23.5
+    steps = phase_steps(prof[::-1], "descending", start_contact=30)
+    assert [s[0] for s in steps] == [24.5, 9.5] and l45_from_steps(steps) == 9.5
+    # a second fold entered from its deep side gives a reversed (negative) step
+    fold = np.r_[np.full(10, 3.0), np.full(10, -1.2), np.full(12, 3.0)]
+    steps = phase_steps(fold, "ascending")
+    assert [s[2] > 0 for s in steps] == [True, False]
+    assert l45_from_steps(steps) == 10.5
+    # a ~pi step has no defined direction (211012-like): ambiguous, still an L4/5 candidate
+    from v1lb.laminar import step_kind
+    pi_step = np.r_[np.full(16, 2.6), np.full(16, -0.5)]
+    steps = phase_steps(pi_step, "ascending")
+    assert len(steps) == 1 and step_kind(steps[0][2]) == "ambiguous" and l45_from_steps(steps) == 16.5
+    # steps among silent contacts below the deepest active contact are ignored
+    assert phase_steps(prof, "ascending", start_contact=3, stop_contact=20) == phase_steps(prof, "ascending", 3)[:1]
+
+
+def test_mua_gap():
+    from v1lb.laminar import mua_gap
+    rate = np.r_[np.full(15, 20.0), [1.0, 1.2, 0.9], np.full(14, 20.0)]
+    assert mua_gap(rate, 10.5, 22.5) and not mua_gap(rate, 2.5, 12.5)

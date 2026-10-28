@@ -118,3 +118,14 @@ with equal N and held-out data.
   `spectral_crossing`. Their code calls generalized phase with a 0 Hz cutoff,
   which we match. V1 profiles can show two phase steps, so the boundary rule
   needs review (05 C8). 28 tests pass.
+* 2026-10-28: laminar decision rules agreed with Blake and implemented
+  (`laminar.top_of_cortex`, `phase_steps`, `step_kind`, `l45_from_steps`,
+  `mua_gap`; `laminar_report` + `scripts/run_laminar_reports.py`):
+  orientation from SPI (template fit) checked against spectrolaminar peaks;
+  top of cortex from spontaneous MUA (evoked analog MUA only as fallback);
+  L4/5 = 2nd non-reversed phase step below the top of cortex, else the only
+  one; two steps may also be two folds (V1/V1 or V1/V2), so reversed steps
+  (>= 0.8 rad) or MUA gaps between steps are flagged. Each penetration gets a
+  complexity label and a confidence tier (A/B/C) from 8 explicit checks, for
+  ranking and possible exclusion. `metadata/penetrations.csv` lists the 30
+  penetrations. 30 tests pass.

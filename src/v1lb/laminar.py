@@ -249,3 +249,90 @@ def spectral_crossing(alpha_beta: np.ndarray, gamma: np.ndarray, smooth: int = 3
     else:
         crossing = float("nan")
     return SpectralCrossing(orient, ga + 1, aa + 1, float(crossing))
+
+
+# --------------------------------------------------------- probe-level decisions
+def superficial_order(n: int, orientation: str) -> np.ndarray:
+    """Contact indices (0-based) ordered from the superficial end to the deep end."""
+    return np.arange(n) if orientation == "ascending" else np.arange(n)[::-1]
+
+
+def top_of_cortex(rate: np.ndarray, evoked: np.ndarray, orientation: str, rate_floor: float = 2.5,
+                  evoked_thresh: float = 6.0, run: int = 3) -> tuple[int, bool, str]:
+    """First contact (1-based), from the superficial end, that starts `run` consecutive active
+    contacts. Spontaneous spiking (threshold-crossing rate above `rate_floor` Hz; chance at -4 SD
+    is ~1 Hz) is local, so it is used first. Evoked analog MUA spreads a few hundred um by volume
+    conduction, so it is only a fallback (e.g. probes whose spikes are too small to threshold).
+    Returns (contact or -1, top_contact_already_in_cortex, criterion used)."""
+    order = superficial_order(len(rate), orientation)
+    for name, active in (("spontaneous MUA", np.asarray(rate)[order] > rate_floor),
+                         ("evoked MUA", np.asarray(evoked)[order] > evoked_thresh)):
+        for i in range(len(order) - run + 1):
+            if active[i:i + run].all():
+                return int(order[i]) + 1, i == 0, name
+    return -1, False, "none"
+
+
+def step_kind(signed: float, ambiguous_near_pi: float = 2.8, min_turn: float = 0.3) -> str:
+    """'canonical' (within-column direction going deeper), 'reversed' (a fold entered from its
+    deep side), or 'ambiguous' (|step| near pi or tiny, so its direction is undefined)."""
+    if min_turn < signed < ambiguous_near_pi:
+        return "canonical"
+    if -ambiguous_near_pi < signed < -min_turn:
+        return "reversed"
+    return "ambiguous"
+
+
+def phase_steps(profile: np.ndarray, orientation: str, start_contact: int = 1, stop_contact: int | None = None,
+                w: int = 3, min_step: float = 0.4, min_sep: int = 3) -> list[tuple[float, float, float]]:
+    """Abrupt changes of preferred phase along the probe, from the superficial end down.
+
+    For each split between neighbouring contacts, the step is the circular difference between
+    the mean phase of `w` contacts below and `w` above. Local maxima of |step| above `min_step`
+    rad, at least `min_sep` contacts apart, between `start_contact` (top of cortex) and
+    `stop_contact` (deepest active contact). Returns [(boundary position as contact number,
+    e.g. 23.5; |step| rad; signed step rad)], superficial to deep. See `step_kind` for how the
+    sign is read (Davis et al.: +-pi superficial/input -> ~-1.2 deep is a positive step).
+    """
+    n = len(profile)
+    order = superficial_order(n, orientation)
+    q = np.exp(1j * np.asarray(profile, float)[order])
+    first = int(np.flatnonzero(order == start_contact - 1)[0]) if start_contact > 0 else 0
+    last = int(np.flatnonzero(order == stop_contact - 1)[0]) if stop_contact else n - 1
+    signed = np.zeros(n - 1)
+    for i in range(max(first, w - 1), min(n - w, last - w + 1)):
+        a, b = np.nanmean(q[i - w + 1:i + 1]), np.nanmean(q[i + 1:i + w + 1])
+        signed[i] = np.angle(b * np.conj(a))
+    mag = np.abs(signed)
+    steps = []
+    for i in np.argsort(mag)[::-1]:
+        if mag[i] < min_step:
+            break
+        if all(abs(i - j) >= min_sep for j, _ in steps):
+            steps.append((i, mag[i]))
+    steps.sort()
+    return [((order[i] + order[i + 1]) / 2 + 1, float(m), float(signed[i])) for i, m in steps]
+
+
+def l45_from_steps(steps: list[tuple[float, float, float]]) -> float:
+    """Blake's rule (2026-10-28): among non-reversed steps below the top of cortex, the 2nd if
+    there are two or more, otherwise the only one; NaN if none. Whether two steps are
+    supra->input + input->deep in one column, or two folds of cortex, is judged separately
+    (see `laminar_report`)."""
+    canon = [s for s in steps if step_kind(s[2]) != "reversed"]
+    if not canon:
+        return float("nan")
+    return canon[1][0] if len(canon) >= 2 else canon[0][0]
+
+
+def mua_gap(rate: np.ndarray, a: float, b: float, rate_floor: float = 2.5, min_len: int = 2) -> bool:
+    """True if >= `min_len` consecutive contacts strictly between boundary positions a and b
+    spike at or below the noise floor (e.g. white matter between two folds)."""
+    lo, hi = sorted((a, b))
+    idx = [c for c in range(int(np.ceil(lo)), int(np.floor(hi)) + 1) if lo < c < hi]
+    quiet = [rate[c - 1] <= rate_floor for c in idx]
+    run = best = 0
+    for q in quiet:
+        run = run + 1 if q else 0
+        best = max(best, run)
+    return best >= min_len
