@@ -10,5 +10,6 @@ h5netcdf>=1.8
 matplotlib>=3.11
 neo>=0.14.6
 openpyxl>=3.1
+statsmodels>=0.15
 pytest>=9.2
 ipykernel

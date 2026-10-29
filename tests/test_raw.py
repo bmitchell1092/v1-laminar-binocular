@@ -131,3 +131,12 @@ def test_eye_channels_identified_and_calibrated():
     from v1lb.eye import calibrate
     c = calibrate("211008_B", "bminteroc003")
     assert (c.x_channel, c.y_channel) == ("ainp3", "ainp4") and min(c.r2) > 0.95
+
+
+def test_kilosort_offset_two_sort_generations():
+    from v1lb.config import recording_files
+    from v1lb.io import NsxFile
+    from v1lb.units import load_sort, measure_offset
+    for session, rec, expected in [("211008_B", "bminteroc003", -204.5), ("221206_J", "bminteroc001", 0)]:
+        rep = measure_offset(load_sort(session, rec), NsxFile(recording_files(session, rec)[".ns6"]), n_units=3)
+        assert rep["consistent"] and abs(rep["offset"] - expected) <= 1.5
