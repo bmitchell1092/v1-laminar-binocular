@@ -185,6 +185,15 @@ interpretable rather than explained away.
   late modulation becomes more negative with |ODI|.
 * **Risk:** 68 strict / 136 lenient units, ~15–50 driven per condition (05 C14). Pooled, hierarchical
   statistics only.
+* **First look (2026-10-29; `scripts/fig5_units_od.py`, [qc/fig5_units_od.csv](qc/fig5_units_od.csv)).**
+  * **Units:** 62–65 lenient units (20 penetrations) and 23–25 strict (13–14) driven. Units are mostly net
+    *suppressed* by binocular stimulation (median BMI −0.05 to −0.15; 29–45% facilitated). MUA is mostly
+    facilitated (median +0.01 to +0.06; 53–69%). This is the aggregation effect Zhang et al. 2024 describe.
+  * **BMI vs |ODI|:** in MUA, BMI falls with |ODI| in *both* epochs (transient 40–140 ms and sustained 150–250 ms;
+    ρ −0.09 to −0.34, mixed-model slopes p < .05, strongest at .9). So the dependence on ocular dominance is not
+    late-specific in these windows. In units the relationship is underpowered (mostly ns).
+  * **Verdict:** the Dougherty vs Zhang "epoch reconciliation" is not supported in fixed windows. An onset-aligned
+    first-20-ms epoch is the remaining test. Fig 5 is at best supporting material.
 
 ### Figure 6 — One model for all of it (optional)
 
