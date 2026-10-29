@@ -224,7 +224,28 @@ interpretable rather than explained away.
   parameters (w, τ, n, per-depth gain).
 * **Pans out if:** cross-validated, it beats a static normalization model (same parameters, no delay) on the
   time courses.
-
+* **First pass (2026-10-29; Fig 5 in the revised arc; `v1lb.dynorm`, `scripts/fig5_model.py`,
+  [qc/fig5_model.csv](qc/fig5_model.csv)).**
+  * **Model:** after Zhou, Benson, Kay & Winawer 2019. Excitation (c_D + a·c_N)·u(t); pool (c_D + w·c_N)·v(t),
+    with v a low-passed u (τ₂); R = g·E^n / (σ^n + P^n). Fitted per penetration to the channel-averaged 6×6 time
+    courses (0–219 ms). Cross-validated across odd/even presentations.
+  * **Passes:**
+    * Beats static normalization on held-out halves in 23/25 penetrations (B 5/7, J 18/18); held-out error
+      2.95× lower; p < .001.
+    * Beats w = a in 21/25 (median 2.4% lower error, p < .001).
+    * **w > a in 24/25** (B 6/7, J 18/18): median w = 1.08 vs a = 0.88. Ocular dominance weights excitation;
+      the pool is close to eye-balanced. This is the quantitative test of the "OD sets the numerator, the pool
+      stays balanced" reading (Mitchell 2023, report Q5), and the condition for binocular < dominant eye at high
+      contrast.
+    * Variance explained median 0.88. Normalization delay τ₂ median 30 ms (IQR 23–37), matching the observed
+      transition. n ≈ 1.1, σ ≈ 0.09, latency δ ≈ 21 ms.
+  * **Shortfall:** the model reproduces the direction and contrast ordering of L(t) (ρ 0.23–0.56, all p ≤ .002)
+    but is too slow and too shallow. At .45 the data reach L ≈ −0.4 by 40 ms; the model reaches ~0 only by ~90 ms.
+    At .11 the model stays near 1 while the data fall to ~0.5. It also underpredicts the early dioptic peak at high
+    contrast. A fixed pool delay explains *that* normalization is delayed, not that it is faster at high contrast.
+  * **Next model:** a pool time constant that shortens with contrast. Temporal integration shortens with contrast
+    (Bair & Movshon 2004). If the data prefer it on held-out halves, that is a mechanism for claim 3.
+  * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
 * **Presentations:** completed, no saccade ≥ 1° from −200 to 500 ms (05 C15); report microsaccade-free
@@ -277,6 +298,8 @@ hide. Each item gets a test, and the S1 column says where the answer is shown.
 | 28 | **Inverting near-flat CRFs** | Where the monocular CRF saturates, small response changes map to large changes in k (noisy, biased late values) | 2, 3 | window means rather than per-ms values; primary contrasts below saturation; CIs from penetration bootstrap | S1b |
 | 29 | **Strongest sink ≠ earliest sink** | The strongest grating sink is often a later intracortical one; testing it as "input" would misplace the input stage | 4 | earliest-onset sink among strong sinks; sink onset must not lag the MUA onset at the same channels | S1g |
 | 30 | **Late collapse of the sink's eye weight** | L = (k − 1)/a divides by a small late a and explodes for CSD | 4 | use k for CSD; report a(t) | S1g |
+| 31 | **Aggregation bias in model weights** | The model is fitted to the average of channels with different eye weights; averaging could itself make the pool look more balanced than excitation (w > a) | 5 (model) | simulation: channels with w = a and heterogeneous a, averaged and fitted. **Tested: bias +0.003 to +0.025** even for a spread of 0.1–1.0, against an observed median w − a of +0.22 | S1i |
+| 32 | **Small trial counts destabilize cross-validation** | With ~4 presentations per cell per half (211008), held-out error of flexible models explodes | 5 | report per-penetration CV; exclude or flag penetrations with < 10 presentations per cell; results with and without 211008 | S1i |
 
 Supplementary Figure S1 layout (one panel per row group): **a** latency and onset symmetry; **b** eye weights,
 nonlinearity, censoring and noise; **c** fixation, microsaccades and trial selection; **d** vergence; **e**

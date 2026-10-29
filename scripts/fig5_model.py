@@ -174,7 +174,9 @@ def main():
 
     # ---- figure
     fig, axs = plt.subplots(1, 4, figsize=(18, 4.2), facecolor="#fcfcfb")
-    ex = max(keep_example, key=lambda p: F.set_index("penetration").loc[p, "n_channels"])
+    Fi = F.set_index("penetration")
+    stable = Fi[Fi.cv_full <= Fi.cv_static]                            # skip unstable fits (e.g. 211008, ~4 per cell per half)
+    ex = (1 - stable.sse_full / stable.var_all).idxmax()
     Yd, Yp = keep_example[ex]
     cols = {0.11: "#2a78d6", 0.225: "#eb6834", 0.45: "#1baf7a"}
     for c in (0.11, 0.225, 0.45):
