@@ -40,6 +40,26 @@ onset latency at each depth, so a robust off-target relationship surfaces withou
 Multiple comparisons are acknowledged: anything found this way is a discovery that needs the held-out confirmation
 (criterion 4).
 
+## Pre-registered confirmations
+
+### Candidate 1: interocular normalization arrives sooner at higher contrast (registered 2026-10-29, before looking)
+
+* **Held-out data:** the dual-probe "cross-recordings", never analyzed before. On each dual-probe day, each
+  probe was also recorded during the bminteroc run whose grating sat on the *other* probe's RF. Pairs are
+  221202, 221206, 221209 and 221214 eA/eB, and 221215 eA, as allowed by alignment v2. These were not used in the
+  discovery: the discovery used each penetration's own run. Only channels driven by the grating count (one-way
+  ANOVA across monocular contrasts, p < .01, as in the discovery). A cross-recording is included if it has ≥ 5
+  such channels.
+* **Statistic (identical to the discovery):** per channel, the linearity index L with window-specific eye
+  weights, in the 20–50 ms window after that channel's onset, for dioptic .11, .225, .45. Per cross-recording:
+  the slope of the channel-median L on log contrast.
+* **Prediction and success criterion:**
+  * the slope is negative in ≥ 80% of included cross-recordings;
+  * a one-sided sign test is p < .05;
+  * if fewer than 5 cross-recordings qualify, the test is inconclusive (not a failure).
+* **Also reported, labelled as reliability only (not independent):** odd vs even presentations within the
+  discovery penetrations.
+
 ## Log
 
 | # | Effect | Where seen | Size and consistency | Known? | Status | Next step |
