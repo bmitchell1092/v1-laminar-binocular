@@ -32,3 +32,19 @@ def test_crf_points_select_conditions():
     assert crf_points(resp, P, "mono_contra")[1].tolist() == [0, 1]
     assert crf_points(resp, P, "mono_ipsi")[1].tolist() == [0, 2]
     assert crf_points(resp, P, "dioptic")[1].tolist() == [0, 3, 5]
+
+
+def test_cv_si_is_unbiased_for_monotonic_crfs_and_detects_downturns():
+    from v1lb.crf import cv_supersaturation_index
+    sites_sat, sites_sup = [], []
+    for seed in range(40):                                           # noisy, saturating: plain SI > 0, CV SI ~ <= 0
+        c, r = _trials((10.0, 0.1, 2.5, 1.0), noise=4.0, seed=seed)
+        sites_sat.append(r)
+        c, r = _trials((10.0, 0.1, 2.5, 2.0), noise=4.0, seed=100 + seed)
+        sites_sup.append(r)
+    R_sat, R_sup = np.stack(sites_sat, axis=1), np.stack(sites_sup, axis=1)
+    plain = supersaturation_index(means_by_contrast(c, R_sat))
+    cv_sat = cv_supersaturation_index(c, R_sat, n_splits=100)
+    cv_sup = cv_supersaturation_index(c, R_sup, n_splits=100)
+    assert np.nanmean(plain) > 0.03                                  # the bias the CV index removes
+    assert np.nanmean(cv_sat) < 0.01 and np.nanmean(cv_sup) > 0.2

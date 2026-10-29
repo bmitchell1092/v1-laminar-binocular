@@ -65,6 +65,31 @@ def bootstrap_si(c: np.ndarray, r: np.ndarray, n_boot: int = 1000, seed: int = 0
     return np.array(out)
 
 
+def cv_supersaturation_index(c: np.ndarray, r: np.ndarray, n_splits: int = 200, seed: int = 0) -> np.ndarray:
+    """Cross-validated SI per site [...]: the plain SI is biased upward by noise (the largest of noisy means
+    overshoots the true peak), so a monotonic CRF still gets SI > 0. Here presentations are split in random
+    halves within each contrast; half A picks the peak contrast c*, half B measures the drop
+    (R_B(c*) - R_B(c_max)) / R_A(c*). Averaged over splits. Its expectation is <= 0 for any monotonic CRF and
+    > 0 only for a real downturn; 0 when A peaks at the top contrast."""
+    rng = np.random.default_rng(seed)
+    groups = [np.flatnonzero(np.isclose(c, k)) for k in CONTRASTS]
+    acc = []
+    for _ in range(n_splits):
+        a_idx, b_idx = [], []
+        for g in groups:
+            p = rng.permutation(g)
+            a_idx.append(p[: len(p) // 2])
+            b_idx.append(p[len(p) // 2:])
+        mA = np.stack([np.nanmean(r[i], axis=0) for i in a_idx])
+        mB = np.stack([np.nanmean(r[i], axis=0) for i in b_idx])
+        k = np.argmax(mA[1:], axis=0) + 1                                  # peak among non-blank contrasts
+        peak_a = np.take_along_axis(mA, k[None], axis=0)[0]
+        drop_b = np.take_along_axis(mB, k[None], axis=0)[0] - mB[-1]
+        with np.errstate(invalid="ignore", divide="ignore"):
+            acc.append(np.where(peak_a > 0, drop_b / peak_a, np.nan))
+    return np.nanmean(np.array(acc), axis=0)
+
+
 def naka_rushton(c, rmax, c50, n, s=1.0):
     c = np.asarray(c, float)
     with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
