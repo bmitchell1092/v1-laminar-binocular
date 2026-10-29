@@ -36,6 +36,7 @@ desktop.ini
 
 # Python
 .venv/
+.venv-ks4/
 __pycache__/
 *.pyc
 .pytest_cache/

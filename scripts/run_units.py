@@ -1,6 +1,7 @@
-"""Import the 2023 Kilosort/phy curation for every depth-usable penetration that has a sort.
+"""Import single units for every depth-usable penetration: the 2023 Kilosort/phy curation where it is usable,
+otherwise the Kilosort 4 sort in <out_root>/kilosort4/<pen>/ (run_ks4.py; pilot showed equal yield, 05 C14).
 
-Usage: .venv\Scripts\python scripts\run_units.py [penetration ...]
+Usage: .venv\\Scripts\\python scripts\\run_units.py [penetration ...]
 Writes <out_root>/units/<pen>_units.parquet (one row per good/mua cluster of the penetration's bank, with
 isolation metrics and depth coordinates) and <pen>_spikes.parquet (cluster_id, tick on the NSP clock), and
 docs/qc/kilosort_offsets.csv (measured spike-time offset per sort).
@@ -14,9 +15,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from v1lb.config import metadata_dir, out_root
-from v1lb.dataset import ALIGNMENT_FILE, channel_table
-from v1lb.units import sort_dir, units
+from v1lb.config import metadata_dir, out_root, recording_files
+from v1lb.dataset import ALIGNMENT_FILE
+from v1lb.io import NsxFile
+from v1lb.units import BROKEN_SORTS, load_ks4, sort_dir, units, with_depth
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -30,25 +32,29 @@ if __name__ == "__main__":
     qc = pd.read_csv(qc_path).set_index("penetration") if qc_path.exists() else pd.DataFrame()
     for pen in todo:
         p, a = pens.loc[pen], al.loc[pen]
-        if sort_dir(p.session, p.bminteroc) is None:
-            print(f"{pen}: no sort", flush=True)
+        rec, ks4 = f"{p.session}_{p.bminteroc}", out_root() / "kilosort4" / pen
+        if sort_dir(p.session, p.bminteroc) is not None and rec not in BROKEN_SORTS:
+            sorter, sort = "kilosort2_phy2023", None
+        elif (ks4 / "spike_times.npy").exists():
+            sorter = "kilosort4"
+            sort = load_ks4(ks4, NsxFile(recording_files(p.session, p.bminteroc)[".ns6"]).labels)
+        else:
+            print(f"{pen}: no usable sort", flush=True)
             continue
         t = time.time()
         try:
-            tab, spikes, rep = units(p.session, p.bminteroc, bank=p.bank)
+            tab, spikes, rep = units(p.session, p.bminteroc, bank=p.bank, sort=sort)
         except Exception:
             print(f"{pen}: FAILED\n{traceback.format_exc()}", flush=True)
             continue
-        ch = channel_table(32, a.orientation, float(a.l45), int(a.top_of_cortex),
-                           float(a.deep_limit) if pd.notna(a.deep_limit) else np.nan).set_index("contact")
-        for col in ("depth_l45", "depth_um", "depth_below_toc", "in_cortex", "beyond_deep_limit"):
-            tab[col] = ch.loc[tab.peak_contact.fillna(tab.contact).astype(int), col].to_numpy()
+        tab = with_depth(tab, a)
         tab.insert(0, "penetration", pen)
+        tab.insert(1, "sorter", sorter)
         tab.to_parquet(out / f"{pen}_units.parquet")
         pd.DataFrame({"cluster_id": np.concatenate([np.full(len(v), k) for k, v in spikes.items()]),
                       "tick": np.concatenate(list(spikes.values()))}).to_parquet(out / f"{pen}_spikes.parquet")
-        qc.loc[pen, ["sort", "offset_samples", "consistent", "unit_lags"]] = [
-            f"{p.session}_{p.bminteroc}", rep["offset"], rep["consistent"], str(rep["lags"])]
+        qc.loc[pen, ["sorter", "sort", "offset_samples", "measured_samples", "consistent", "unit_lags"]] = [
+            sorter, rec, rep["offset"], rep["measured"], rep["consistent"], str(rep["lags"])]
         g = tab[tab.group == "good"]
         print(f"{pen}: {time.time() - t:.0f}s offset {rep['offset']}; good {len(g)}, well isolated "
               f"{int(tab.well_isolated.sum())}", flush=True)

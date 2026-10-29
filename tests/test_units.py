@@ -22,3 +22,14 @@ def test_amplitude_cutoff_detects_truncation():
 def test_presence_ratio():
     s = np.concatenate([np.arange(0, 300, 0.5), np.arange(540, 600, 0.5)])   # silent 300-540 s
     assert np.isclose(presence_ratio(s, 0, 600), 6 / 10)
+
+
+def test_base_ticks_maps_joined_packets():
+    from types import SimpleNamespace
+    from v1lb.units import PhySort, base_ticks
+    ns6 = SimpleNamespace(t_start=102, period=1)
+    s = PhySort(None, None, np.array([0, 999, 1000, 1500]), np.zeros(4, int), np.ones(4), None,
+                packets=[[102, 1000], [1130, 5000]])                   # 28-tick gap between packets
+    assert base_ticks(s, ns6).tolist() == [102, 1101, 1130, 1630]
+    s.packets = None
+    assert base_ticks(s, ns6).tolist() == [102, 1101, 1102, 1602]

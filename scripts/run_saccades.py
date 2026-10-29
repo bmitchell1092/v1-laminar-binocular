@@ -1,7 +1,7 @@
 """Saccades for every built dataset: <pen>_saccades.parquet (continuous) and <pen>_presentation_eye.parquet
 (per presentation: saccades / microsaccades in -200...500 ms, time since the last saccade, to the next).
 
-Usage: .venv\Scripts\python scripts\run_saccades.py [penetration ...]
+Usage: .venv\\Scripts\\python scripts\\run_saccades.py [penetration ...]
 """
 
 import sys

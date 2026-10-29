@@ -1,0 +1,5 @@
+penetration,tag,offset,offset_measured,offset_consistent,ks4_clusters,ks4_well_isolated,ks4_wi_over_1hz,ks4_wi_contacts,ks4_median_snr,ks4_median_isi,ks4_median_ampcut,ks2023_clusters,ks2023_well_isolated,ks2023_wi_over_1hz,ks2023_wi_contacts,ks2023_median_snr,ks2023_median_isi,ks2023_median_ampcut,ks4_wi_matched_2023,ks4_wi_matched_2023_wi
+221212_J_eA,,0,0.0,True,35,1,1,1,2.67,3.227,0.0,17.0,1.0,1.0,1.0,1.37,1.443,0.0,1.0,1.0
+211012_B_eA,,0,0.0,True,63,10,9,7,4.74,0.625,0.001,88.0,11.0,10.0,10.0,6.36,1.602,0.001,8.0,7.0
+221202_J_eB,,0,0.0,True,29,1,0,1,2.98,1.083,0.002,13.0,3.0,2.0,1.0,4.08,1.557,0.001,0.0,0.0
+221209_J_eB,,0,0.0,True,27,0,0,0,2.93,3.419,0.001,61.0,0.0,0.0,0.0,3.29,2.519,0.001,,
