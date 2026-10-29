@@ -131,6 +131,24 @@ interpretable rather than explained away.
   mechanism statement; only an unidentifiable sink fails.
 * **Risk:** an identifiable earliest sink in ≤ 22 penetrations (05 C13); after ~10 ms the CSD includes
   intracortical currents.
+* **First pass (2026-10-29; `scripts/dichoptic_csd.py`, [qc/dichoptic_csd_sinks.csv](qc/dichoptic_csd_sinks.csv)).**
+  * **Sink selection:** an earliest grating sink was found in all 26 penetrations. "Earliest" means the
+    earliest-onset channel among strong sinks; the strongest sink is often a later, intracortical one.
+    * Mostly 1–13 contacts below the top of cortex and 0.5–8.5 contacts above the L4/5 landmark. Two are deep,
+      consistent with L6 input.
+    * Onsets mostly 23–44 ms after the flash.
+  * **Eye weights:** early sink a ≈ 0.77, the same as MUA at the same channels (0.70). The input is not monocular
+    at this resolution.
+  * **Combination:** at onset the sink adds the eyes roughly linearly. k at 0–20 ms after sink onset is 1.4–2.2,
+    against ~1.8 predicted for linear summation. It then normalizes, like spiking: k 0.4–0.9 from 50 ms, and
+    0.14–0.24 at .45.
+  * **Verdict so far:** no evidence that normalization is present in the earliest input. That argues against
+    geniculate inheritance at onset. Whether the sink normalizes later than spiking is unresolved: it is tentative
+    at .45, and the windows are timed from different onsets.
+  * **Method notes:** use k, not L = (k − 1)/a, for the CSD, because the sink's eye weight collapses late (register
+    #30). Per-penetration CSD inversions are noisy; grand averages fail because of the late eye-weight collapse.
+  * **Next:** compare sink and MUA on one clock with k only, contrasts .225 and .45. Add a sink-depth breakdown
+    (granular vs L6 sinks).
 
 ### Figure 5 — Single neurons and ocular dominance (strengthening)
 
@@ -202,6 +220,8 @@ hide. Each item gets a test, and the S1 column says where the answer is shown.
 | 26 | **Small eye weights amplify L** | Strongly monocular channels (small a) make L = (k − 1)/a noisy and heavy-tailed | 2, 3 | medians over channels and penetrations; repeat with a ≥ 0.3; report k alongside L | S1b |
 | 27 | **Top-censoring at the rising edge** | The binocular response can exceed even the .9 monocular response early (it starts earlier and rises faster); k is then only a lower bound (up to 43% at .45, 0–10 ms) | 2 | treat censored values as lower bounds (medians); report the censored fraction per window; primary contrasts .11 and .225 | S1a |
 | 28 | **Inverting near-flat CRFs** | Where the monocular CRF saturates, small response changes map to large changes in k (noisy, biased late values) | 2, 3 | window means rather than per-ms values; primary contrasts below saturation; CIs from penetration bootstrap | S1b |
+| 29 | **Strongest sink ≠ earliest sink** | The strongest grating sink is often a later intracortical one; testing it as "input" would misplace the input stage | 4 | earliest-onset sink among strong sinks; sink onset must not lag the MUA onset at the same channels | S1g |
+| 30 | **Late collapse of the sink's eye weight** | L = (k − 1)/a divides by a small late a and explodes for CSD | 4 | use k for CSD; report a(t) | S1g |
 
 Supplementary Figure S1 layout (one panel per row group): **a** latency and onset symmetry; **b** eye weights,
 nonlinearity, censoring and noise; **c** fixation, microsaccades and trial selection; **d** vergence; **e**

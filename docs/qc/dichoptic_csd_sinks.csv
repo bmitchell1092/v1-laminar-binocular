@@ -1,0 +1,27 @@
+penetration,sink_channel,sink_contact,sink_depth_below_toc,sink_depth_l45,sink_peak_ms,sink_onset_ms,sink_z,usable,l45_basis
+211008_B_eA,eA16,16,13.0,6.0,47.0,38.0,27.8,True,flash (SPI agrees)
+211012_B_eA,eA29,29,3.0,3.5,38.0,32.0,43.3,True,spi (flash implausible depth)
+211025_B_eA,eA10,10,6.0,,62.0,44.0,25.6,True,none
+211027_B_eA,eA10,10,22.0,-8.5,46.0,37.0,79.7,True,flash
+211103_B_eA,eA12,12,1.0,7.5,44.0,35.0,57.8,True,flash
+211208_B_eA,eA29,29,23.0,-9.5,59.0,34.0,19.7,True,flash
+211210_B_eA,eA24,24,10.0,-1.5,48.0,15.0,7.9,True,flash
+211217_B_eA,eA17,17,12.0,-1.5,61.0,42.0,104.1,True,flash
+221109_J_eA,eA28,28,4.0,,31.0,27.0,144.9,True,none
+221118_J_eA,eA18,18,4.0,3.5,55.0,30.0,133.9,True,flash
+221119_J_eA,eA07,7,3.0,2.5,36.0,30.0,84.0,True,flash
+221121_J_eA,eA13,13,5.0,5.5,36.0,26.0,33.7,True,spi (flash implausible depth)
+221123_J_eA,eA25,25,12.0,-2.5,68.0,15.0,5.8,True,spi (flash unusable)
+221128_J_eA,eA26,26,5.0,1.5,33.0,28.0,80.3,True,spi (flash implausible depth)
+221130_J_eA,eA13,13,3.0,5.5,39.0,26.0,192.7,True,spi (flash implausible depth)
+221202_J_eA,eA23,23,8.0,0.5,69.0,32.0,101.0,True,flash
+221202_J_eB,eB18,18,8.0,3.5,68.0,42.0,81.6,True,flash
+221204_J_eB,eB09,9,4.0,10.5,38.0,29.0,202.6,True,flash
+221206_J_eA,eA15,15,1.0,7.5,42.0,23.0,12.0,True,spi (flash unusable)
+221206_J_eB,eB27,27,17.0,,47.0,36.0,25.3,True,none
+221209_J_eA,eA31,31,1.0,8.5,47.0,34.0,47.9,True,flash
+221209_J_eB,eB14,14,9.0,0.5,42.0,31.0,150.3,True,flash
+221212_J_eA,eA13,13,8.0,4.5,41.0,28.0,52.9,True,flash
+221214_J_eA,eA25,25,7.0,-4.5,46.0,28.0,52.9,True,flash
+221214_J_eB,eB27,27,3.0,1.5,69.0,26.0,11.3,True,flash (SPI agrees)
+221215_J_eA,eA23,23,12.0,,46.0,33.0,29.0,True,none
