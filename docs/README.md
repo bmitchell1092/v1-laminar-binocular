@@ -18,5 +18,6 @@ and are kept for reference. Docs 02, 05 and 06 are maintained here.
 | [06_rebuild_plan.md](06_rebuild_plan.md) | phases, decisions, to-dos | **maintained** |
 | [07_supersaturation_assessment.md](07_supersaturation_assessment.md) | honest assessment: supersaturation vs depth/compartment (2026-10-28) |
 | [08_binocular_feasibility.md](08_binocular_feasibility.md) | first-pass feasibility of the top literature questions (2026-10-29) |
+| [09_paper_design.md](09_paper_design.md) | paper design draft: figures, pass criteria, analysis plan (2026-10-29) |
 | [../reports/V1 binocular contrast normalization.md](../reports/V1%20binocular%20contrast%20normalization.md) | literature sweep (2026-10-29): binocular/monocular contrast, interocular normalization, laminar timing; 16 ranked open questions vs this dataset (notes in `research_notes/`) |
 | [legacy_TuneList_all_versions.csv](legacy_TuneList_all_versions.csv) | recovered legacy session metadata, every historical version | legacy reference |
