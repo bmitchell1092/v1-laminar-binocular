@@ -105,7 +105,7 @@ def test_bminteroc_table_fixes_211009_labels():
 
 def test_dataset_layout_and_depths():
     from v1lb.dataset import build_penetration
-    ds = build_penetration("211008_B_eA", max_presentations=6, write=False)
+    ds = build_penetration("211008_B_eA", max_presentations=6, write=False, alignment_file="laminar_alignment_v1.csv")
     assert ds.lfp.dims == ("presentation", "time", "channel") and ds.lfp.shape == (6, 700, 32)
     assert ds.time.values[0] == -200 and ds.time.values[-1] == 499
     assert ds.channel.values[0] == "eA01" and ds.depth_l45.values[0] == 22.5      # ascending, L4/5 at 23.5
@@ -113,10 +113,19 @@ def test_dataset_layout_and_depths():
     assert np.isnan(ds.csd.values[:, :, 0]).all() and np.isfinite(ds.csd.values[:, :, 1]).all()
     assert ds.spikes.sum() > 0 and ds.attrs["orientation"] == "ascending"
     assert set(ds.condition.values) <= {"blank", "mono_contra", "mono_ipsi", "dioptic", "dichoptic"}
+    fix = ds.eye_x.sel(time=slice(-50, 0)).values[ds.completed.values]          # fixating before onset
+    assert ds.eye_x.attrs["source"] == "ainp3" and np.nanmedian(np.abs(fix)) < 3   # near the fixation point (deg)
+    assert np.isfinite(ds.pupil.values).all()
 
 
 def test_dataset_descending_probe_is_reordered():
     from v1lb.dataset import build_penetration
-    ds = build_penetration("211012_B_eA", max_presentations=3, write=False)
+    ds = build_penetration("211012_B_eA", max_presentations=3, write=False, alignment_file="laminar_alignment_v1.csv")
     assert ds.channel.values[0] == "eA32" and ds.channel.values[-1] == "eA01"          # superficial first
     assert ds.depth_l45.values[0] == 6.5 and (np.diff(ds.depth_l45.values) == -1).all()
+
+
+def test_eye_channels_identified_and_calibrated():
+    from v1lb.eye import calibrate
+    c = calibrate("211008_B", "bminteroc003")
+    assert (c.x_channel, c.y_channel) == ("ainp3", "ainp4") and min(c.r2) > 0.95

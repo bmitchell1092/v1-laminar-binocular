@@ -71,7 +71,7 @@ doi:10.5061/dryad.3r2280gmm) before using it on ours:
 * The clock fix matters here: a 3.4 ms spike-vs-LFP offset is a 12° phase error
   at 10 Hz and 61° at 50 Hz.
 
-## Phase 4 — Units
+## Phase 4 — Units (**mandatory for the supersaturation paper**, Blake 2026-10-28: MUA pools neurons with different c50s and can mask single-neuron supersaturation; well-isolated Kilosort units are required)
 Fix `importPhy`: all good units, every sorted file, NaN for unsorted files.
 **Kilosort 4 pilot** (optional, after Phase 1):
 * For: only 24 recordings were sorted, several bminteroc files failed, and
@@ -181,3 +181,4 @@ Statistics: hierarchical, with penetration (and monkey) as random effects.
   recording before comparing (`scripts/register_flash_csd.py`).
   `events.ml_events` drops non-strobe port lines (stray 2048 events in
   211008_B_evp002).
+* 2026-10-28: eye data added (`v1lb.io.bhv2` MonkeyLogic 2 reader, `v1lb.eye`): `ainp3`/`ainp4` = gaze X/Y calibrated against MonkeyLogic, `ainp5` = pupil (light reflex); per-presentation `eye_x`, `eye_y`, `pupil` in the datasets plus continuous `<pen>_eye.nc` (05 C11). Next for eyes: saccade/microsaccade detection and fixation-vs-post-saccade epochs. 38 tests pass.

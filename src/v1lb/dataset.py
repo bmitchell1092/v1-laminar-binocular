@@ -27,9 +27,10 @@ from .config import metadata_dir, out_root, recording_files
 from .io import NsxFile
 from .laminar import csd as compute_csd
 from .signals import analog_mua_epochs, probe_labels, threshold_spikes
+from . import eye as eyemod
 
 WINDOW_MS = (-200, 500)
-ALIGNMENT_FILE = "laminar_alignment_v1.csv"
+ALIGNMENT_FILE = "laminar_alignment_v2.csv"  # flash-CSD layer-4 sink as primary landmark
 
 
 def _git_hash() -> str:
@@ -83,9 +84,10 @@ def bin_spikes(spike_ticks: list[np.ndarray], onsets: np.ndarray, window_ms=WIND
 
 
 def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=WINDOW_MS,
-                      max_presentations: int | None = None, write: bool = True) -> xr.Dataset:
+                      max_presentations: int | None = None, write: bool = True,
+                      alignment_file: str = ALIGNMENT_FILE) -> xr.Dataset:
     pens = pd.read_csv(metadata_dir() / "penetrations.csv", dtype=str).set_index("penetration")
-    align = pd.read_csv(metadata_dir() / ALIGNMENT_FILE).set_index("penetration")
+    align = pd.read_csv(metadata_dir() / alignment_file).set_index("penetration")
     meta, al = pens.loc[penetration], align.loc[penetration]
     session, bank, rec = meta["session"], meta["bank"], meta["bminteroc"]
 
@@ -109,6 +111,12 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
     spikes = bin_spikes(threshold_spikes(ns6, ordered, max(span[0], ns6.t_start), min(span[1], ns6.t_stop)),
                         onsets, window_ms)
 
+    cal = eyemod.calibrate(session, rec)
+    eye_ch = [cal.x_channel, cal.y_channel] + ([eyemod.PUPIL_CHANNEL] if eyemod.PUPIL_CHANNEL in ns2.labels else [])
+    eye_raw = lfp_epochs(ns2, eye_ch, onsets, window_ms)
+    eye_x, eye_y = eyemod.to_degrees(cal, eye_raw[:, :, 0], eye_raw[:, :, 1])
+    pupil = eye_raw[:, :, 2] if eye_raw.shape[2] > 2 else np.full(eye_x.shape, np.nan, np.float32)
+
     t_ms = np.arange(window_ms[0], window_ms[1]).astype(float)
     pres_coords = {}
     for col in P.columns:
@@ -121,6 +129,9 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
                  {"units": "nA/mm^3", "definition": "-sigma d2V/dz2, sigma 0.4 S/m, 0.1 mm spacing; sinks negative; edge channels NaN"}),
             mua=(("presentation", "time", "channel"), mua,
                  {"units": "uV", "definition": "ns6: 500-5000 Hz band-pass, rectify, 200 Hz low-pass (4th-order, zero-phase), 1 kHz"}),
+            eye_x=(("presentation", "time"), eye_x.astype(np.float32), {"units": "deg re fixation cross", "source": cal.x_channel}),
+            eye_y=(("presentation", "time"), eye_y.astype(np.float32), {"units": "deg re fixation cross", "source": cal.y_channel}),
+            pupil=(("presentation", "time"), pupil.astype(np.float32), {"units": "mV (uncalibrated)", "source": eyemod.PUPIL_CHANNEL}),
             spikes=(("presentation", "time", "channel"), spikes,
                     {"units": "count per 1 ms bin", "definition": "negative crossings of -4 SD (1 s windows) after 500 Hz high-pass; 1 ms dead time"}),
         ),
@@ -133,21 +144,29 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
                    hemisphere=meta["hemisphere"], orientation=al["orientation"], l45=float(al["l45"]),
                    top_of_cortex=int(al["top_of_cortex"]),
                    deep_limit=float(al["deep_limit"]) if pd.notna(al["deep_limit"]) else np.nan,
-                   alignment=f"{ALIGNMENT_FILE} ({al['basis']})", contact_spacing_um=100.0,
+                   alignment=f"{alignment_file} ({al['basis']})", contact_spacing_um=100.0,
                    time_zero=("first backlight flash at the photodiode (bottom-right of the screen), "
                               "detected per presentation; the possible 2.6-3.4 ms scan offset to the "
                               "stimulus row is NOT applied (docs/05 A2b)"),
                    scan_offset_note="ViewPixx backlight mode unknown",
                    trial_matching_shift=int(pmeta["trial_shift"]), ml_minus_nsp_s=float(pmeta["ml_minus_nsp_s"]),
+                   eye_calibration=f"{cal.x_channel}/{cal.y_channel} affine vs MonkeyLogic AnalogData.Eye, R2 {cal.r2[0]:.3f}/{cal.r2[1]:.3f}",
                    pipeline="v1lb " + __version__, git=_git_hash(),
                    created=dt.datetime.now().isoformat(timespec="seconds")),
     )
     if write:
         out_dir = Path(out_dir or out_root() / "datasets")
         out_dir.mkdir(parents=True, exist_ok=True)
-        enc = {v: {"zlib": True, "complevel": 4} for v in ("lfp", "csd", "mua", "spikes")}
+        enc = {v: {"zlib": True, "complevel": 4} for v in ("lfp", "csd", "mua", "spikes", "eye_x", "eye_y", "pupil")}
         ds.to_netcdf(out_dir / f"{penetration}.nc", engine="h5netcdf", encoding=enc)
         P.to_parquet(out_dir / f"{penetration}_presentations.parquet")
+        tk, ex, ey, pu = eyemod.continuous(ns2, cal)
+        xr.Dataset(dict(eye_x=("tick", ex, {"units": "deg re fixation cross"}), eye_y=("tick", ey, {"units": "deg re fixation cross"}),
+                        pupil=("tick", pu, {"units": "mV (uncalibrated)"})),
+                   coords=dict(tick=("tick", tk, {"units": "NSP ticks (30 kHz clock), 1 kHz samples"})),
+                   attrs=dict(penetration=penetration, recording=rec, calibration=ds.attrs["eye_calibration"])
+                   ).to_netcdf(out_dir / f"{penetration}_eye.nc", engine="h5netcdf",
+                               encoding={v: {"zlib": True, "complevel": 4} for v in ("eye_x", "eye_y", "pupil")})
     return ds
 
 
