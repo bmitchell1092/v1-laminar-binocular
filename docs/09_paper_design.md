@@ -563,6 +563,28 @@ covariates.
   * Measure: per driven channel and monocular dominant-eye contrast (.11–.9), the half-decay time after
     response offset and the onset rise time (10→90%); penetration medians; test the contrast dependence.
     Descriptive, not pass/fail.
+* **Diagnostic result (2026-10-29; `scripts/dynamics_diagnostics.py`,
+  [qc/dynamics_diagnostics.csv](qc/dynamics_diagnostics.csv)): both signatures favour recurrent/shunting
+  normalization.**
+  * **Rise time (10→90%)**, dominant eye alone:
+
+    | | .11 | .225 | .45 | .9 | Slope per log contrast |
+    |---|---|---|---|---|---|
+    | Data, channel-averaged | 36 ms | 26 ms | 20 ms | 18 ms | −8.6 ms (84% of penetrations; B −27.9, J −5.8) |
+    | Data, per channel | 48 ms | 39 ms | 26 ms | 20.5 ms | — |
+    | Fitted fixed-delay model | 20 ms | 16 ms | 13 ms | 11 ms | −4.3 ms |
+
+    The fixed-delay model's rise also shortens with contrast, so the trend alone does not discriminate. But it is
+    too fast everywhere (by ~16 ms at .11) and half as contrast-dependent. Slow integration at low input is the
+    recurrent signature.
+  * **Half-decay after stimulus offset.** The fitted fixed-delay model (fitted to 0–219 ms only, so the decay is
+    an out-of-sample prediction) predicts **5–12 ms**. The **data show 27–32 ms**, 2.5–5× slower and nearly
+    contrast-independent (Friedman p = .008, slight lengthening with contrast). This is the slow,
+    input-independent decay predicted by recurrent/shunting normalization (ORGaNICs: τ ≈ 60 ms with no input).
+  * **Undershoot after offset:** not interpretable. The metric is biased by noise at low sustained levels.
+  * **Implication:** the fixed-delay feedforward models (single-stage and two-stage) fail an out-of-sample
+    dynamic test. A recurrent normalization model is the principled next fit: Carandini–Heeger shunting, or
+    ORGaNICs (Blake has legacy MATLAB fits), fitted to onset *and* offset and binocular. To be pre-registered.
 * **Next:** a theory-driven fourth model test (recurrent/shunting normalization vs the fixed-delay model). It
   needs its own pre-registration after the sweep. The condition set earlier ("no more model tests without a new
   reason") is met by this theoretical reason.
