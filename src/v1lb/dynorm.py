@@ -31,6 +31,8 @@ BOUNDS = {"g": (0.05, 50.0), "sigma": (0.005, 3.0), "n": (0.5, 6.0), "delta": (5
 TWO_STAGE = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "S", "omega", "tau_s"]
 TWO_STAGE_FULL = TWO_STAGE + ["w"]               # 'full2': stage-2 pool with its own non-dominant weight
 FULL2_BOUNDS = {"sigma": (1e-5, 3.0), "S": (0.001, 500.0)}   # wide enough to reach the single-stage limit
+DS = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "rho", "gamma", "tau_g"]   # dynamic Ding-Sperling
+DS_BOUNDS = {"rho": (0.01, 200.0), "gamma": (0.5, 4.0), "tau_g": (1.0, 400.0)}
 
 
 def lowpass(x: np.ndarray, tau: float, dt: float = 1.0) -> np.ndarray:
@@ -72,6 +74,50 @@ def step_responses(t: np.ndarray, delta: float, tau1: float, tau2: float, static
     return u, v
 
 
+def predict_ds(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
+    """Dynamic Ding-Sperling (2006) gain-control combination followed by delayed normalization.
+
+    x_D = c_D u, x_N = a c_N u; gain-control energy eps_e = (rho lowpass(x_e, tau_g))^gamma (Ding & Sperling filter
+    the energy temporally); Gamma = sum_e x_e (1 + eps_e) / (1 + eps_D + eps_N), which gives Gamma(I, 0) = I and
+    Gamma(I, I) = I (2 + 2 eps) / (1 + 2 eps) as in the paper; R = g Gamma^n / (sigma^n + lowpass(Gamma, tau2)^n).
+    Linear summation while eps is small (onset), contrast-weighted averaging once eps >> 1 (late), so with a < 1
+    the binocular response can fall below the dominant eye alone."""
+    u, _ = step_responses(t, p["delta"], p["tau1"], p["tau2"], static=True)
+    dt = t[1] - t[0]
+    xd = cd[:, None] * u[None, :]
+    xn = p["a"] * cn[:, None] * u[None, :]
+    ed = (p["rho"] * lowpass(xd, p["tau_g"], dt)) ** p["gamma"]
+    en = (p["rho"] * lowpass(xn, p["tau_g"], dt)) ** p["gamma"]
+    gam = (xd * (1 + ed) + xn * (1 + en)) / (1 + ed + en)
+    pool = lowpass(gam, p["tau2"], dt)
+    with np.errstate(over="ignore", invalid="ignore"):
+        return p["g"] * gam ** p["n"] / (p["sigma"] ** p["n"] + pool ** p["n"])
+
+
+def interaction_residuals(pred: np.ndarray, y: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
+    """Residuals for the interaction-targeted loss: monocular time courses (one eye at 0) and the binocular
+    interaction I(c_D, c_N, t) = R(c_D, c_N, t) - R(c_D, 0, t), each part divided by sqrt(data variance x number
+    of points), so both parts weigh equally. Sum of squares = the loss."""
+    mono = (cd == 0) | (cn == 0)
+    bino = np.flatnonzero((cd > 0) & (cn > 0))
+    ref = np.array([np.flatnonzero((cd == cd[i]) & (cn == 0))[0] for i in bino])
+    ym, pm = y[mono], pred[mono]
+    yi, pi = y[bino] - y[ref], pred[bino] - pred[ref]
+    out = []
+    for yy, pp in ((ym, pm), (yi, pi)):
+        ok = np.isfinite(yy)
+        scale = np.sqrt(np.nanvar(yy) * ok.sum()) + 1e-12
+        out.append(np.where(ok, np.nan_to_num(pp - yy, nan=1e3), 0.0).ravel() / scale)
+    return np.concatenate(out)
+
+
+def loss_value(p: dict, t, cd, cn, y, loss: str = "interaction") -> float:
+    pred = predict(p, t, cd, cn)
+    if loss == "interaction":
+        return float(np.sum(interaction_residuals(pred, y, cd, cn) ** 2))
+    return float(np.nansum((pred - y) ** 2))
+
+
 def predict(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray, static: bool = False) -> np.ndarray:
     """Responses [condition, time] for condition contrasts cd, cn (arrays of equal length).
 
@@ -79,6 +125,8 @@ def predict(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray, static: bool
     so normalization is faster at higher contrast ('tau_c' model). If p has "S", the two-stage model is used."""
     if "S" in p:
         return predict_two_stage(p, t, cd, cn)
+    if "rho" in p:
+        return predict_ds(p, t, cd, cn)
     u, v = step_responses(t, p["delta"], p["tau1"], p["tau2"], static)
     e = (cd + p["a"] * cn)[:, None] * u[None, :]
     pool_c = cd + p["w"] * cn
@@ -105,7 +153,7 @@ class Fit:
 
 
 def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str = "full",
-        starts: int = 6, seed: int = 0, init: dict | None = None) -> Fit:
+        starts: int = 6, seed: int = 0, init: dict | None = None, loss: str = "sse") -> Fit:
     """Least-squares fit to responses y [condition, time]. model: 'full', 'static' (no pool delay), 'w=a', or
     'tau_c' (full + a pool time constant that shortens with contrast; the others fix beta = 0), or '2stage'
     (predict_two_stage), or 'full2' (two-stage with a stage-2 pool weight w; nests 'full'). `init` adds a first
@@ -114,10 +162,12 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
         free = list(TWO_STAGE)
     elif model == "full2":
         free = list(TWO_STAGE_FULL)
+    elif model == "ds":
+        free = list(DS)
     else:
         free = [k for k in PARAMS if not (model == "static" and k == "tau2") and not (model == "w=a" and k == "w")
                 and not (model != "tau_c" and k == "beta") and k not in ("S", "omega", "tau_s")]
-    bounds = BOUNDS | (FULL2_BOUNDS if model == "full2" else {})
+    bounds = BOUNDS | (FULL2_BOUNDS if model == "full2" else {}) | (DS_BOUNDS if model == "ds" else {})
     lo = np.array([bounds[k][0] for k in free])
     hi = np.array([bounds[k][1] for k in free])
     ok = np.isfinite(y)
@@ -129,16 +179,19 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
             p["tau2"] = BOUNDS["tau2"][0]
         if model == "w=a":
             p["w"] = p["a"]
-        if model not in ("2stage", "full2"):
+        if model not in ("2stage", "full2", "ds"):
             p.setdefault("beta", 0.0)
         return p
 
     def resid(x):
-        r = predict(unpack(x), t, cd, cn, static=(model == "static")) - y
+        pred = predict(unpack(x), t, cd, cn, static=(model == "static"))
+        if loss == "interaction":
+            return interaction_residuals(pred, y, cd, cn)
+        r = pred - y
         return np.where(ok, np.nan_to_num(r, nan=1e3), 0.0).ravel()
 
     base = {"g": 1.5, "sigma": 0.15, "n": 2.0, "delta": 30.0, "tau1": 4.0, "tau2": 40.0, "a": 0.7, "w": 1.0,
-            "beta": 2.0, "S": 0.2, "omega": 1.0, "tau_s": 20.0}
+            "beta": 2.0, "S": 0.2, "omega": 1.0, "tau_s": 20.0, "rho": 5.0, "gamma": 1.2, "tau_g": 50.0}
     best = None
     for s in range(starts + (1 if init else 0)):
         first_base = 1 if init else 0                     # with init: start 0 = init, start 1 = base, then random
@@ -155,7 +208,7 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
             continue
         if best is None or res.cost < best.cost:
             best = res
-    return Fit(unpack(best.x), float(2 * best.cost), int(ok.sum()), model)
+    return Fit(unpack(best.x), float(2 * best.cost), int(ok.sum()), model)   # sse = loss value for loss='interaction'
 
 
 def sse(p: dict, t, cd, cn, y, model: str) -> float:

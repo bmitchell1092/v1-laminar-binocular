@@ -74,3 +74,31 @@ def test_full2_nests_single_stage_and_seeded_fit_is_never_worse():
     init = f1.params | dict(S=S, sigma=f1.params["sigma"] / S, omega=1.0, tau_s=20.0)
     f2 = fit(t, cd, cn, y, "full2", starts=1, init=init)
     assert f2.sse <= f1.sse * 1.01
+
+
+def test_ding_sperling_identities_and_averaging():
+    from v1lb.dynorm import predict_ds
+    t = np.arange(0, 400.0)
+    p = dict(g=1.0, sigma=1e-6, n=1.0, delta=20.0, tau1=4.0, tau2=1.0, a=1.0, rho=10.0, gamma=1.2, tau_g=50.0)
+    # with a near-identity output stage (sigma tiny, n = 1, fast pool) R ~ Gamma / lowpass(Gamma) -> use Gamma directly
+    from v1lb.dynorm import step_responses, lowpass
+    u, _ = step_responses(t, 20.0, 4.0, 1.0, static=True)
+    x = 0.45 * u
+    e = (10.0 * lowpass(x[None], 50.0)[0]) ** 1.2
+    g_bin = (x * (1 + e) + x * (1 + e)) / (1 + 2 * e)
+    assert np.allclose(g_bin[300:], x[300:] * (2 + 2 * e[300:]) / (1 + 2 * e[300:]))
+    # late, high contrast, unequal eyes: binocular below the dominant eye alone; at onset it adds
+    q = dict(g=2.0, sigma=0.1, n=1.5, delta=20.0, tau1=4.0, tau2=30.0, a=0.6, rho=20.0, gamma=1.5, tau_g=40.0)
+    r = predict_ds(q, t, np.array([0.45, 0.45]), np.array([0.0, 0.45]))
+    assert r[1, 30:34].mean() > r[0, 30:34].mean() and r[1, 250:].mean() < r[0, 250:].mean()
+
+
+def test_interaction_loss_runs_and_prefers_truth():
+    from v1lb.dynorm import loss_value
+    t = np.arange(0, 220.0)
+    cd, cn = grid()
+    true = dict(g=2.0, sigma=0.1, n=1.5, delta=20.0, tau1=4.0, tau2=30.0, a=0.6, rho=20.0, gamma=1.5, tau_g=40.0)
+    rng = np.random.default_rng(5)
+    y = predict(true, t, cd, cn) + rng.normal(0, 0.01, (len(cd), len(t)))
+    f = fit(t, cd, cn, y, "ds", starts=2, loss="interaction")
+    assert loss_value(f.params, t, cd, cn, y) <= loss_value(true, t, cd, cn, y) * 1.05
