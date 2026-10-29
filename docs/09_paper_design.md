@@ -323,6 +323,30 @@ interpretable rather than explained away.
       two-stage; fitted ω, S and τ_s; L(t) agreement.
     * **Reporting:** both tests appear in the paper, the first with its flaws stated. If this one fails, two-stage
       is not claimed and there is no third attempt on these data.
+    * **Result (2026-10-29): PASS** (`scripts/fig5_channel_test.py`,
+      [qc/fig5_channel_test.csv](qc/fig5_channel_test.csv)).
+      * **Primary test:** 533 channels in 24 penetrations. Penetration medians of r > 0: one-sided Wilcoxon
+        **p = 3 × 10⁻⁶** (α = .025).
+      * **Each monkey:** median of penetration medians B +0.006 (5/6 penetrations favour two-stage), J +0.015
+        (16/18).
+      * **Breadth:** two-stage favoured in 21/24 penetrations and 76% of channels.
+      * **Seeding worked:** training error of 'full2' ≤ 'full' in 100% of channels.
+      * **Effect size, stated plainly: consistent but small.** Median held-out error is 1.1% lower.
+      * **Two-stage parameters (per channel, median [IQR]):**
+        * interocular suppression weight ω 0.86 [0.52, 1.33], near the ~1 psychophysics requires;
+        * stage-1 semi-saturation S 0.18 [0.09, 0.37];
+        * stage-1 delay τ_s 31 ms [17, 65]; stage-2 delay τ₂ 36 ms [19, 74];
+        * pool weight w 1.12 vs excitatory weight a 0.92; w > a in 75% of channels.
+    * **Claim for the paper:**
+
+      > A dynamic two-stage model, with early interocular gain control (suppression weight ~0.9, ~30 ms delay)
+      > before delayed binocular normalization, predicts held-out responses better than single-stage delayed
+      > normalization, consistently across channels, penetrations and both monkeys, though by a small margin
+      > (~1%).
+
+      State both tests: the first (channel averages, non-nested, L-based criterion) failed narrowly, and its
+      flaws are given above; this corrected one passed. Still to do, descriptive: whether 'full2' reproduces L(t)
+      better, especially the low-contrast misfit.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
