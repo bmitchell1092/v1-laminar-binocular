@@ -505,6 +505,7 @@ hide. Each item gets a test, and the S1 column says where the answer is shown.
 | 30 | **Late collapse of the sink's eye weight** | L = (k − 1)/a divides by a small late a and explodes for CSD | 4 | use k for CSD; report a(t) | S1g |
 | 31 | **Aggregation bias in model weights** | The model is fitted to the average of channels with different eye weights; averaging could itself make the pool look more balanced than excitation (w > a) | 5 (model) | simulation: channels with w = a and heterogeneous a, averaged and fitted. **Tested: bias +0.003 to +0.025** even for a spread of 0.1–1.0, against an observed median w − a of +0.22 | S1i |
 | 32 | **Small trial counts destabilize cross-validation** | With ~4 presentations per cell per half (211008), held-out error of flexible models explodes | 5 | report per-penetration CV; exclude or flag penetrations with < 10 presentations per cell; results with and without 211008 | S1i |
+| 33 | **Offset-decay estimates are method-sensitive; input may carry the slow decay** | Half-decay depends on baseline (blank vs pre-stimulus), channel set and eye pooling (MUA 27–59 ms). A slow decay already present in the input currents would not reflect cortical recurrence | 5 (model) | fixed measurement protocol pre-registered; sink vs MUA comparison; model the input stage | S1i |
 
 **S1 results, first pass (2026-10-29; `scripts/fig2_robustness.py`,
 [qc/fig2_robustness.csv](qc/fig2_robustness.csv)).** The core statistics are recomputed under each control subset.
@@ -599,6 +600,25 @@ covariates.
   * **Implication:** the fixed-delay feedforward models (single-stage and two-stage) fail an out-of-sample
     dynamic test. A recurrent normalization model is the principled next fit: Carandini–Heeger shunting, or
     ORGaNICs (Blake has legacy MATLAB fits), fitted to onset *and* offset and binocular. To be pre-registered.
+* **Inheritance control (recommended by the second literature report).** If the input (earliest current sink)
+  also decays slowly after offset, the slow offset is inherited and stops discriminating the models.
+  * **Inconclusive.** The sink's offset decay is unstable across methods: 97–100 ms with per-trial baselines and
+    both eyes pooled; 60 / 75 / 26 / 19 ms at .11–.9 with blank subtraction and the dominant eye. The input-layer
+    CSD after offset is too noisy to decide.
+  * **MUA half-decay at the sink channels** is 39–59 ms, depending on method, against 27–32 ms over all driven
+    channels. Decay estimates are method-sensitive (register #33).
+  * **Rise times**, at the same channels:
+
+    | | Rise at .11 → .9 | Slope per log contrast | Penetrations with a negative slope |
+    |---|---|---|---|
+    | Spiking (MUA) | 25.5 → 16 ms | −4.4 ms | 73% |
+    | Input current (sink) | 46 → 32.5 ms | −2.7 ms | 55% (no consistent trend) |
+
+    This weakly suggests the contrast speed-up arises at or after the input rather than being inherited. Not
+    conclusive.
+  * **Consequence:** the offset prediction remains a valid out-of-sample test of a fitted MUA model. As
+    *mechanistic* evidence for cortical recurrence it is limited unless the input stage is modelled, as the second
+    literature report recommends.
 * **Next:** a theory-driven fourth model test (recurrent/shunting normalization vs the fixed-delay model). It
   needs its own pre-registration after the sweep. The condition set earlier ("no more model tests without a new
   reason") is met by this theoretical reason.
