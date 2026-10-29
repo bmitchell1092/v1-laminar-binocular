@@ -34,3 +34,14 @@ def test_binocular_below_dominant_eye_needs_w_above_a():
         assert (r[1, late].mean() < r[0, late].mean()) == below
     early = predict(base | dict(a=0.6, w=1.2), t, np.array([0.9, 0.9]), np.array([0.0, 0.9]))[:, 33:38]
     assert (early[1] > early[0]).all()                      # at onset the second eye adds
+
+
+def test_contrast_dependent_pool_time_constant_is_identifiable():
+    t = np.arange(0, 220.0)
+    cd, cn = grid()
+    true = dict(g=2.0, sigma=0.12, n=1.5, delta=25.0, tau1=4.0, tau2=60.0, a=0.8, w=1.1, beta=8.0)
+    rng = np.random.default_rng(2)
+    y = predict(true, t, cd, cn) + rng.normal(0, 0.02, (len(cd), len(t)))
+    fc = fit(t, cd, cn, y, "tau_c", starts=3)
+    ff = fit(t, cd, cn, y, "full", starts=3)
+    assert fc.sse < ff.sse and 4 < fc.params["beta"] < 16

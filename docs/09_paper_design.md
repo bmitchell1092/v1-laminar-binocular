@@ -243,8 +243,16 @@ interpretable rather than explained away.
     but is too slow and too shallow. At .45 the data reach L ≈ −0.4 by 40 ms; the model reaches ~0 only by ~90 ms.
     At .11 the model stays near 1 while the data fall to ~0.5. It also underpredicts the early dioptic peak at high
     contrast. A fixed pool delay explains *that* normalization is delayed, not that it is faster at high contrast.
-  * **Next model:** a pool time constant that shortens with contrast. Temporal integration shortens with contrast
-    (Bair & Movshon 2004). If the data prefer it on held-out halves, that is a mechanism for claim 3.
+  * **Tested and rejected: a pool time constant that shortens with contrast** ('tau_c', τ₂ / (1 + β·pool
+    contrast); Bair & Movshon 2004). It beats the fixed delay in only 16/25 penetrations, with no gain in held-out
+    error (median ratio 1.000, p = .045). β ≈ 0 (median 0.02), and L(t) is reproduced no better. So the faster,
+    deeper collapse at high contrast is not a contrast-dependent pool speed.
+  * **Where the misfit points:** at .11 the data fall to L ≈ 0.5 while the model stays ~1, because its pool is
+    below σ there. That suggests interocular suppression already acting at low contrast: a separate early
+    eye-vs-eye gain-control stage, as in the psychophysical two-stage model (Meese, Georgeson & Baker 2006). Next
+    model: a dynamic two-stage model. Stage 1 divides each eye by S + both eyes' contrasts, with its own delay;
+    stage 2 is the delayed binocular pool. Compare with the single-stage model on held-out halves. This is report
+    Q2 (the summation rule) in dynamic form.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 

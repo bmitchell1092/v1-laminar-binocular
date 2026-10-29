@@ -10,6 +10,7 @@ v(t) is u(t) low-pass filtered by an exponential with time constant tau2 (the no
 Because the drive is linear in contrast, every condition is a scaled copy of the same u and v, so the model is fast.
 
 Reduced models: static normalization (tau2 -> 0, so v = u) and w = a (the pool weighted like excitation).
+Extended model 'tau_c': the pool time constant shortens with pool contrast, tau2 / (1 + beta (c_D + w c_N)).
 Derived consequences (not fitted assumptions): the response is linear in the eye-weighted contrast at onset,
 before v catches up; the pool reaches sigma sooner at higher contrast; and at high contrast the binocular response
 falls below the dominant eye alone only if w > a.
@@ -23,9 +24,10 @@ import numpy as np
 from scipy import optimize, stats
 
 K_GAMMA = 3.0
-PARAMS = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "w"]
+PARAMS = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "w", "beta"]
 BOUNDS = {"g": (0.05, 50.0), "sigma": (0.005, 3.0), "n": (0.5, 6.0), "delta": (5.0, 70.0), "tau1": (0.5, 25.0),
-          "tau2": (0.5, 300.0), "a": (0.0, 1.5), "w": (0.0, 3.0)}
+          "tau2": (0.5, 300.0), "a": (0.0, 1.5), "w": (0.0, 3.0),
+          "beta": (0.0, 50.0)}
 
 
 def step_responses(t: np.ndarray, delta: float, tau1: float, tau2: float, static: bool = False):
@@ -41,10 +43,23 @@ def step_responses(t: np.ndarray, delta: float, tau1: float, tau2: float, static
 
 
 def predict(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray, static: bool = False) -> np.ndarray:
-    """Responses [condition, time] for condition contrasts cd, cn (arrays of equal length)."""
+    """Responses [condition, time] for condition contrasts cd, cn (arrays of equal length).
+
+    If p has "beta" (> 0), the pool time constant shortens with pool contrast, tau2 / (1 + beta (c_D + w c_N)),
+    so normalization is faster at higher contrast ('tau_c' model)."""
     u, v = step_responses(t, p["delta"], p["tau1"], p["tau2"], static)
     e = (cd + p["a"] * cn)[:, None] * u[None, :]
-    q = (cd + p["w"] * cn)[:, None] * v[None, :]
+    pool_c = cd + p["w"] * cn
+    if p.get("beta", 0) > 0 and not static:
+        dt = t[1] - t[0]
+        tau = p["tau2"] / (1 + p["beta"] * pool_c)                      # per condition
+        alpha = 1 - np.exp(-dt / tau)
+        vv = np.zeros((len(cd), len(t)))
+        for i in range(1, len(t)):                                      # first-order low-pass, per condition
+            vv[:, i] = vv[:, i - 1] + alpha * (u[i] - vv[:, i - 1])
+        q = pool_c[:, None] * vv
+    else:
+        q = pool_c[:, None] * v[None, :]
     with np.errstate(over="ignore", invalid="ignore"):
         return p["g"] * e ** p["n"] / (p["sigma"] ** p["n"] + q ** p["n"])
 
@@ -59,8 +74,10 @@ class Fit:
 
 def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str = "full",
         starts: int = 6, seed: int = 0) -> Fit:
-    """Least-squares fit to responses y [condition, time]. model: 'full', 'static' (no pool delay) or 'w=a'."""
-    free = [k for k in PARAMS if not (model == "static" and k == "tau2") and not (model == "w=a" and k == "w")]
+    """Least-squares fit to responses y [condition, time]. model: 'full', 'static' (no pool delay), 'w=a', or
+    'tau_c' (full + a pool time constant that shortens with contrast; the others fix beta = 0)."""
+    free = [k for k in PARAMS if not (model == "static" and k == "tau2") and not (model == "w=a" and k == "w")
+            and not (model != "tau_c" and k == "beta")]
     lo = np.array([BOUNDS[k][0] for k in free])
     hi = np.array([BOUNDS[k][1] for k in free])
     ok = np.isfinite(y)
@@ -72,13 +89,15 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
             p["tau2"] = BOUNDS["tau2"][0]
         if model == "w=a":
             p["w"] = p["a"]
+        p.setdefault("beta", 0.0)
         return p
 
     def resid(x):
         r = predict(unpack(x), t, cd, cn, static=(model == "static")) - y
         return np.where(ok, np.nan_to_num(r, nan=1e3), 0.0).ravel()
 
-    base = {"g": 1.5, "sigma": 0.15, "n": 2.0, "delta": 30.0, "tau1": 4.0, "tau2": 40.0, "a": 0.7, "w": 1.0}
+    base = {"g": 1.5, "sigma": 0.15, "n": 2.0, "delta": 30.0, "tau1": 4.0, "tau2": 40.0, "a": 0.7, "w": 1.0,
+            "beta": 2.0}
     best = None
     for s in range(starts):
         x0 = np.array([base[k] for k in free], float)
