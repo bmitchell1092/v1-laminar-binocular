@@ -20,6 +20,25 @@ timing, laminar resolution and a full dichoptic contrast matrix. This dataset ha
 Working titles: *"The two eyes add first and normalize later in primate V1"*; *"Binocular summation precedes
 interocular normalization across the layers of macaque V1"*.
 
+## Narrative arc: the paper as a sequence of figures
+
+A reader should be able to get the paper from the figure titles alone. Each figure makes one claim and sets up
+the question the next one answers. Claims are written as we hope they turn out; the figure sections below say what
+replaces each claim if it does not.
+
+| | Figure claim (title) | Question it answers | Sets up |
+|---|---|---|---|
+| 1 | We can measure binocular combination with millisecond and laminar precision | can we see it? | when do the eyes combine? |
+| 2 | The two eyes add at response onset, then normalize within tens of milliseconds | **when** | is that the same at every depth? |
+| 3 | The timing is shared across depth; the late interocular suppression is strongest in deep layers | **where** | is normalization in the input or made locally? |
+| 4 | The earliest synaptic input adds the eyes linearly; normalization appears in the cortical output | **how** | which neurons carry it? |
+| 5 | In single neurons, ocular dominance decides who is suppressed late | **who** | can one mechanism explain it all? |
+| 6 | A binocular normalization pool acting with a delay accounts for time, contrast and depth | **synthesis** | discussion: reconciling cat, human and macaque results |
+| S1 | Pitfalls and confounds: none of the above is explained by latency, eye imbalance, fixation, vergence, adaptation, layer assignment or monkey | **robustness** | — |
+
+Supplementary beyond S1: S2 per monkey; S3 no supersaturation at any depth (07); S4 the main results under each
+laminar marker; S5 unit isolation and spike-time verification (05 A7, C14).
+
 ## Core figures (essential: 1–3; strengthening: 4–5; optional: 6)
 
 Each figure answers one question. The criteria are set now, before the final analysis, so that a null is
@@ -118,15 +137,42 @@ interpretable rather than explained away.
 * **Inclusion:** driven channels (ANOVA across monocular contrasts, p < .01); all 26 depth-usable penetrations;
   211008 (median 8 presentations per cell) reported but checked by exclusion.
 
-## Controls
+## Pitfalls and confounds register (basis of Supplementary Figure S1)
 
-* **Latency:** handled by k(t) (Fig 2); also show onset latency vs effective contrast.
-* **Vergence:** zero-disparity gratings make vergence error into interocular phase noise. Estimate its effect on
-  the B days with both eyes on Blackrock; report by ocularity class.
-* **Adaptation:** three presentations per trial, 317 ms apart. Regress out the previous presentation's per-eye
-  contrast (report Q15) or show the result with first presentations only.
-* **Pupil and arousal:** pupil size per presentation as a covariate.
-* **Monkey:** B and J separately in a supplementary figure.
+A living list: add every new suspect as it comes up. "Threatens" names the figure whose claim it could fake or
+hide. Each item gets a test, and the S1 column says where the answer is shown.
+
+| # | Pitfall / confound | How it could fake or hide the result | Threatens | Test or control | Shown in |
+|---|---|---|---|---|---|
+| 1 | **Latency shift with effective contrast** | Binocular input is effectively higher contrast, so it starts earlier; an earlier rising edge alone gives a transient "facilitation" with no change in the combination rule | 2, 3 | k(t) compares at matched response, not matched time; onset latency vs monocular contrast and vs binocular condition; onset-aligned windows | S1a |
+| 2 | **Unequal eye weights in "balanced" MUA** | \|ODI\| < 0.3 allows eye weights ~2:1; with an accelerating CRF this alone pushes summation statistics below linear | 2, 3 | per-site eye-weight fit (contrast scale a); every statistic compared with that site's prediction | S1b |
+| 3 | **Output nonlinearity** | An expansive or saturating CRF changes the additivity index without any change in how inputs combine | 2 | k(t) is invariant to the output nonlinearity; additivity index reported only alongside k | S1b |
+| 4 | **Ceiling and the contrast range** | k·c above .9 cannot be measured, so k is censored at high contrast; interpolation between 6 levels adds error | 2, 3 | report k only where k·c ≤ .9; treat censoring explicitly; interpolation in log contrast, checked against Naka–Rushton inversion | S1b |
+| 5 | **Noise bias in ratios and maxima** | Ratios of small responses near threshold and maxima of noisy means are biased (cf. supersaturation, 07) | 2, 3 | cross-validated estimates; bootstrap over presentations and penetrations; report low-contrast cells separately | S1b |
+| 6 | **Fixation instability and microsaccades** | Saccade-locked modulation differs between conditions or epochs; B is a less steady fixator (9–24% of presentations with a large saccade) | 2, 3, 5 | large saccades excluded; results repeated on microsaccade-free presentations; saccade rate by condition | S1c |
+| 7 | **Vergence error** | Zero-disparity gratings turn vergence error into interocular phase noise, which phase-sensitive cells read as facilitation or suppression | 2, 5 | B days with both eyes on Blackrock: vergence vs binocular modulation; results by ocularity class | S1d |
+| 8 | **Adaptation from the previous presentation** | Three presentations per trial ~317 ms apart; the previous stimulus's per-eye contrast changes the current response | 2, 3 | regress out previous per-eye contrast; repeat with first presentations only | S1e |
+| 9 | **Interocular crosstalk in the stereoscope** | Light from one half reaching the other eye makes "monocular" stimuli partly binocular and shrinks apparent summation | 2, 5 | strictly monocular units (expected in L4) should give ~0 to the other eye; check the septum geometry | S1f |
+| 10 | **Interocular onset asymmetry** | If one eye's grating appeared earlier (display scan), binocular timing effects would be partly an eye delay | 2 | gratings sit on the same screen rows in both halves, so they share scan time (verify from stimulus positions); monocular latencies per eye | S1a |
+| 11 | **Eye labelling (contra/ipsi)** | A swapped eye code would invert ocular dominance analyses | 5 | verified mapping (raw 3 = left, 2 = right; hemisphere swap); granular OD should favour the contralateral eye across penetrations | S1f |
+| 12 | **Layer assignment** | Labels uncertain by ±0.5–1 mm (05 C13); a depth effect could be a mislabelled boundary | 3, 4 | depth below the top of cortex as the primary axis; rerun under each laminar marker | S4 |
+| 13 | **Top-of-cortex error** | Shifts the whole depth axis per penetration and blurs depth effects | 3 | sensitivity analysis with ±2-contact shifts; penetration-level random effects | S4 |
+| 14 | **CSD artefacts** | Contact gain mismatch makes sink/source stripes (05 C12); volume conduction | 4 | bad-contact interpolation and Hamming smoothing; results with and without smoothing | S1g |
+| 15 | **MUA ocularity dilution** | Analog MUA pools neighbouring columns, so OD-specific effects are diluted | 5 | single units; threshold-crossing MUA as a check | Fig 5 |
+| 16 | **Unit isolation and spike timing** | Contaminated clusters mix neurons; legacy spike times were offset (05 A7) | 5 | strict vs lenient units; corrected spike times verified on raw waveforms | S5 |
+| 17 | **Pseudo-replication** | Neighbouring channels share signal; treating channels as independent inflates significance | all | the penetration is the unit of replication; hierarchical models; penetration bootstrap | all |
+| 18 | **Monkey and session differences** | Species (M. radiata vs M. mulatta), hemisphere, stimulus duration (217 vs 317 ms, 05 A5), fixation quality | all | per monkey; duration-limited windows for early B; monkey as a fixed effect | S2 |
+| 19 | **RF position and size relative to the grating** | Grating centred on one probe's RF; off-centre or larger-RF sites get surround suppression, which could look like depth-dependent normalization | 3 | RF maps (dotmapping) as a covariate; restrict to sites with RF inside the grating | S1h |
+| 20 | **Orientation and SF tuning** | One grating per session; poorly tuned sites (more common in some layers) respond differently | 3 | tuning from the rfori runs as a covariate where available | S1h |
+| 21 | **Trial selection** | Completed presentations only; if fixation breaks depend on condition, the surviving sample is biased | 2, 3 | break rate by condition; analysis including broken presentations up to the break | S1c |
+| 22 | **Absolute timing reference** | The photodiode sits at the bottom right; any scan offset to the stimulus row is constant (≤ 3.4 ms, 05 A2b) | 1, 2 | affects absolute latencies only, not condition differences; state it | Methods |
+| 23 | **Arousal and drift within session** | Slow changes in responsiveness or pupil interact with condition order | 2, 3 | randomised order; time in session and pupil as covariates | S1e |
+| 24 | **Analysis flexibility** | Many windows, thresholds and depth bins | all | decisions locked in this document before the final run; cross-validated model comparison | Methods |
+
+Supplementary Figure S1 layout (one panel per row group): **a** latency and onset symmetry; **b** eye weights,
+nonlinearity, censoring and noise; **c** fixation, microsaccades and trial selection; **d** vergence; **e**
+adaptation and drift; **f** monocular crosstalk and eye labelling; **g** CSD processing; **h** RF and tuning
+covariates.
 
 ## Out of scope (other papers or supplementary)
 
