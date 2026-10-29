@@ -10,6 +10,8 @@ Sites: MUA per in-cortex channel; single units 'strict' (well_isolated: contamin
 Compartments (penetrations with an L4/5): supragranular depth_l45 > 5 contacts, granular 0 < depth_l45 <= 5,
 infragranular depth_l45 <= 0 (approximate: L4 ~0.5 mm above the L4/5 boundary). Depth: contacts below the top of
 cortex, bins of 5.
+Per site, the held-out downturn test (p_downturn) is calibrated, so the fraction of sites with p < 0.05 is
+compared with the 5% expected if no site supersaturates (binomial test).
 Tests: (1) site-level mixed model si_cv ~ compartment + (1 | penetration); (2) conservative: per penetration,
 mean si_cv per compartment, supragranular - granular and infragranular - granular differences tested across
 penetrations (neighbouring MUA channels share signal, so sites are not independent). Power: one-sample t-test on
@@ -73,6 +75,10 @@ def main():
         rows.append(dict(kind=kind, window=window, condition=cond, n_sites=len(x), n_pen=g.penetration.nunique(),
                          si_cv_mean=x.mean(), si_cv_median=x.median(), p_greater_0=w,
                          frac_si_cv_gt_0_1=(x > 0.1).mean(),
+                         n_downturn=int((g.p_downturn < 0.05).sum()),
+                         frac_downturn=(g.p_downturn < 0.05).mean(),
+                         binom_p_vs_5pct=stats.binomtest(int((g.p_downturn < 0.05).sum()), len(g), 0.05,
+                                                         alternative="greater").pvalue,
                          frac_fit_supersat=((g.s > 1) & (g.s_p < 0.05)).mean(),
                          frac_peak_below_top=(g.peak_contrast_obs < 0.9).mean()))
         # compartment effects

@@ -69,10 +69,12 @@ def cv_supersaturation_index(c: np.ndarray, r: np.ndarray, n_splits: int = 200, 
     """Cross-validated SI per site [...]: the plain SI is biased upward by noise (the largest of noisy means
     overshoots the true peak), so a monotonic CRF still gets SI > 0. Here presentations are split in random
     halves within each contrast; half A picks the peak contrast c*, half B measures the drop
-    (R_B(c*) - R_B(c_max)) / R_A(c*). Averaged over splits. Its expectation is <= 0 for any monotonic CRF and
-    > 0 only for a real downturn; 0 when A peaks at the top contrast."""
+    R_B(c*) - R_B(c_max). The mean drop over splits is divided by the peak of the full-data means (a fixed,
+    positive scale for a driven site; normalising by half A's peak blows up when that is near 0). Its
+    expectation is <= 0 for any monotonic CRF and > 0 only for a real downturn; 0 when A peaks at the top."""
     rng = np.random.default_rng(seed)
     groups = [np.flatnonzero(np.isclose(c, k)) for k in CONTRASTS]
+    scale = np.nanmax(means_by_contrast(c, r)[1:], axis=0)
     acc = []
     for _ in range(n_splits):
         a_idx, b_idx = [], []
@@ -83,11 +85,34 @@ def cv_supersaturation_index(c: np.ndarray, r: np.ndarray, n_splits: int = 200, 
         mA = np.stack([np.nanmean(r[i], axis=0) for i in a_idx])
         mB = np.stack([np.nanmean(r[i], axis=0) for i in b_idx])
         k = np.argmax(mA[1:], axis=0) + 1                                  # peak among non-blank contrasts
-        peak_a = np.take_along_axis(mA, k[None], axis=0)[0]
-        drop_b = np.take_along_axis(mB, k[None], axis=0)[0] - mB[-1]
-        with np.errstate(invalid="ignore", divide="ignore"):
-            acc.append(np.where(peak_a > 0, drop_b / peak_a, np.nan))
-    return np.nanmean(np.array(acc), axis=0)
+        acc.append(np.take_along_axis(mB, k[None], axis=0)[0] - mB[-1])
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(scale > 0, np.nanmean(np.array(acc), axis=0) / scale, np.nan)
+
+
+def downturn_p(c: np.ndarray, r: np.ndarray, n_splits: int = 50, seed: int = 0) -> np.ndarray:
+    """Held-out one-sided test that the response falls from the peak contrast to the top contrast, per site.
+
+    Each split: half A picks the peak non-blank contrast c*; half B tests R(c*) > R(c_max) with a one-sided
+    Welch t-test (p = 1 when c* is the top contrast). Selection and test use disjoint presentations, so each
+    split's p is valid; splits are combined as min(1, 2 x median p) (Meinshausen et al. 2009), valid whatever
+    the dependence between splits. Under a non-decreasing CRF at most 5% of sites reach p < 0.05."""
+    rng = np.random.default_rng(seed)
+    r = r.reshape(len(r), -1)
+    groups = [np.flatnonzero(np.isclose(c, k)) for k in CONTRASTS]
+    ps = np.ones((n_splits, r.shape[1]))
+    for i in range(n_splits):
+        halves = [rng.permutation(g) for g in groups]
+        a_idx = [h[: len(h) // 2] for h in halves]
+        b_idx = [h[len(h) // 2:] for h in halves]
+        mA = np.stack([np.nanmean(r[a], axis=0) for a in a_idx])
+        k = np.argmax(mA[1:], axis=0) + 1
+        top = r[b_idx[-1]]
+        for j in np.flatnonzero(k < len(CONTRASTS) - 1):
+            x, y = r[b_idx[k[j]], j], top[:, j]
+            if np.nanstd(x) > 0 or np.nanstd(y) > 0:
+                ps[i, j] = stats.ttest_ind(x, y, equal_var=False, alternative="greater", nan_policy="omit").pvalue
+    return np.minimum(1.0, 2 * np.nanmedian(ps, axis=0))
 
 
 def naka_rushton(c, rmax, c50, n, s=1.0):

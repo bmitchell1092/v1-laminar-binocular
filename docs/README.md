@@ -16,4 +16,5 @@ and are kept for reference. Docs 02, 05 and 06 are maintained here.
 | [04_LMN_analysis.md](04_LMN_analysis.md) | legacy laminar-normalization analysis chain and figure list | legacy reference |
 | [05_known_issues_and_QC.md](05_known_issues_and_QC.md) | issue register and verification plan | **maintained** |
 | [06_rebuild_plan.md](06_rebuild_plan.md) | phases, decisions, to-dos | **maintained** |
+| [07_supersaturation_assessment.md](07_supersaturation_assessment.md) | honest assessment: supersaturation vs depth/compartment (2026-10-28) |
 | [legacy_TuneList_all_versions.csv](legacy_TuneList_all_versions.csv) | recovered legacy session metadata, every historical version | legacy reference |

@@ -48,3 +48,16 @@ def test_cv_si_is_unbiased_for_monotonic_crfs_and_detects_downturns():
     cv_sup = cv_supersaturation_index(c, R_sup, n_splits=100)
     assert np.nanmean(plain) > 0.03                                  # the bias the CV index removes
     assert np.nanmean(cv_sat) < 0.01 and np.nanmean(cv_sup) > 0.2
+
+
+def test_downturn_p_is_calibrated_and_sensitive():
+    from v1lb.crf import downturn_p
+    sat, sup = [], []
+    for seed in range(60):
+        c, r = _trials((10.0, 0.1, 2.5, 1.0), noise=4.0, seed=seed)       # saturating (null)
+        sat.append(r)
+        c, r = _trials((10.0, 0.1, 2.5, 2.0), noise=4.0, seed=500 + seed)  # supersaturating
+        sup.append(r)
+    p_null = downturn_p(c, np.stack(sat, axis=1), n_splits=30)
+    p_alt = downturn_p(c, np.stack(sup, axis=1), n_splits=30)
+    assert np.mean(p_null < 0.05) <= 0.05 and np.mean(p_alt < 0.05) > 0.8
