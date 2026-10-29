@@ -10,8 +10,8 @@ Spike times: sample s of the copy is NSP tick T0 + s (T0 = first packet timestam
 before 221206 the waveform trough sits 204 samples = 2 x T0 (6.8 ms) before T0 + s (05 A7). The offset is
 measured per sort from mean raw waveforms of its best units, separately in each half of the recording. Single
 units scatter by several samples (trough timing depends on waveform shape), so for the 2023 sorts the measured
-value is snapped to the generation it belongs to (-2 x T0 or 0); other sorts (Kilosort 4, `load_ks4`) use the
-measured value.
+value is snapped to the generation it belongs to (-2 x T0 or 0). Kilosort 4 reports the trough sample itself
+(offset 0; measured 0 in the pilot), so its sorts use 0 and the measurement is a check.
 
 `well_isolated` is metric-based (any non-noise cluster); the curation label is kept in `group`.
 """
@@ -108,7 +108,7 @@ def load_ks4(results_dir: str | Path, ns6_labels: list[str]) -> PhySort:
     run = d / "run.json"
     packets = json.loads(run.read_text()).get("packets") if run.exists() else None
     return PhySort(d, labels, np.load(d / "spike_times.npy").ravel().astype(np.int64), clusters,
-                   np.load(d / "amplitudes.npy").ravel(), info, packets=packets)
+                   np.load(d / "amplitudes.npy").ravel(), info, generations=(0,), packets=packets)
 
 
 def _snippets(ns6: NsxFile, ticks: np.ndarray, labels: list[str], window=SNIPPET, pad: int = 90,
@@ -142,13 +142,15 @@ def measure_offset(sort: PhySort, ns6: NsxFile, n_units: int = 5, n_spikes: int 
                    search=(-400, 100), seed: int = 0) -> dict:
     """Samples to add to T0 + s so that the spike time falls on the waveform trough.
 
-    Uses the `n_units` good units with most spikes; for each half of the recording, the trough of the mean
+    Uses the `n_units` clusters with most spikes and a clear waveform, 'good' first; for each half of the recording, the trough of the mean
     high-passed waveform on the unit's channel within `search`. Returns the median lag over units with a clear
     waveform, the per-unit lags, and `consistent`: most units' halves agree within 3 samples (no drift) and most
     units sit within 8 samples of the offset. With `sort.generations`, the offset is the nearest known value."""
     rng = np.random.default_rng(seed)
     t0 = ns6.t_start
-    good = sort.info[sort.info.group == "good"].sort_values("n_spikes", ascending=False).head(n_units)
+    info = sort.info[sort.info.group.isin(["good", "mua"])]
+    good = pd.concat([info[info.group == "good"].sort_values("n_spikes", ascending=False),
+                      info[info.group != "good"].sort_values("n_spikes", ascending=False)]).head(2 * n_units)
     ticks = base_ticks(sort, ns6)
     mid = np.median(ticks)
     lags = {}
@@ -166,6 +168,8 @@ def measure_offset(sort: PhySort, ns6: NsxFile, n_units: int = 5, n_spikes: int 
                 per_half.append(int(np.argmin(w)) + search[0])
         if per_half:
             lags[int(u.id)] = per_half
+        if len(lags) == n_units:
+            break
     if not lags:
         return dict(offset=np.nan, measured=np.nan, lags=lags, consistent=False)
     per_unit = [float(np.median(v)) for v in lags.values()]
@@ -241,7 +245,9 @@ def units(session: str, recording: str, bank: str | None = None, n_waveform: int
     ns6 = NsxFile(recording_files(session, recording)[".ns6"])
     rep = measure_offset(sort, ns6)
     if not rep["consistent"]:
-        raise RuntimeError(f"{session}_{recording}: spike-time offset not consistent: {rep}")
+        if not (sort.generations and len(sort.generations) == 1):
+            raise RuntimeError(f"{session}_{recording}: spike-time offset not consistent: {rep}")
+        rep["offset"] = sort.generations[0] * ns6.t_start      # single known convention (Kilosort 4: 0)
     ticks_all = base_ticks(sort, ns6) + rep["offset"]
     inside = (ticks_all >= ns6.t_start) & (ticks_all < ns6.t_stop)
     start_s, stop_s = ns6.t_start / 30000, ns6.t_stop / 30000
