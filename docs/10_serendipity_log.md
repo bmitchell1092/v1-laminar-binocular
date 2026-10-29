@@ -59,12 +59,25 @@ Multiple comparisons are acknowledged: anything found this way is a discovery th
   * if fewer than 5 cross-recordings qualify, the test is inconclusive (not a failure).
 * **Also reported, labelled as reliability only (not independent):** odd vs even presentations within the
   discovery penetrations.
+* **Result (2026-10-29): FAIL by the pre-registered criterion, narrowly.**
+  * **Sample:** 8 cross-recordings had driven channels; 7 had ≥ 5 and were included. 221209 eB's cross-recording
+    had none: the grating missed its RF.
+  * **Outcome:** the slope is negative in 6/7 (86%, meeting the ≥ 80% bar), but the one-sided sign test gives
+    p = .063 (> .05).
+  * **Design flaw:** with 7 recordings only 7/7 could pass (p = .008); the test was underpowered by design.
+    Lesson: size held-out tests before registering them.
+  * **Direction and size replicate:** median slope −0.87 (discovery −0.92); early–late drops 0.32 / 0.69 / 0.93
+    at .11 / .225 / .45 (discovery 0.49 / 0.59 / 0.85).
+  * **Limits:** the held-out data are J only, from 4 days, and eA/eB pairs share a day.
+  * **Reliability:** odd/even splits 25/25 and 22/24 negative.
+  * **Status stays "candidate", no post-hoc rescue.** A future confirmation needs new data, or a registered
+    test that can pass (e.g. ≥ 10 independent recordings).
 
 ## Log
 
 | # | Effect | Where seen | Size and consistency | Known? | Status | Next step |
 |---|---|---|---|---|---|---|
-| 1 | **Binocular summation collapses further and faster at higher contrast** (first framed as "normalization arrives sooner at higher contrast") | Fig 2 (`equivalent_contrast.py`, `normalization_timing.py`) | **Robust:** L falls with contrast in the 20–50 ms window in 26/26 penetrations (both monkeys). Replicates in odd and even presentations separately (25/25, 22/24; reliability, not independence). Visible in raw data: binocular gain at onset is larger and collapses faster at higher contrast. At .45 it peaks at ~0.25 of the monocular peak and is gone by ~30 ms; at .225 it peaks at 0.19 and is gone by ~40 ms; at .11 it peaks at 0.14, decays slowly and stays positive. Late strength rises with contrast (early–late drop 0.49 / 0.59 / 0.85). **Not robust:** "sooner" independent of strength. Amplitude-normalized half-transition times (median 25 / 30 / 15 ms) put .45 first in only 50% of penetrations (p = .23); odd/even reliability r = 0.39. | strength dependence: a contrast-dependent late k is the two-stage / Ding–Sperling signature, and L < 0 at .45 (binocular below the dominant eye alone) exceeds ocularity invariance. Timing dependence: not found in the sweep | **candidate** (strength and population-level speed); the timing-only claim is not supported | pre-registered held-out test on the cross-recordings (above); if it holds, model which normalization architectures give L < 0 at high contrast |
+| 1 | **Binocular summation collapses further and faster at higher contrast** (first framed as "normalization arrives sooner at higher contrast") | Fig 2 (`equivalent_contrast.py`, `normalization_timing.py`) | **Robust:** L falls with contrast in the 20–50 ms window in 26/26 penetrations (both monkeys). Replicates in odd and even presentations separately (25/25, 22/24; reliability, not independence). Visible in raw data: binocular gain at onset is larger and collapses faster at higher contrast. At .45 it peaks at ~0.25 of the monocular peak and is gone by ~30 ms; at .225 it peaks at 0.19 and is gone by ~40 ms; at .11 it peaks at 0.14, decays slowly and stays positive. Late strength rises with contrast (early–late drop 0.49 / 0.59 / 0.85). **Not robust:** "sooner" independent of strength. Amplitude-normalized half-transition times (median 25 / 30 / 15 ms) put .45 first in only 50% of penetrations (p = .23); odd/even reliability r = 0.39. | strength dependence: a contrast-dependent late k is the two-stage / Ding–Sperling signature, and L < 0 at .45 (binocular below the dominant eye alone) exceeds ocularity invariance. Timing dependence: not found in the sweep | **candidate** (strength and population-level speed); the timing-only claim is not supported. **Held-out test failed narrowly** (6/7 negative, p = .063; see above) | pre-registered held-out test on the cross-recordings (above); if it holds, model which normalization architectures give L < 0 at high contrast |
 | 2 | **Monkey difference in MUA onset latency:** J 26–31 ms vs B 34–37 ms | dataset check (2026-10-28) | ~8 ms, all penetrations | latency varies with eccentricity, SF, size and species; B and J differ in all of these | noted, probably confounded | regress latency on eccentricity, SF, size; only interesting if a residual monkey effect remains |
 | 3 | **Late binocular linearity is an inverted U across depth:** middle depths stay linear, superficial and deep normalize | Fig 3 first pass | mixed model p < .001; upper vs middle p = .005 | not found in the sweep | on-target (Fig 3) | landmark compartments, CSD (Fig 4), per-monkey |
 | 4 | **Flash CSD stripes from contact gain mismatch** on 100 µm Plexon probes; outlier-contact interpolation + Hamming smoothing fixes them | 05 C12 | systematic, many penetrations | known in principle (CSD sensitivity to gain) | methods note | cite in methods; not a paper |
