@@ -36,6 +36,26 @@ replaces each claim if it does not.
 | 6 | A binocular normalization pool acting with a delay accounts for time, contrast and depth | **synthesis** | discussion: reconciling cat, human and macaque results |
 | S1 | Pitfalls and confounds: none of the above is explained by latency, eye imbalance, fixation, vergence, adaptation, layer assignment or monkey | **robustness** | — |
 
+### Proposed revision after the first passes (2026-10-29, for Blake's approval)
+
+The first passes moved the weight of the paper from depth to **time × contrast**: Fig 2 holds, Fig 3 favours
+the columnar fallback, Fig 4 lands between its outcomes, Fig 5 is supporting at best. A revised arc that uses
+only what held:
+
+| | Figure claim (title) | Evidence so far |
+|---|---|---|
+| 1 | We can measure binocular combination with millisecond and laminar precision | setup |
+| 2 | The two eyes add at response onset, then normalize within tens of milliseconds | latency-proof k(t); linear at onset at all contrasts; early→late drops p ≤ .016 |
+| 3 | Contrast sets how far and how fast binocular summation collapses | falls with contrast in 26/26 penetrations, both monkeys, odd/even; visible in raw data; held-out test 6/7 (p = .063, failed narrowly); L < 0 at .45 (net interocular suppression beyond invariance) |
+| 4 | The same sequence runs at every depth and in the earliest synaptic input | drop similar across depth; earliest sink linear at onset; currents and spikes normalize together |
+| 5 | A contrast-driven, delayed binocular normalization pool explains it | to do (model) |
+
+Supplementary: units (neurons net-suppressed while MUA is facilitated; OD dependence early and late), depth
+compartments and the J-only inverted U, per monkey, no supersaturation, the confounds register.
+
+Open risk: claim 3 is the most interesting and the least confirmed; the held-out test failed narrowly. Fig 3
+should present it with that caveat, or the paper should wait for a better-powered confirmation.
+
 Supplementary beyond S1: S2 per monkey; S3 no supersaturation at any depth (07); S4 the main results under each
 laminar marker; S5 unit isolation and spike-time verification (05 A7, C14).
 
