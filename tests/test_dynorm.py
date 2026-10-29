@@ -45,3 +45,16 @@ def test_contrast_dependent_pool_time_constant_is_identifiable():
     fc = fit(t, cd, cn, y, "tau_c", starts=3)
     ff = fit(t, cd, cn, y, "full", starts=3)
     assert fc.sse < ff.sse and 4 < fc.params["beta"] < 16
+
+
+def test_two_stage_model_selected_when_true():
+    from v1lb.dynorm import predict_two_stage
+    t = np.arange(0, 220.0)
+    cd, cn = grid()
+    true = dict(g=1.5, sigma=0.3, n=1.3, delta=22.0, tau1=4.0, tau2=30.0, a=0.85, S=0.08, omega=1.2, tau_s=10.0)
+    rng = np.random.default_rng(3)
+    y = predict_two_stage(true, t, cd, cn) + rng.normal(0, 0.01, (len(cd), len(t)))
+    f2 = fit(t, cd, cn, y, "2stage", starts=3)
+    f1 = fit(t, cd, cn, y, "full", starts=3)
+    assert f2.sse < f1.sse
+    assert np.allclose(predict(f2.params, t, cd, cn), predict_two_stage(f2.params, t, cd, cn))

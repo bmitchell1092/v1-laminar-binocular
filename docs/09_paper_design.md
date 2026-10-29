@@ -269,6 +269,23 @@ interpretable rather than explained away.
       3. It reproduces L(t) better: lower median |L_data − L_model| at .11 and at .45.
     * **If it fails:** the paper reports the single-stage delayed model with its stated shortfall, and two-stage is
       not claimed.
+    * **Result (2026-10-29): FAILS the pre-specified criterion.**
+
+      | Criterion | Result | Verdict |
+      |---|---|---|
+      | 1. CV wins in ≥ 70% of penetrations, p < .05 | 68% (17/25), p = .039; median CV error only 1% lower | fails, narrowly |
+      | 2. Both monkeys | B 5/7, J 12/18 | passes |
+      | 3. Better L(t) at .11 and .45 (median abs error) | .45: 0.56 → 0.43 better; .11: 0.48 → 0.50 worse | fails |
+
+      Two-stage is therefore **not claimed**; the paper reports the single-stage delayed model with its shortfall.
+    * **Exploratory only (not claimable):**
+      * Rank agreement of L(t) improves at .11 (ρ 0.24 → 0.54) and .225 (0.38 → 0.55).
+      * Fitted stage-1 interocular suppression weight ω ≈ 0.95 (IQR 0.76–1.14), close to the weight ~1 that
+        psychophysics requires.
+      * Stage-1 semi-saturation S ≈ 0.13; stage-1 delay τ_s ≈ 36 ms; stage-2 delay τ₂ ≈ 34 ms.
+    * **What a fair second test would need:** an analysis fixed in advance and powered for it, e.g.
+      channel-level hierarchical fits rather than channel averages, or new data with denser low contrasts. Not a
+      re-run of this comparison with a relaxed criterion.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 

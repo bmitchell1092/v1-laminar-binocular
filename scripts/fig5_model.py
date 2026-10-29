@@ -6,7 +6,9 @@ for all 36 cells (completed presentations, no saccade >= 1 deg), Gaussian sigma 
 so axis 0 is the channel's dominant eye (larger monocular response at .9, 40-250 ms), normalised by the dominant
 .9 peak, averaged over channels. Time 0-219 ms after the photodiode flash.
 Models: full, static (no pool delay), w = a (pool weighted like excitation), tau_c (full + a pool time constant
-that shortens with contrast, tau2 / (1 + beta (c_D + w c_N))). Cross-validation: fit odd
+that shortens with contrast, tau2 / (1 + beta (c_D + w c_N))), and 2stage (dynamic two-stage model: per-eye
+interocular gain control with its own delay, then delayed binocular normalization; pre-specified comparison
+with 'full' in docs/09). Cross-validation: fit odd
 presentations and score even ones, and the reverse; CV error = summed held-out SSE. Parameters from fits to all
 presentations. Model L(t) is computed from the fitted predictions with the same onset-aligned windows as the data.
 Writes <out_root>/binocular/fig5_model.parquet, docs/qc/fig5_model.csv and <out_root>/binocular/fig5_model.png.
@@ -34,7 +36,7 @@ from v1lb.dataset import open_penetration  # noqa: E402
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
 T = np.arange(0, 220)
-MODELS = ["full", "static", "w=a", "tau_c"]
+MODELS = ["full", "static", "w=a", "tau_c", "2stage"]
 L_WINDOWS = [(0, 10), (10, 20), (20, 35), (35, 50), (50, 75), (75, 100), (100, 150)]
 CD, CN = np.meshgrid(CONTRASTS, CONTRASTS, indexing="ij")
 NONBLANK = (CD + CN) > 0
@@ -138,6 +140,14 @@ def main():
                 pred[0, 0] = 0
                 for (c, w0), v in windowed_L(pred).items():
                     Lrows.append(dict(penetration=pen, source="model_tau_c", c=c, w0=w0, L=v))
+            if m == "2stage":
+                res |= {f"p2_{k}": v for k, v in f_all.params.items()}
+                pred = np.full((6, 6, T.size), np.nan)
+                pred[NONBLANK] = dynorm.predict(f_all.params, T, cd, cn)
+                pred[0, 0] = 0
+                for (c, w0), v in windowed_L(pred).items():
+                    Lrows.append(dict(penetration=pen, source="model_2stage", c=c, w0=w0, L=v))
+                keep_example[pen] = keep_example[pen] + (pred,)
         for (c, w0), v in windowed_L(Y["all"]).items():
             Lrows.append(dict(penetration=pen, source="data", c=c, w0=w0, L=v))
         res["var_all"] = float(np.nansum((ys["all"] - np.nanmean(ys["all"])) ** 2))
@@ -153,6 +163,14 @@ def main():
 
     # ---- tests
     summ = []
+    # pre-specified: two-stage vs single-stage (docs/09)
+    lr2 = np.log(F["cv_full"] / F["cv_2stage"])
+    summ.append(dict(test="PRE-SPEC 1-2: CV two-stage beats single-stage", n=len(F), frac=(lr2 > 0).mean(),
+                     frac_B=(lr2[F.monkey == "B"] > 0).mean(), frac_J=(lr2[F.monkey == "J"] > 0).mean(),
+                     median=np.exp(lr2.median()), p=stats.wilcoxon(lr2).pvalue))
+    for k in ("S", "omega", "tau_s", "tau2", "n", "a"):
+        summ.append(dict(test=f"two-stage param {k}: median [IQR]", n=len(F), frac=F[f"p2_{k}"].median(),
+                         frac_B=F[f"p2_{k}"].quantile(.25), frac_J=F[f"p2_{k}"].quantile(.75), median=np.nan, p=np.nan))
     lr = np.log(F["cv_full"] / F["cv_tau_c"])
     summ.append(dict(test="CV: tau_c beats full", n=len(F), frac=(lr > 0).mean(),
                      frac_B=(lr[F.monkey == "B"] > 0).mean(), frac_J=(lr[F.monkey == "J"] > 0).mean(),
@@ -179,7 +197,7 @@ def main():
     for c in (0.11, 0.225, 0.45):
         piv = Ld[Ld.c == c].pivot_table(index=["penetration", "w0"], columns="source", values="L").dropna()
         piv = piv[(piv.abs() < 5).all(axis=1)]
-        for src in ("model", "model_tau_c"):
+        for src in ("model", "model_tau_c", "model_2stage"):
             summ.append(dict(test=f"L data vs {src}, c={c}: Spearman over penetration x window", n=len(piv),
                              frac=stats.spearmanr(piv.data, piv[src]).correlation, frac_B=np.nan, frac_J=np.nan,
                              median=float(np.median(np.abs(piv.data - piv[src]))), p=stats.spearmanr(piv.data, piv[src]).pvalue))
@@ -193,7 +211,7 @@ def main():
     Fi = F.set_index("penetration")
     stable = Fi[Fi.cv_full <= Fi.cv_static]                            # skip unstable fits (e.g. 211008, ~4 per cell per half)
     ex = (1 - stable.sse_full / stable.var_all).idxmax()
-    Yd, Yp = keep_example[ex]
+    Yd, Yp, Yp2 = keep_example[ex]
     cols = {0.11: "#2a78d6", 0.225: "#eb6834", 0.45: "#1baf7a"}
     for c in (0.11, 0.225, 0.45):
         i = list(CONTRASTS).index(c)
@@ -201,20 +219,21 @@ def main():
         axs[0].plot(T, Yp[i, 0], color=cols[c], lw=1.6, ls="--")
         axs[1].plot(T, Yd[i, i], color=cols[c], lw=1, alpha=0.6, label=f"c = {c:g}")
         axs[1].plot(T, Yp[i, i], color=cols[c], lw=1.6, ls="--")
+        axs[1].plot(T, Yp2[i, i], color=cols[c], lw=1.2, ls="-.")
     axs[0].set_title(f"{ex}: dominant eye alone (data solid, model dashed)", fontsize=8)
     axs[1].set_title("both eyes at c (dioptic)", fontsize=8)
     axs[1].legend(fontsize=7, frameon=False)
     for ax in axs[:2]:
         ax.set_xlabel("ms from photodiode flash", fontsize=8)
     for c in (0.11, 0.225, 0.45):
-        for src, ls in (("data", "-"), ("model", "--"), ("model_tau_c", ":")):
+        for src, ls in (("data", "-"), ("model", "--"), ("model_2stage", "-.")):
             g = Ld[(Ld.c == c) & (Ld.source == src)].groupby("w0").L.median()
             xs = [(a + b) / 2 for a, b in L_WINDOWS if a in g.index]
             axs[2].plot(xs, g.values, color=cols[c], ls=ls, marker="o" if src == "data" else None, ms=3, lw=1.4)
     axs[2].axhline(1, color="#0b0b0b", lw=0.8, ls=":")
     axs[2].axhline(0, color="#52514e", lw=0.8)
     axs[2].set_ylim(-1.2, 1.8)
-    axs[2].set_title("linearity L(t): data (solid), fixed-delay model (dashed), contrast-dependent delay (dotted)", fontsize=8)
+    axs[2].set_title("linearity L(t): data (solid), single-stage (dashed), two-stage (dash-dot)", fontsize=8)
     axs[2].set_xlabel("ms from onset", fontsize=8)
     axs[3].scatter(F.p_a, F.p_w, s=18, c=np.where(F.monkey == "B", "#eb6834", "#2a78d6"))
     lim = [0, max(F.p_a.max(), F.p_w.max()) * 1.05]
