@@ -371,6 +371,37 @@ interpretable rather than explained away.
     * **Possible next model test (not run; would need its own pre-registration):** fit with a loss that weights
       the binocular interaction (binocular vs matched-monocular responses per window) rather than raw time
       courses.
+  * **Third model test: interaction-targeted fits (registered 2026-10-29, before implementing; Blake approved).**
+    * **Question:** can a delayed normalization model capture the *late binocular collapse* (L(t)), and with
+      which architecture?
+    * **Loss (all models).** Two parts, each normalised by its own data variance and number of points, then
+      summed:
+      * the monocular time courses (10 cells, one eye at 0);
+      * the binocular interaction I(c_D, c_N, t) = R(c_D, c_N, t) − R(c_D, 0, t) for the 25 cells with both eyes
+        > 0.
+
+      This replaces raw time-course SSE, whose fit is dominated by the large onset transients.
+    * **Models:**
+      1. Single-stage 'full' (8 parameters).
+      2. Two-stage 'full2' (11 parameters).
+      3. **Dynamic Ding–Sperling 'ds'** (10 parameters), after Ding & Sperling 2006:
+         * x_D = c_D·u(t) and x_N = a·c_N·u(t);
+         * gain-control energy ε_e(t) = (ρ·lowpass(x_e, τ_g))^γ;
+         * Γ(t) = Σ_e x_e·(1 + ε_e) / (1 + ε_D + ε_N);
+         * R = g·Γ^n / (σ^n + lowpass(Γ, τ₂)^n).
+
+         Γ(I, 0) = I and Γ(I, I) = I(2 + 2ε)/(1 + 2ε) match the identities stated in Ding & Sperling. The full
+         equation form is to be verified against the PDF before reporting.
+    * **Data:** per channel, as in the channel-level test (driven channels; 211008 and 211210 excluded);
+      odd/even cross-validation; all-presentation fits for L.
+    * **Primary criterion (capture), per model.** Late L (≥ 50 ms after the channel's onset) is computed from
+      the model's all-presentation fit and from the data, with the same windows. Take the penetration median of
+      the signed error at .11, .225 and .45. A model **captures** the late collapse iff, at all three contrasts,
+      the 90% bootstrap CI (over penetrations) of the median signed error lies within ±0.25 (equivalence test).
+    * **Secondary (architecture; a third look at the comparison question).** Held-out interaction loss is
+      compared pairwise (ds vs full, full2 vs full, ds vs full2) with one-sided Wilcoxon tests on penetration
+      medians of log loss ratios. A difference is claimed only if p < .005 and it holds in both monkeys.
+    * **Reporting:** all three model tests are reported.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
