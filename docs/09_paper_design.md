@@ -531,6 +531,31 @@ covariates.
 * **Not testable with this stimulus set:** orientation conflict and rivalry; disparity and phase; temporal
   frequency; monoptic vs dichoptic masking. These are the limitations section.
 
+## Framing: dynamic and recurrent normalization (Blake, 2026-10-29)
+
+* **Heeger's remark.** When Blake showed David Heeger preliminary data, Heeger said: "Hmm, it seems like
+  normalization takes time." That is our central result (claims 2 and 3), and it calls for a dynamic or recurrent
+  normalization framing, and for relating the results to recurrent feedback in cortex and to the SSN, including
+  SSN models across the column.
+* **Why it may explain the open problem.** Our fitted models put normalization behind a *fixed* delay: a
+  feedforward pool behind a low-pass filter. Recurrent and shunting accounts make the *speed* of normalization
+  input-dependent:
+  * In conductance-based normalization (Carandini & Heeger 1994; Carandini, Heeger & Movshon 1997), more input
+    means more shunting, a shorter effective time constant and faster normalization.
+  * ORGaNICs (Heeger & Mackey 2019; Heeger & Zemlianova 2020) produce input-dependent dynamics as well.
+  * Claim 3 (faster and further collapse at higher contrast) could therefore be a signature of the mechanism.
+    The ad hoc contrast-scaled pool time constant ('tau_c') was a crude stand-in and failed.
+* **Prior work.** Blake's 2024 manuscript (BM-ephys `3. visualization/2024_LaminarCRFs/Manuscript_focused_v2/
+  Simulation/`) fitted the Heeger & Zemlianova ORGaNICs code (`toolboxes/ORGaNIC_Normalization`) to monocular
+  CRF dynamics: `simulateV1Response.m`, Bayesian-optimisation and latency-aware cost functions. It is MATLAB, so
+  it would be ported to Python if used.
+* **In progress:** a second literature sweep (`research_notes/Recurrent normalization and laminar SSN/`). It
+  covers dynamic and recurrent normalization, SSN dynamics with laminar/columnar SSN models, and circuit evidence
+  for recurrent vs feedforward normalization.
+* **Next:** a theory-driven fourth model test (recurrent/shunting normalization vs the fixed-delay model). It
+  needs its own pre-registration after the sweep. The condition set earlier ("no more model tests without a new
+  reason") is met by this theoretical reason.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
