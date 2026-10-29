@@ -104,6 +104,23 @@ interpretable rather than explained away.
   * **Mixed model** for late L ~ depth + depth²: inverted U, peaking ~1.7 mm below the top of cortex (both terms
     p < .001). This is a candidate "middle (input-dominated) depths stay linear, superficial and deep normalize"
     pattern. It needs the landmark-based compartments and CSD (Fig 4) to interpret.
+* **Compartments and per monkey (2026-10-29; `scripts/fig3_depth.py`, [qc/fig3_depth.csv](qc/fig3_depth.csv)).**
+  * **Compartment medians** (L early / transition / late):
+
+    | Compartment | Early | Transition | Late |
+    |---|---|---|---|
+    | Supragranular | 0.70 | 0.60 | 0.35 |
+    | Granular | 1.27 | 1.09 | 0.81 |
+    | Infragranular | 1.15 | 0.82 | 0.75 |
+
+    Supragranular sites are the least linear already at onset.
+  * **Within penetrations: not significant.** Granular is more linear than supragranular in 63% of 19
+    penetrations (p = .09–.40); granular vs infragranular is inconsistent.
+  * **The inverted U is J only:** J p = .001 (18 penetrations, peak ~2.1 mm below the top of cortex); B p = .29
+    (8 penetrations). This fails the both-monkeys bar.
+  * **Verdict:** Fig 3's pre-set criterion is not met robustly. The data favour the fallback: the early–late
+    drop is similar at all depths, so the timing and size of interocular normalization look columnar.
+    Superficial sites start less linear, consistent with receiving already-combined signals (hypothesis).
 
 ### Figure 3 — Where normalization is strongest: depth
 
@@ -147,8 +164,15 @@ interpretable rather than explained away.
     at .45, and the windows are timed from different onsets.
   * **Method notes:** use k, not L = (k − 1)/a, for the CSD, because the sink's eye weight collapses late (register
     #30). Per-penetration CSD inversions are noisy; grand averages fail because of the late eye-weight collapse.
-  * **Next:** compare sink and MUA on one clock with k only, contrasts .225 and .45. Add a sink-depth breakdown
-    (granular vs L6 sinks).
+  * **Same clock (2026-10-29):** MUA at the sink channels starts a median 2 ms after the sink (IQR −2 to +6).
+    Timed from the sink onset, k for the sink and for MUA do not differ consistently in any window at .225 or .45
+    (sink more linear in 40–65% of penetrations, all p > .05). The largest gap is at .45, 35–50 ms: 1.03 vs 0.37,
+    p = .053.
+  * **Verdict:** between the pre-set outcomes. The input adds linearly at onset (not inherited), then
+    normalization appears in currents and spikes together. That points to recurrent intracortical normalization:
+    recurrent currents join the input within ~20–35 ms. It is a weaker statement than "output only", and the figure
+    could be folded into Fig 2 or 3 rather than standing alone.
+  * **Still open:** a sink-depth breakdown (granular vs L6 sinks).
 
 ### Figure 5 — Single neurons and ocular dominance (strengthening)
 

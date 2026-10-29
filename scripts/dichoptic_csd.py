@@ -184,6 +184,9 @@ def main():
         on_m = t[np.flatnonzero((t >= 10) & (Mm[-1, 0] >= 0.5 * mx))[0]] if np.isfinite(mx) and mx > 0 else np.nan
         if np.isfinite(on_m):
             rows += windowed_L(Mm, t, float(on_m), "mua_same_depth", pen, dict(depth=info["sink_depth_below_toc"]))
+        # same clock as the sink (time from the sink onset), for a direct sink-vs-spiking timing comparison
+        rows += windowed_L(Mm, t, sink_on, "mua_sink_clock", pen, dict(depth=info["sink_depth_below_toc"],
+                                                                      mua_onset_minus_sink=float(on_m - sink_on)))
         # grand-average inputs: both signals on one clock (time from the sink onset), dominant eye first,
         # each normalised by its dominant-eye response at .9 in the first 50 ms after the sink onset
         rel = np.arange(-10, 200)
