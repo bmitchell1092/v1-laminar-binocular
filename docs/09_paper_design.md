@@ -552,6 +552,17 @@ covariates.
 * **In progress:** a second literature sweep (`research_notes/Recurrent normalization and laminar SSN/`). It
   covers dynamic and recurrent normalization, SSN dynamics with laminar/columnar SSN models, and circuit evidence
   for recurrent vs feedforward normalization.
+* **Discriminating diagnostic, stated before computing (2026-10-29): decay after stimulus offset.**
+  * Recurrent or shunting normalization (ORGaNICs: τ ≈ 60 ms with no input; Carandini, Heeger & Movshon 1997)
+    predicts a *slow* decay that does not depend on contrast. The input-dependent speed-up vanishes once the input
+    is gone.
+  * A fixed-delay feedforward pool predicts a *fast* decay set by the input filter (τ₁ ≈ 4 ms in our fits), which
+    can undershoot below baseline while the delayed pool is still high.
+  * The same models predict onset rise times that shorten strongly with contrast (recurrent), against a
+    contrast-independent rise shape (feedforward with a fixed filter).
+  * Measure: per driven channel and monocular dominant-eye contrast (.11–.9), the half-decay time after
+    response offset and the onset rise time (10→90%); penetration medians; test the contrast dependence.
+    Descriptive, not pass/fail.
 * **Next:** a theory-driven fourth model test (recurrent/shunting normalization vs the fixed-delay model). It
   needs its own pre-registration after the sweep. The condition set earlier ("no more model tests without a new
   reason") is met by this theoretical reason.
