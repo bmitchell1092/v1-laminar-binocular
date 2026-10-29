@@ -403,6 +403,33 @@ hide. Each item gets a test, and the S1 column says where the answer is shown.
 | 31 | **Aggregation bias in model weights** | The model is fitted to the average of channels with different eye weights; averaging could itself make the pool look more balanced than excitation (w > a) | 5 (model) | simulation: channels with w = a and heterogeneous a, averaged and fitted. **Tested: bias +0.003 to +0.025** even for a spread of 0.1–1.0, against an observed median w − a of +0.22 | S1i |
 | 32 | **Small trial counts destabilize cross-validation** | With ~4 presentations per cell per half (211008), held-out error of flexible models explodes | 5 | report per-penetration CV; exclude or flag penetrations with < 10 presentations per cell; results with and without 211008 | S1i |
 
+**S1 results, first pass (2026-10-29; `scripts/fig2_robustness.py`,
+[qc/fig2_robustness.csv](qc/fig2_robustness.csv)).** The core statistics are recomputed under each control subset.
+
+* **Claim 3 survives every control** (transition-window linearity falls with contrast):
+
+  | Subset | Penetrations with a negative slope |
+  |---|---|
+  | No saccade of any size (#6) | 92% |
+  | Pupil within its IQR (#23) | 92% |
+  | Previous presentation absent or ≤ .11 (#8) | 100% |
+  | First / second half of session (#23) | 100% / 88% |
+  | Monkey B / J (#18) | 8/8 / 18/18 |
+  | Without 211008 (#32); channels with a ≥ 0.3 (#26) | 100% / 100% |
+
+  All p ≤ .0003, except monkey B alone (p = .008).
+* **Claim 2** (early → late collapse):
+  * **.45:** robust, p ≤ .02 in every subset.
+  * **.11:** significant in most subsets, but not after a low-contrast previous presentation (p = .72), in
+    the second session half (p = .33), or in monkey B alone (p = .84).
+  * **.225: sensitive to windowing (#24).** With a single late window (50–200 ms) the baseline gives p = .07;
+    with the median over late sub-windows (equivalent_contrast.py) it gives p < .001. The paper must state
+    the window choice and show both.
+* **Implication:** claim 3 is the most robust result in the paper. Claim 2 should be anchored at high contrast,
+  with the lower-contrast collapse described as weaker and windowing-dependent.
+* **Still to do:** vergence (#7; only 211008 has both eyes on Blackrock), RF position (#19, needs RF maps),
+  monocular crosstalk (#9), trial selection (#21), CSD processing (#14).
+
 Supplementary Figure S1 layout (one panel per row group): **a** latency and onset symmetry; **b** eye weights,
 nonlinearity, censoring and noise; **c** fixation, microsaccades and trial selection; **d** vergence; **e**
 adaptation and drift; **f** monocular crosstalk and eye labelling; **g** CSD processing; **h** RF and tuning
