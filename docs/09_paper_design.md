@@ -135,6 +135,26 @@ interpretable rather than explained away.
 * **Not testable with this stimulus set:** orientation conflict and rivalry; disparity and phase; temporal
   frequency; monoptic vs dichoptic masking. These are the limitations section.
 
+## Competitive landscape (checked 2026-10-29)
+
+* **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
+  [laminar identification study](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10849622/), the Carr et al.
+  [cell-class study](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12132580/), anesthetized
+  [orientation across layers](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11456443/)) would beat this dataset on
+  unit counts and on 4A/4B/4Cα/4Cβ resolution.
+* **No dichoptic Neuropixels work found.** The search found no Neuropixels study with dichoptic or stereoscopic
+  contrast control in macaque V1 through October 2026. The nearest interocular-normalization work is population
+  imaging: Reynaud, Roux, Chemla, Chavane & Hess ([AES abstract](https://aes.amegroups.org/article/view/5220/html):
+  VSDI and frequency tagging, superficial, mechanism explicitly open), and Zhang et al. 2024 (two-photon,
+  superficial, one contrast).
+* **Edge:** a full dichoptic contrast matrix, laminar timing on a corrected clock, and CSD, across 26
+  penetrations in two animals.
+* **Implications for the design:**
+  * Make the claims rest on population timing, depth and CSD (Figs 2–4), where 100 µm MUA/CSD is sufficient.
+  * Keep single units as support (Fig 5), not as the evidence base.
+  * Make no sublaminar claims (no 4Cα vs 4Cβ).
+  * Treat Figs 1–3 as the minimum publishable unit, so a short-format paper is possible if speed matters.
+
 ## Novelty check (Blake to confirm)
 
 The dataset underlies Mitchell et al. 2022 (iScience) and 2023 (Curr Biol), which used pooled MUA over 50–200 ms
