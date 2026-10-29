@@ -195,6 +195,20 @@ interpretable rather than explained away.
     recurrent currents join the input within ~20–35 ms. It is a weaker statement than "output only", and the figure
     could be folded into Fig 2 or 3 rather than standing alone.
   * **Still open:** a sink-depth breakdown (granular vs L6 sinks).
+* **Laminar timing check (2026-10-29; flagged by the circuit literature, where intracortical suppression reaches
+  L4C last).** Channels are grouped by position relative to each penetration's earliest current sink (±2
+  contacts), using .225 and .45 and window-specific eye weights; 20–25 penetrations.
+  * **The sink is the input:** its channels respond first, at 31 ms after the flash, vs 35.5 ms above (+4 ms,
+    p = .02) and 36 ms below (+2.5 ms, p = .008).
+  * **Each depth normalizes a fixed ~27 ms after its own onset:** first window with L < 0.5 at 27.5 ms after
+    onset, both at the sink and above it (no difference). Below the sink it takes longer (42.5 ms).
+  * **On the flash clock:** normalization arrives first at the input sink (~63 ms), then superficial channels
+    ~5.5 ms later (p = .026), then deep channels (~74.5 ms).
+  * **Interpretation:** interocular normalization follows the feedforward activation sequence with a fixed
+    local lag, starting in the input layer. That is unlike intracortical near-surround suppression, which reaches
+    L4C last (Bijanzadeh 2018).
+  * **Confidence:** modest. The windows are coarse (15 ms) and p = .026 for the upward step. A finer,
+    pre-registered timing analysis is needed before claiming it. A candidate for Figs 3–4.
 
 ### Figure 5 — Single neurons and ocular dominance (strengthening)
 

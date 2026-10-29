@@ -100,7 +100,7 @@ Latencies differ by suppression type:
 
 | Suppression type | Delay after excitatory onset | Source |
 |---|---|---|
-| Monocular COS | ≈0 ms (signal arrives ~7.5 ms *faster* than excitatory onset latency) | Smith 2006 |
+| Monocular COS | ≈0 ms (suppression latency ~6–7.5 ms *shorter* than excitatory onset latency: paired mean 6.4 ms, difference of means 7.5 ms) | Smith 2006 |
 | Near-surround suppression | ~5–10 ms on average | Bair 2003; Smith 2006 |
 | Awake laminar "fast suppression" (flashed gratings) | ~11–21 ms | Wang 2020 |
 | Binocular suppression of monocular neurons (awake macaque) | ~12 ms between pooled medians | Dougherty 2019 |
@@ -183,7 +183,7 @@ The team's 20–35 ms falls between the feedforward/near-surround group and the 
 - **Ozeki et al. 2009** (cat, AN): at surround onset there was a 30–50 ms transient rise in inhibition, after which steady-state E fell 51% and I fell 38%. The paper cites cortical surround suppression as "delayed by at least 10 ms" after center onset. — [PMC2691725](https://pmc.ncbi.nlm.nih.gov/articles/PMC2691725)
 - **Sato et al. 2016** (mouse, light AN): no transient IPSC increase at 80–120 ms; the divisive effect dominated at 150–300 ms. — [PMC4817833](https://pmc.ncbi.nlm.nih.gov/articles/PMC4817833)
 - **Haider, Häusser & Carandini 2013** (mouse, AW vs AN, whole-cell): under anesthesia inhibition tracked excitation. Awake, "inhibition was much stronger than excitation and had extremely broad spatial selectivity," and responses were briefer. *Nature* 493:97–100. — [doi:10.1038/nature11665](https://doi.org/10.1038/nature11665)
-- **Nassi et al. 2015** (macaque, AW): single-unit latency to light was 10.4 ± 1.9 ms (17/55 units ≤2 ms). A 5 ms light pulse alone produced suppression. — [PMC4534089](https://pmc.ncbi.nlm.nih.gov/articles/PMC4534089)
+- **Nassi et al. 2015** (macaque, AW): single-unit latency to light was 10.4 ± 1.9 ms (17/55 units ≤2 ms). Pulsed 5 ms stimulation also produced suppression (post-stimulation window 10–210 ms after offset). — [PMC4534089](https://pmc.ncbi.nlm.nih.gov/articles/PMC4534089)
 
 #### Reference latencies for laminar interpretation
 - **Maunsell & Gibson 1992** (macaque; prep. unverified):
@@ -350,7 +350,7 @@ Interocular suppression in V1 is cortical and inhibitory in cat (low temporal-fr
 - **Bearing on F3.** Zhang 2024 and Dougherty 2019 both find that monocularly dominated neurons are *more* suppressed binocularly, while their excitation is driven mostly by one eye. So the NDE must contribute more to suppression than to excitation in those neurons, which is qualitatively F3. Mitchell 2023 placed the OD weight on the NDE numerator (down-weighting its excitation) with an untouched pool. That is algebraically the same asymmetry: the pool weights the NDE relatively more than excitation does. Whether the pool is eye-balanced or NDE-biased is not separable without dynamic or laminar constraints like F2 and F4.
 - **Circuit candidates for an NDE-heavy pool.**
   - Lateral inhibition from the neighbouring OD column (Sengpiel 1995; Cox 2019; Dougherty 2019). A neuron in a DE column would be suppressed by interneurons driven from the adjacent NDE column.
-  - Broadly binocular inhibitory interneurons. Cat L4 FS cells are only moderately more broadly tuned than RS cells, per Cardin, Palmer & Contreras 2007, *J Neurosci* 27:10333 — [doi:10.1523/JNEUROSCI.1692-07.2007](https://doi.org/10.1523/JNEUROSCI.1692-07.2007). I found no macaque data on interneuron ocularity.
+  - Broadly binocular inhibitory interneurons. L4 FS cells' spike tuning is only moderately broader than RS cells' (orientation and SF, not ocularity), per Cardin, Palmer & Contreras 2007, *J Neurosci* 27:10333 — [doi:10.1523/JNEUROSCI.1692-07.2007](https://doi.org/10.1523/JNEUROSCI.1692-07.2007). The species is not stated in the abstract; the lab normally uses cat. I found no macaque data on interneuron ocularity.
 - **Bearing on F2.** Mutual inhibition between eyes is "relatively fast" in rivalry models (Li 2017), and interocular psychophysical suppression *grows* with duration (Baker 2007). Both fit an interocular divisive term that builds up over tens of ms after onset rather than being present at onset.
 - **Bearing on F1.** Ding & Sperling 2006 predict linear binocular addition at low contrast and normalization only at higher contrast. An onset period of near-linear summation that becomes sublinear as the pool builds is the time-domain analogue: low effective pool drive early behaves like low contrast.
 
