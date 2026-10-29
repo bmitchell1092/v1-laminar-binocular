@@ -74,6 +74,36 @@ interpretable rather than explained away.
 * **First look:** binocular − monocular difference is positive from 20–37 ms (at the monocular onset, half-max
   30–39 ms), peaks near 45 ms, and is gone by ~70 ms; additivity index 0.85 → 0.60 with contrast in the early
   window, ~0.6 throughout late. Consistent with the claim, but not yet latency-proof.
+* **First pass, latency-proof (2026-10-29; `scripts/equivalent_contrast.py`, `v1lb.binocular`,
+  [qc/equivalent_contrast_windows.csv](qc/equivalent_contrast_windows.csv)).**
+  * **Method:** k computed on window means aligned to each channel's onset. Per-millisecond inversion was too noisy
+    where CRFs saturate.
+  * **Early:** L in the first 20 ms after onset is ~1 (linear) at every contrast (medians 0.8–1.3, CIs include 1).
+  * **Late (50–200 ms after onset):**
+
+    | Contrast | Early → late L | p (26 penetrations, Wilcoxon) | When L drops (after onset) |
+    |---|---|---|---|
+    | .11 | 1.18 → 0.74 | .016 | ~50–75 ms |
+    | .225 | 1.20 → 0.49 | < .001 | 35–50 ms |
+    | .45 | 0.97 → −0.12 | < .001 | 20–35 ms |
+    | .055 | 1.02 → 0.50 | .26, ns | — |
+
+    Normalization arrives sooner and stronger at higher contrast.
+  * **Controls:** eye weights refitted per window are stable (median a 0.64–0.70), and the drops are unchanged
+    (register #25). Monocular onset shortens with contrast (46 → 35 ms); binocular onset is 1–3 ms earlier than
+    monocular at the same contrast, as expected from higher effective contrast.
+  * **Criterion:** passes the pre-set "pans out if" at .11, .225 and .45 (drop ≥ 0.3; ≤ ~50 ms at .225 and .45,
+    ~50–75 ms at .11).
+  * **Weaknesses:** per-window CIs are wide, and between-penetration variance is large. Top-censoring reaches 43%
+    at .45 in the first window (L is a lower bound there).
+* **Depth, first pass (Fig 3).**
+  * **Drop:** similar at all depths (median 0.5–0.6).
+  * **Late L:** middle depths (7–21 contacts below the top) stay nearer linear (0.92) than upper depths (−0.15;
+    p = .005, 25 penetrations within-penetration). Deep (0.21) vs middle is not significant (p = .23, 15
+    penetrations).
+  * **Mixed model** for late L ~ depth + depth²: inverted U, peaking ~1.7 mm below the top of cortex (both terms
+    p < .001). This is a candidate "middle (input-dominated) depths stay linear, superficial and deep normalize"
+    pattern. It needs the landmark-based compartments and CSD (Fig 4) to interpret.
 
 ### Figure 3 — Where normalization is strongest: depth
 
@@ -168,6 +198,10 @@ hide. Each item gets a test, and the S1 column says where the answer is shown.
 | 22 | **Absolute timing reference** | The photodiode sits at the bottom right; any scan offset to the stimulus row is constant (≤ 3.4 ms, 05 A2b) | 1, 2 | affects absolute latencies only, not condition differences; state it | Methods |
 | 23 | **Arousal and drift within session** | Slow changes in responsiveness or pupil interact with condition order | 2, 3 | randomised order; time in session and pupil as covariates | S1e |
 | 24 | **Analysis flexibility** | Many windows, thresholds and depth bins | all | decisions locked in this document before the final run; cross-validated model comparison | Methods |
+| 25 | **Time-varying eye weights** | If the non-dominant eye's monocular response fades faster, L = (k − 1)/a drops late even under linear summation | 2, 3 | eye weight refitted in each window. **Tested: a is stable (0.64–0.70) and the early–late drops are unchanged (L_w)** | S1b |
+| 26 | **Small eye weights amplify L** | Strongly monocular channels (small a) make L = (k − 1)/a noisy and heavy-tailed | 2, 3 | medians over channels and penetrations; repeat with a ≥ 0.3; report k alongside L | S1b |
+| 27 | **Top-censoring at the rising edge** | The binocular response can exceed even the .9 monocular response early (it starts earlier and rises faster); k is then only a lower bound (up to 43% at .45, 0–10 ms) | 2 | treat censored values as lower bounds (medians); report the censored fraction per window; primary contrasts .11 and .225 | S1a |
+| 28 | **Inverting near-flat CRFs** | Where the monocular CRF saturates, small response changes map to large changes in k (noisy, biased late values) | 2, 3 | window means rather than per-ms values; primary contrasts below saturation; CIs from penetration bootstrap | S1b |
 
 Supplementary Figure S1 layout (one panel per row group): **a** latency and onset symmetry; **b** eye weights,
 nonlinearity, censoring and noise; **c** fixation, microsaccades and trial selection; **d** vergence; **e**
