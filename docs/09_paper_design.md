@@ -402,6 +402,40 @@ interpretable rather than explained away.
       compared pairwise (ds vs full, full2 vs full, ds vs full2) with one-sided Wilcoxon tests on penetration
       medians of log loss ratios. A difference is claimed only if p < .005 and it holds in both monkeys.
     * **Reporting:** all three model tests are reported.
+    * **Result (2026-10-29; `scripts/fig5_interaction_test.py`,
+      [qc/fig5_interaction_test.csv](qc/fig5_interaction_test.csv); 533 channels, 24 penetrations).**
+      * **PRIMARY: no model captures the late collapse** by the equivalence criterion. Median late-L signed
+        error (model − data) at .11 / .225 / .45, with 90% CIs:
+
+        | Model | .11 | .225 | .45 |
+        |---|---|---|---|
+        | Single-stage | −0.00 [−0.39, 0.41] | −0.19 [−0.35, 0.10] | −0.09 [−0.32, 0.18] |
+        | Two-stage | +0.36 [0.10, 0.56] | +0.39 [0.00, 0.60] | +0.22 [−0.02, 0.35] |
+        | Ding–Sperling | −0.19 [−0.38, 0.06] | −0.13 [−0.39, 0.15] | +0.34 [−0.08, 0.44] |
+
+        * **The interaction loss removed the single-stage bias** (medians near 0, against +0.29 with the raw-SSE
+          fit), but the CIs are too wide for equivalence.
+        * **Two-stage stays too linear late.**
+        * **Design weakness, stated (not used to rescue):** penetration-level L is so noisy that a ±0.25 margin
+          was nearly unreachable for any model.
+      * **SECONDARY:**
+        * **Two-stage beats single-stage on held-out interaction loss: p = 7 × 10⁻⁶**, positive in B and J (median
+          log ratio +0.008 / +0.011). Claimed under the stringent α. That makes two independent loss functions
+          favouring two-stage (raw SSE p = 3 × 10⁻⁶; interaction p = 7 × 10⁻⁶), each by ~1%.
+        * **Ding–Sperling** does not beat single-stage (p = .49), and two-stage beats it (p ≈ 1 for ds > full2).
+          Its parameters sit at bounds (γ = 4; τ_g up to 400 ms), so it is poorly constrained by these data.
+      * **What the model figure can claim:**
+        1. Delayed normalization is required.
+        2. The pool weights the non-dominant eye more than excitation does.
+        3. Early interocular gain control (two-stage) predicts held-out responses better than single-stage,
+           consistently under two loss functions and in both monkeys, by a small margin.
+        4. Two-stage's advantage lies in the early interaction; it does not reproduce the late collapse, which
+           remains incompletely explained.
+        5. The single-stage model fitted to the interaction has no median bias, but its precision is too low to
+           call it a capture.
+      * **Reading:** the early binocular interaction favours an early interocular stage; the strength of the late
+        collapse is not pinned down by any fitted model. No further model tests on these data without a new
+        reason and a new pre-registration.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
