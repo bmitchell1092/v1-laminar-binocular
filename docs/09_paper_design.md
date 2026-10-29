@@ -345,8 +345,32 @@ interpretable rather than explained away.
       > (~1%).
 
       State both tests: the first (channel averages, non-nested, L-based criterion) failed narrowly, and its
-      flaws are given above; this corrected one passed. Still to do, descriptive: whether 'full2' reproduces L(t)
-      better, especially the low-contrast misfit.
+      flaws are given above; this corrected one passed.
+    * **Descriptive check: neither model reproduces the late binocular collapse** (`scripts/fig5_L_check.py`,
+      [qc/fig5_L_check.csv](qc/fig5_L_check.csv); per-channel fits to all presentations, penetration medians).
+      * **At onset** both match the data (L ≈ 1); two-stage is slightly closer.
+      * **Late, both predict too linear a combination, and two-stage is worse:**
+
+        | Late (≥ 50 ms) | Data | Single-stage | Two-stage |
+        |---|---|---|---|
+        | .11 | 0.62–0.64 | 0.97–0.99 | 1.15–1.19 |
+        | .225 | 0.28–0.53 | 0.64–0.74 | ~1.02 |
+        | .45 | −0.50 to 0.22 | 0.17–0.29 | 0.30–0.68 |
+
+        Signed error late at .11: +0.29 single-stage, +0.53 two-stage.
+      * **Interpretation:** the 1% held-out gain comes from time-course shape, not from the interocular
+        interaction the paper is about. L is sensitive where CRFs flatten (a few % response error becomes a
+        large L error), but the bias is systematic.
+      * **Consequence for the paper:** "two-stage solves it" is only half-supported.
+    * **Model claims that survive:**
+      1. Delayed normalization is required (static is ~3× worse on held-out data).
+      2. The pool weights the non-dominant eye more than excitation does (w > a).
+      3. An early interocular stage improves held-out prediction consistently but slightly.
+      4. No fitted model reproduces the strength of the late binocular collapse; it is stated as the open
+         problem.
+    * **Possible next model test (not run; would need its own pre-registration):** fit with a loss that weights
+      the binocular interaction (binocular vs matched-monocular responses per window) rather than raw time
+      courses.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
