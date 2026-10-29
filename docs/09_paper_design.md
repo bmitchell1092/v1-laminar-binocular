@@ -253,6 +253,22 @@ interpretable rather than explained away.
     model: a dynamic two-stage model. Stage 1 divides each eye by S + both eyes' contrasts, with its own delay;
     stage 2 is the delayed binocular pool. Compare with the single-stage model on held-out halves. This is report
     Q2 (the summation rule) in dynamic form.
+  * **Narrative (Blake, 2026-10-29):** if it holds, the paper can make the point that the single-stage model fails
+    in a specific way and a *dynamic two-stage* model is the solution.
+  * **Pre-specified comparison (written before fitting the two-stage model).**
+    * **Single-stage ('full'):** E = (c_D + a·c_N)·u; P = (c_D + w·c_N)·v; R = g·E^n / (σ^n + P^n). 8 parameters.
+    * **Two-stage ('2stage'):**
+      * Stage 1, per eye: b_D = c_D·u / (S + v_s·(c_D + ω·c_N)) and b_N = a·c_N·u / (S + v_s·(c_N + ω·c_D)),
+        where v_s is u low-passed with τ_s.
+      * Stage 2: B = b_D + b_N; R = g·B^n / (σ^n + (low-passed B, τ₂)^n).
+      * 10 parameters. It nests the single-stage model as S → ∞, except that the pool weight comes from stage 1
+        instead of a free w.
+    * **Success criterion (all three must hold):**
+      1. Two-stage has lower cross-validated (odd/even) error in ≥ 70% of penetrations, Wilcoxon p < .05.
+      2. It holds in both monkeys (B ≥ 4/7).
+      3. It reproduces L(t) better: lower median |L_data − L_model| at .11 and at .45.
+    * **If it fails:** the paper reports the single-stage delayed model with its stated shortfall, and two-stage is
+      not claimed.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
