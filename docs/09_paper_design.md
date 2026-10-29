@@ -36,7 +36,7 @@ replaces each claim if it does not.
 | 6 | A binocular normalization pool acting with a delay accounts for time, contrast and depth | **synthesis** | discussion: reconciling cat, human and macaque results |
 | S1 | Pitfalls and confounds: none of the above is explained by latency, eye imbalance, fixation, vergence, adaptation, layer assignment or monkey | **robustness** | — |
 
-### Proposed revision after the first passes (2026-10-29, for Blake's approval)
+### Revised arc after the first passes (2026-10-29; approved by Blake)
 
 The first passes moved the weight of the paper from depth to **time × contrast**: Fig 2 holds, Fig 3 favours
 the columnar fallback, Fig 4 lands between its outcomes, Fig 5 is supporting at best. A revised arc that uses
@@ -53,8 +53,10 @@ only what held:
 Supplementary: units (neurons net-suppressed while MUA is facilitated; OD dependence early and late), depth
 compartments and the J-only inverted U, per monkey, no supersaturation, the confounds register.
 
-Open risk: claim 3 is the most interesting and the least confirmed; the held-out test failed narrowly. Fig 3
-should present it with that caveat, or the paper should wait for a better-powered confirmation.
+**Decisions (Blake, 2026-10-29):**
+* **Claim 3** is presented, with the failed held-out test stated plainly (6/7 negative, p = .063, J only).
+* **Depth** is reframed as columnar.
+* **Fig 5** is the dynamic normalization model.
 
 Supplementary beyond S1: S2 per monkey; S3 no supersaturation at any depth (07); S4 the main results under each
 laminar marker; S5 unit isolation and spike-time verification (05 A7, C14).
@@ -307,6 +309,40 @@ covariates.
   * Keep single units as support (Fig 5), not as the evidence base.
   * Make no sublaminar claims (no 4Cα vs 4Cβ).
   * Treat Figs 1–3 as the minimum publishable unit, so a short-format paper is possible if speed matters.
+
+### Closest prior paper: Cox et al. 2019 (J Vis 19(12):13, [PMC6797477](https://pmc.ncbi.nlm.nih.gov/articles/PMC6797477/))
+
+It motivated Mitchell et al. 2023. Awake *M. radiata*, laminar arrays (100 µm), SUA/MUA/CSD, 500 ms gratings.
+
+**Design:**
+* Conditions: monocular, binocular congruent, and binocular incongruent (orthogonal).
+* **One fixed contrast pair per penetration set** (dominant eye about half the non-dominant: .45/.9, .5/1, .4/1).
+* Fixed windows: transient 50–100 ms, sustained 150–250 ms.
+
+**Findings that match ours:**
+* Congruent binocular stimulation boosts the transient response (+13.7 spikes/s; mean modulation index 0.21) and
+  the boost vanishes in the sustained window. This is our "add at onset, then normalize" (Fig 2).
+* The initial granular sink is larger for binocular stimulation, and the congruent sink returns to the monocular
+  level by 150–250 ms. This is our "earliest input adds, then currents normalize" (Fig 4).
+* Equiocular granular neurons stay facilitated late; our granular sites are the most linear late (ns within
+  penetrations).
+
+**Possible difference:** they found ocularity correlates with *sustained* but not transient modulation; we see
+the OD dependence in MUA in both fixed windows. Their units vs our MUA, and our 40–140 ms window already contains
+the collapse.
+
+**What they did not do and we add:**
+* contrast as a parametric variable (full 6×6 matrix);
+* a latency-proof, onset-aligned, time-resolved measure of the combination rule (k(t), L(t)) with eye weights;
+* the normalization framing with model tests (linear summation vs normalization vs two-stage; L < 0 at high
+  contrast);
+* corrected timing, and depth across 26 penetrations;
+* a dynamic normalization model.
+
+They did not invoke divisive normalization, and called the early summation both "additive" (abstract) and
+"subadditive" (discussion). Our k(t) settles that: linear at onset for the eye weights.
+
+**Their incongruent (dichoptic cross-orientation) results are outside our design.**
 
 ## Novelty check (Blake to confirm)
 
