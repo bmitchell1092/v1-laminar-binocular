@@ -72,6 +72,15 @@ Multiple comparisons are acknowledged: anything found this way is a discovery th
   * **Reliability:** odd/even splits 25/25 and 22/24 negative.
   * **Status stays "candidate", no post-hoc rescue.** A future confirmation needs new data, or a registered
     test that can pass (e.g. ≥ 10 independent recordings).
+  * **Sensitivity after MUA artifact rejection (2026-10-29; 05 C16, register #34).** Large MUA artifacts had not
+    been rejected. The rule was set while building Fig 1, for an unrelated reason, before its effect on this test
+    was seen.
+    * **Rerun:** the same registered statistic and inclusion rule on cleaned data gives 7/8 negative, one-sided
+      sign test p = .035, median slope −1.01. That would pass the registered criterion.
+    * **Why the sample changed:** 221209_J_eB's cross-recording now has 7 driven channels. Artifacts had masked
+      its responses: it was not that "the grating missed its RF".
+    * **Status:** the registered test failed as run, and that result stands. This rerun is a sensitivity analysis
+      on corrected data, not a confirmation. Whether to accept it is Blake's decision. Fig 3c shows both.
 
 ## Log
 

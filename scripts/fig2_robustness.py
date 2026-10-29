@@ -1,7 +1,7 @@
 """Supplementary S1: do the core Fig 2/3 results survive the confound controls? (docs/09 register)
 
 Usage: .venv\\Scripts\\python scripts\\fig2_robustness.py
-Core statistics, recomputed per control subset of presentations (always: completed, no saccade >= 1 deg):
+Core statistics, recomputed per control subset of presentations (always: completed, no saccade >= 1 deg, no MUA artifact (05 C16)):
 * claim 2: linearity L (window-specific eye weights) early (0-20 ms after each channel's onset) vs late (50-200);
   per penetration the channel median; Wilcoxon over penetrations, at dioptic .11, .225, .45;
 * claim 3: slope of L on log contrast in the transition window (20-50 ms); fraction of penetrations negative.
@@ -23,7 +23,7 @@ from scipy.ndimage import gaussian_filter1d
 
 from v1lb.binocular import CONTRASTS, equivalent_contrast, eye_weight
 from v1lb.config import out_root
-from v1lb.dataset import open_penetration
+from v1lb.dataset import clean_presentations, open_penetration
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -31,8 +31,8 @@ DIOPTIC = [0.11, 0.225, 0.45]
 EPOCHS = {"early": (0, 20), "transition": (20, 50), "late": (50, 200)}
 
 
-def subsets(P: pd.DataFrame, E: pd.DataFrame, pupil: np.ndarray) -> dict:
-    base = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+def subsets(ds, P: pd.DataFrame, E: pd.DataFrame, pupil: np.ndarray) -> dict:
+    base = clean_presentations(ds, P, E)
     prev = np.fmax(P.prev_contrast_L.to_numpy(float), P.prev_contrast_R.to_numpy(float))
     q1, q3 = np.nanpercentile(pupil[base], [25, 75])
     order = np.arange(len(P))
@@ -115,7 +115,7 @@ def main():
         chans = [k for k, ch in enumerate(ds.channel.values) if ds.in_cortex.values[k] and (pen, str(ch)) in driven]
         if not chans:
             continue
-        for name, mask in subsets(P, E, pupil).items():
+        for name, mask in subsets(ds, P, E, pupil).items():
             rows += channel_rows(ds, mask, chans, pen, name)
         print(pen, flush=True)
     D = pd.DataFrame(rows)

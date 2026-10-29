@@ -1,7 +1,7 @@
 """CRFs and supersaturation for every built dataset: MUA per in-cortex channel and every imported unit.
 
 Usage: .venv\\Scripts\\python scripts\\run_crf.py [penetration ...]
-Presentations: completed, no saccade >= 1 deg in -200...500 ms (run_saccades.py). Per site (channel or unit),
+Presentations: completed, no saccade >= 1 deg in -200...500 ms, no MUA artifact (05 C16) (run_saccades.py). Per site (channel or unit),
 condition (mono_contra, mono_ipsi, dioptic) and window (transient 40-140, sustained 150-250 ms): blank-subtracted
 means per contrast, driven (one-way ANOVA across the 6 contrasts p < 0.01 and peak > 0), SI with a 500-sample
 bootstrap CI, the cross-validated SI (unbiased for monotonic CRFs; the
@@ -20,7 +20,7 @@ from scipy import stats
 
 from v1lb import crf
 from v1lb.config import out_root
-from v1lb.dataset import open_penetration
+from v1lb.dataset import clean_presentations, open_penetration
 
 warnings.filterwarnings("ignore")
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         ds = open_penetration(pen)
         P = pd.read_parquet(d / f"{pen}_presentations.parquet")
         E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-        keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+        keep = clean_presentations(ds, P, E)
         Pk = P[keep].reset_index(drop=True)
         t = ds.time.values
         incx = ds.in_cortex.values

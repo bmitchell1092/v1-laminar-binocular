@@ -10,7 +10,7 @@ deg; Gaussian sigma 2 ms; blank-subtracted):
   (negative = below baseline). Decay is defined only where S > 10% of the peak.
 Recurrent/shunting normalization predicts contrast-independent, slow decay and rise times that shorten with
 contrast; a fixed-delay feedforward pool predicts fast decay (possibly undershooting) and contrast-independent rise.
-Writes docs/qc/dynamics_diagnostics.csv.
+Writes docs/qc/dynamics_diagnostics.csv and <out_root>/binocular/dynamics_channels.parquet (per channel).
 """
 
 import glob
@@ -23,7 +23,7 @@ from scipy import stats
 from scipy.ndimage import gaussian_filter1d
 
 from v1lb.config import out_root
-from v1lb.dataset import open_penetration
+from v1lb.dataset import clean_presentations, open_penetration
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -45,7 +45,7 @@ def main():
         ds = open_penetration(pen)
         P = pd.read_parquet(d / f"{pen}_presentations.parquet")
         E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-        keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+        keep = clean_presentations(ds, P, E)
         dur = float(np.median((P.pd_off_tick - P.pd_on_tick)[keep & (P.pd_off_tick > 0)]) / 30.0)
         t = ds.time.values
         chans = [k for k, ch in enumerate(ds.channel.values) if ds.in_cortex.values[k] and (pen, str(ch)) in driven]
@@ -76,6 +76,7 @@ def main():
                 rows.append(row)
         print(pen, flush=True)
     D = pd.DataFrame(rows)
+    D.to_parquet(out_root() / "binocular" / "dynamics_channels.parquet")
     per = D.groupby(["penetration", "monkey", "c"])[["onset", "rise", "half_decay", "undershoot"]].median()
     out = []
     for var in ("onset", "rise", "half_decay", "undershoot"):

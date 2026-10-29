@@ -1,7 +1,7 @@
 """Figure 4: binocular combination in the earliest current sink vs in spiking (MUA) at the same depth (docs/09).
 
 Usage: .venv\\Scripts\\python scripts\\dichoptic_csd.py
-Per penetration (completed presentations, no saccade >= 1 deg; CSD from the dataset: bad contacts interpolated,
+Per penetration (completed presentations, no saccade >= 1 deg, no MUA artifact (05 C16); CSD from the dataset: bad contacts interpolated,
 Hamming-smoothed, 05 C12):
 * Earliest grating sink: mean CSD over presentations with either eye >= .45, baseline (-50...0) removed; among
   in-cortex channels whose 20-70 ms sink peak is >= 40% of the strongest, the one whose sink reaches 25% of its own
@@ -25,7 +25,7 @@ from scipy.ndimage import gaussian_filter1d
 
 from v1lb.binocular import CONTRASTS, equivalent_contrast, eye_weight
 from v1lb.config import out_root
-from v1lb.dataset import open_penetration
+from v1lb.dataset import clean_presentations, open_penetration
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -138,7 +138,7 @@ def main():
         ds = open_penetration(pen)
         P = pd.read_parquet(d / f"{pen}_presentations.parquet")
         E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-        keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+        keep = clean_presentations(ds, P, E)
         Pk = P[keep].reset_index(drop=True)
         t = ds.time.values
         cc, ci = Pk.contrast_contra.to_numpy(), Pk.contrast_ipsi.to_numpy()

@@ -17,7 +17,7 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from v1lb.config import out_root
-from v1lb.dataset import open_penetration
+from v1lb.dataset import clean_presentations, open_penetration
 warnings.filterwarnings("ignore")
 R = pd.concat([pd.read_parquet(f) for f in glob.glob(str(out_root() / "crf" / "*_crf.parquet"))], ignore_index=True)
 drv = R[(R.site == "mua") & R.condition.str.startswith("mono")].groupby(["penetration", "site_id"]).driven.any()
@@ -27,7 +27,7 @@ for f in sorted(glob.glob(str(out_root() / "datasets" / "*_presentation_eye.parq
     ds = open_penetration(pen)
     P = pd.read_parquet(out_root() / "datasets" / f"{pen}_presentations.parquet")
     E = pd.read_parquet(f)
-    keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+    keep = clean_presentations(ds, P, E)
     Pk = P[keep].reset_index(drop=True)
     t = ds.time.values
     mua = ds.mua.values[keep].astype(float)

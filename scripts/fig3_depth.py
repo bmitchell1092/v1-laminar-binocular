@@ -1,7 +1,7 @@
 """Figure 3: where is interocular normalization strongest? Depth below the top of cortex (primary) and
 landmark-based compartments (secondary), per monkey (docs/09).
 
-Usage: .venv\Scripts\python scripts\fig3_depth.py
+Usage: .venv\\Scripts\\python scripts\\fig3_depth.py
 Input: <out_root>/binocular/k_windows.parquet (equivalent_contrast.py): per channel and onset-aligned window, the
 linearity index with window-specific eye weights (L_w), dioptic .11 and .225 pooled (the primary contrasts).
 Epochs: early 0-20, transition 20-50, late 50-200 ms after each channel's onset.

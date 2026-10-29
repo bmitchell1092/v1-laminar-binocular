@@ -17,7 +17,7 @@ resources/project/
 *.dat
 *.npy
 output/
-figures/
+/figures/
 
 # Documents / images (exports)
 *.png

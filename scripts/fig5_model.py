@@ -2,7 +2,7 @@
 
 Usage: .venv\\Scripts\\python scripts\\fig5_model.py
 Data: per penetration, driven in-cortex MUA channels (driven in a monocular condition, run_crf.py); condition means
-for all 36 cells (completed presentations, no saccade >= 1 deg), Gaussian sigma 2 ms, blank-subtracted, oriented
+for all 36 cells (completed presentations, no saccade >= 1 deg, no MUA artifact (05 C16)), Gaussian sigma 2 ms, blank-subtracted, oriented
 so axis 0 is the channel's dominant eye (larger monocular response at .9, 40-250 ms), normalised by the dominant
 .9 peak, averaged over channels. Time 0-219 ms after the photodiode flash.
 Models: full, static (no pool delay), w = a (pool weighted like excitation), tau_c (full + a pool time constant
@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 from v1lb import dynorm  # noqa: E402
 from v1lb.binocular import CONTRASTS, equivalent_contrast, eye_weight  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
-from v1lb.dataset import open_penetration  # noqa: E402
+from v1lb.dataset import clean_presentations, open_penetration  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -47,7 +47,7 @@ def population(pen: str, driven: set):
     ds = open_penetration(pen)
     P = pd.read_parquet(d / f"{pen}_presentations.parquet")
     E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-    keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+    keep = clean_presentations(ds, P, E)
     t = ds.time.values
     chans = [k for k, ch in enumerate(ds.channel.values) if ds.in_cortex.values[k] and (pen, str(ch)) in driven]
     if len(chans) < 3:

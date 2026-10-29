@@ -33,7 +33,7 @@ from scipy.ndimage import gaussian_filter1d  # noqa: E402
 from v1lb import dynorm  # noqa: E402
 from v1lb.binocular import CONTRASTS  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
-from v1lb.dataset import open_penetration  # noqa: E402
+from v1lb.dataset import clean_presentations, open_penetration  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -50,7 +50,7 @@ def channel_data(pen: str, driven: set) -> list:
     ds = open_penetration(pen)
     P = pd.read_parquet(d / f"{pen}_presentations.parquet")
     E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-    keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+    keep = clean_presentations(ds, P, E)
     t = ds.time.values
     chans = [k for k, ch in enumerate(ds.channel.values) if ds.in_cortex.values[k] and (pen, str(ch)) in driven]
     if not chans:

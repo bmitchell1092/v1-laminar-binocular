@@ -189,3 +189,28 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
 def open_penetration(penetration: str, data_dir: Path | None = None) -> xr.Dataset:
     """Open a built dataset lazily."""
     return xr.open_dataset(Path(data_dir or out_root() / "datasets") / f"{penetration}.nc", engine="h5netcdf")
+
+
+ARTIFACT_Z = 20.0
+
+
+def artifact_presentations(mua: np.ndarray, t: np.ndarray, in_cortex: np.ndarray, z_max: float = ARTIFACT_Z,
+                           window_ms: tuple[float, float] = (-50, 450)) -> np.ndarray:
+    """Presentations with an extreme MUA excursion on any in-cortex channel (05 C16).
+
+    Per channel, the peak MUA in `window_ms` is compared across presentations as a robust z (median, 1.4826 MAD);
+    a presentation is flagged when any in-cortex channel exceeds `z_max`. Visual responses reach z ~ 6-11 in
+    artifact-free penetrations; the artifacts reach 20-2000."""
+    w = (t >= window_ms[0]) & (t < window_ms[1])
+    x = np.asarray(mua)[:, w][:, :, np.asarray(in_cortex, bool)].astype(float).max(axis=1)
+    med = np.median(x, axis=0)
+    mad = 1.4826 * np.median(np.abs(x - med), axis=0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        z = (x - med) / np.where(mad > 0, mad, np.nan)
+    return np.nan_to_num(z, nan=0.0).max(axis=1) > z_max
+
+
+def clean_presentations(ds: xr.Dataset, P: pd.DataFrame, E: pd.DataFrame) -> np.ndarray:
+    """The standard presentation selection: completed, no saccade >= 1 deg (05 C15), no MUA artifact (05 C16)."""
+    art = artifact_presentations(ds.mua.values, ds.time.values, ds.in_cortex.values)
+    return P.completed.to_numpy() & (E.n_large.to_numpy() == 0) & ~art

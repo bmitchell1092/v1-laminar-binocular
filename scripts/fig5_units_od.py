@@ -1,6 +1,6 @@
 """Figure 5 first look: binocular modulation vs ocular dominance, early vs late, in single units and MUA.
 
-Usage: .venv\Scripts\python scripts\fig5_units_od.py
+Usage: .venv\\Scripts\\python scripts\\fig5_units_od.py
 From the 6x6 matrices (run_dichoptic.py; transient 40-140, sustained 150-250 ms), for sites driven in a monocular
 condition (run_crf.py): ODI = (R_contra - R_ipsi) / (|R_contra| + |R_ipsi|) at .9, full window;
 binocular modulation BMI(c) = (R(c,c) - R_D(c)) / (|R(c,c)| + |R_D(c)|), R_D = dominant eye alone at c, for c = .45, .9.

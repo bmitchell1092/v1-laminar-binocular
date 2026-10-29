@@ -2,7 +2,7 @@
 
 Usage: .venv\\Scripts\\python scripts\\equivalent_contrast.py
 Per driven in-cortex MUA channel (driven in a monocular condition, run_crf.py): condition-mean time courses
-(completed presentations, no saccade >= 1 deg), Gaussian-smoothed (sigma 3 ms), blank (0/0) subtracted.
+(completed presentations, no saccade >= 1 deg, no MUA artifact (05 C16)), Gaussian-smoothed (sigma 3 ms), blank (0/0) subtracted.
 Dominant eye D = larger monocular response at .9 (40-250 ms); eye weight a = contrast scale mapping the
 non-dominant CRF onto D's (v1lb.binocular.eye_weight). Onset = first time the D response at .9 reaches half its
 peak. For dioptic contrast c, k(t) = equivalent dominant-eye contrast / c and L(t) = (k - 1) / a (1 = linear
@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from v1lb.binocular import CONTRASTS, equivalent_contrast, eye_weight  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
-from v1lb.dataset import open_penetration  # noqa: E402
+from v1lb.dataset import clean_presentations, open_penetration  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -54,7 +54,7 @@ def penetration(pen: str, driven: set) -> pd.DataFrame:
     ds = open_penetration(pen)
     P = pd.read_parquet(d / f"{pen}_presentations.parquet")
     E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-    keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+    keep = clean_presentations(ds, P, E)
     Pk = P[keep].reset_index(drop=True)
     t = ds.time.values
     tw = (t >= T_KEEP[0]) & (t < T_KEEP[1])

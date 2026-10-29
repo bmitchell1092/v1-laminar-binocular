@@ -1,7 +1,7 @@
 """Full 6 x 6 dichoptic response matrices per site (MUA channel or unit) and window.
 
 Usage: .venv\\Scripts\\python scripts\\run_dichoptic.py [penetration ...]
-Presentations: completed, no saccade >= 1 deg in -200...500 ms. Responses: window means (MUA uV, units spikes/s)
+Presentations: completed, no saccade >= 1 deg in -200...500 ms, no MUA artifact (05 C16). Responses: window means (MUA uV, units spikes/s)
 minus the blank (0/0) mean, so cell (0, 0) is 0 by construction. Windows: transient 40-140, sustained 150-250,
 full 40-250 ms after the photodiode flash.
 Writes <out_root>/dichoptic/<pen>.parquet, long format: penetration, site, site_id, depth coordinates, unit metrics,
@@ -17,7 +17,7 @@ import pandas as pd
 
 from v1lb import crf
 from v1lb.config import out_root
-from v1lb.dataset import open_penetration
+from v1lb.dataset import clean_presentations, open_penetration
 
 warnings.filterwarnings("ignore")
 WINDOWS = dict(crf.WINDOWS, full=(40, 250))
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         ds = open_penetration(pen)
         P = pd.read_parquet(d / f"{pen}_presentations.parquet")
         E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-        keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+        keep = clean_presentations(ds, P, E)
         Pk = P[keep].reset_index(drop=True)
         t = ds.time.values
         incx = ds.in_cortex.values

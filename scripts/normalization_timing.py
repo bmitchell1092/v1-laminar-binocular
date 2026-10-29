@@ -3,7 +3,7 @@
 
 Usage: .venv\\Scripts\\python scripts\\normalization_timing.py [--data-dir datasets_cross] [--tag cross]
 Per driven in-cortex MUA channel (one-way ANOVA across the dominant eye's monocular contrasts, 40-250 ms,
-p < .01; same rule as the discovery), condition means (completed presentations, no saccade >= 1 deg), Gaussian
+p < .01; same rule as the discovery), condition means (completed presentations, no saccade >= 1 deg, no MUA artifact (05 C16)), Gaussian
 sigma 3 ms, blank-subtracted. Sliding 15 ms windows starting 0, 5, ..., 150 ms after the channel's onset: k and
 L = (k - 1) / a with the eye weight refitted per window (v1lb.binocular), for dioptic .11, .225, .45.
 Per penetration: the channel median L(s). Half-transition time per penetration x contrast: first s >= 10 ms at which
@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from v1lb.binocular import CONTRASTS, equivalent_contrast, eye_weight  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
-from v1lb.dataset import open_penetration  # noqa: E402
+from v1lb.dataset import clean_presentations, open_penetration  # noqa: E402
 from v1lb.saccades import around_onsets, detect_continuous  # noqa: E402
 
 warnings.filterwarnings("ignore")
@@ -58,7 +58,7 @@ def analyse(name: str, d: Path, split: str = "all"):
     ds = open_penetration(name, d)
     P = pd.read_parquet(d / f"{name}_presentations.parquet")
     E = eye_table(d, name, P)
-    keep = P.completed.to_numpy() & (E.n_large.to_numpy() == 0)
+    keep = clean_presentations(ds, P, E)
     if split != "all":
         keep &= (np.arange(len(P)) % 2 == (1 if split == "odd" else 0))
     Pk = P[keep].reset_index(drop=True)

@@ -505,7 +505,8 @@ hide. Each item gets a test, and the S1 column says where the answer is shown.
 | 30 | **Late collapse of the sink's eye weight** | L = (k − 1)/a divides by a small late a and explodes for CSD | 4 | use k for CSD; report a(t) | S1g |
 | 31 | **Aggregation bias in model weights** | The model is fitted to the average of channels with different eye weights; averaging could itself make the pool look more balanced than excitation (w > a) | 5 (model) | simulation: channels with w = a and heterogeneous a, averaged and fitted. **Tested: bias +0.003 to +0.025** even for a spread of 0.1–1.0, against an observed median w − a of +0.22 | S1i |
 | 32 | **Small trial counts destabilize cross-validation** | With ~4 presentations per cell per half (211008), held-out error of flexible models explodes | 5 | report per-penetration CV; exclude or flag penetrations with < 10 presentations per cell; results with and without 211008 | S1i |
-| 33 | **Offset-decay estimates are method-sensitive; input may carry the slow decay** | Half-decay depends on baseline (blank vs pre-stimulus), channel set and eye pooling (MUA 27–59 ms). A slow decay already present in the input currents would not reflect cortical recurrence | 5 (model) | fixed measurement protocol pre-registered; sink vs MUA comparison; model the input stage | S1i |
+| 33 | **Offset-decay estimates are method-sensitive; input may carry the slow decay; an OFF transient dominates** | Half-decay depends on baseline (blank vs pre-stimulus), channel set and eye pooling (MUA 27–59 ms). A slow decay already present in the input currents would not reflect cortical recurrence. The response to stimulus offset peaks at ~1.8× the sustained level ~7 ms after the response offset (88–100% of penetrations), so the half-decay mostly measures the OFF transient; model comparisons must use the same metric (the toy scan of the second report did not) | 5 (model) | fixed measurement protocol pre-registered; sink vs MUA comparison; model the input stage; separate the OFF transient (decay after the OFF peak, or ON/OFF drive) | S1i |
+| 34 | **Unrejected MUA artifacts** (found 2026-10-29 while building Fig 1; 05 C16) | ~0.6% of presentations carry MUA excursions of robust z 20–2000, almost all in monkey J (up to 62 in one penetration). One such presentation can dominate a ~30-presentation cell mean, add heavy tails to k and L, and distort single-penetration panels | all | rule fixed before seeing its effect: drop presentations whose peak MUA (−50…450 ms) on any in-cortex channel exceeds robust z 20 (`v1lb.dataset.clean_presentations`); every analysis rerun; pre-registered results kept as run and the cleaned reruns reported as sensitivity analyses | S1c |
 
 **S1 results, first pass (2026-10-29; `scripts/fig2_robustness.py`,
 [qc/fig2_robustness.csv](qc/fig2_robustness.csv)).** The core statistics are recomputed under each control subset.
@@ -619,6 +620,21 @@ covariates.
   * **Consequence:** the offset prediction remains a valid out-of-sample test of a fitted MUA model. As
     *mechanistic* evidence for cortical recurrence it is limited unless the input stage is modelled, as the second
     literature report recommends.
+* **Correction (2026-10-29, found while building Fig 6): the half-decay statistic mostly measures an offset
+  transient, so the "slow decay favours recurrence" reading is withdrawn.**
+  * **What the figure showed.** Aligned to the response offset (stimulus duration + onset latency) and scaled to
+    the sustained level, the population response does not simply decay. It rises to a peak ~7 ms later: median
+    1.75–1.9× the sustained level at every contrast, above 1.2× in 88–100% of 26 penetrations, in both monkeys.
+    This is an OFF response to the grating's disappearance. The 27–32 ms "half-decay" is mostly its duration.
+  * **The toy scan was not like-for-like.** The second literature report's scan (ORGaNICs, recurrent shunting,
+    SSN "matching" a flat ~30 ms decay) measured half-decay from the post-offset *peak*. Measured as the data are
+    (from duration + t50), the toy ORGaNICs gives 0–25 ms half-decays that lengthen with contrast. No model has
+    been shown to reproduce the data's offset behaviour under the data's own metric.
+  * **What stands:** the fitted fixed-delay model, measured with the same metric, rises too fast at low contrast
+    (20 vs 48 ms at .11, per channel) and has no offset transient. A model with no OFF pathway cannot produce one,
+    whether it is feedforward or recurrent.
+  * **Fig 6** therefore shows rise times and the offset transient, not the half-decay. A future decay test must
+    separate the OFF transient: measure decay after the OFF peak, or model ON and OFF drive.
 * **Next:** a theory-driven fourth model test (recurrent/shunting normalization vs the fixed-delay model). It
   needs its own pre-registration after the sweep. The condition set earlier ("no more model tests without a new
   reason") is met by this theoretical reason.
@@ -695,11 +711,16 @@ suppression, one contrast pair); Dougherty et al. 2019 (binocular modulation of 
 5. Fig 1 assembly; Fig 6 model if 1–3 hold.
 6. Controls and supplementary.
 
-| Figure | Script (to write unless noted) | Inputs |
+**Figures as built (2026-10-29; style in [11](11_figure_style.md); `scripts/figures/`, packet with legends:
+`figure_packet.py`).** Each figure script only plots saved analysis outputs and prints the statistics it shows.
+
+| Figure (as built) | Figure script | Analysis scripts it reads |
 |---|---|---|
-| 1 | `fig1_setup.py` | datasets, laminar alignment v2, flash CSD |
-| 2 | `equivalent_contrast.py` (k(t), latency) | datasets (MUA), `run_dichoptic.py` (exists) |
-| 3 | extends `equivalent_contrast.py`; `fit_interocular.py` (w) | as Fig 2 |
-| 4 | `dichoptic_csd.py` | datasets (CSD), laminar alignment v2 |
-| 5 | `units_binocular.py` | units, `run_dichoptic.py` |
-| 6 | `delayed_normalization.py` | Figs 2–3 outputs |
+| 1 Setup | `fig1_setup.py` | `figure_data.py`, flash CSD + alignment v2, `run_crf.py`, `run_dichoptic.py` |
+| 2 Add, then normalize | `fig2_add_then_normalize.py` | `figure_data.py`, `equivalent_contrast.py` |
+| 3 Contrast sets the collapse | `fig3_contrast.py` | `figure_data.py`, `normalization_timing.py` (incl. `--tag cross`) |
+| 4 Depth and earliest sink | `fig4_depth_input.py` | `equivalent_contrast.py`, `dichoptic_csd.py`, `laminar_timing.py` |
+| 5 Delayed normalization models | `fig5_models.py` | `fig5_model.py`, `fig5_channel_test.py`, `fig5_interaction_test.py` |
+| 6 Dynamics | `fig6_dynamics.py` | `figure_data.py`, `dynamics_diagnostics.py`, `fig5_model.py` |
+
+Units (old Fig 5: units net-suppressed while MUA is facilitated) go to the supplement.
