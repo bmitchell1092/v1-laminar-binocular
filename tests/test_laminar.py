@@ -155,3 +155,24 @@ def test_dominant_early_sink_ignores_weak_early_blip():
     c[(t >= 38) & (t < 70), 9:12] = -5.0            # dominant layer-4 sink
     peak, top, bottom, _ = dominant_early_sink(c, t)
     assert (top, bottom) == (9, 11) and peak in (9, 10, 11)
+
+
+def test_hamming_smoothing_suppresses_alternating_contacts():
+    from v1lb.laminar import hamming_smooth
+    alt = (-1.0) ** np.arange(16)
+    assert np.allclose(hamming_smooth(alt)[1:-1], 0.08 * alt[1:-1])
+    lin = np.arange(16.0)
+    assert np.allclose(hamming_smooth(lin)[1:-1], lin[1:-1])          # linear profiles pass unchanged
+
+
+def test_bad_channel_detection_and_interpolation():
+    from v1lb.laminar import bad_channels, interpolate_channels
+    t = np.linspace(0, 1, 200)[:, None]
+    depth = np.linspace(1, 2, 16)[None, :]
+    lfp = np.sin(2 * np.pi * 5 * t) * depth                          # smooth laminar profile
+    broken = lfp.copy(); broken[:, 6] *= 0.3; broken[:, 0] *= 2.5   # weak contact, hot edge contact
+    bad = bad_channels(broken)
+    assert np.flatnonzero(bad).tolist() == [0, 6]
+    fixed = interpolate_channels(broken, bad)
+    assert np.allclose(fixed[:, 6], lfp[:, 6]) and np.allclose(fixed[:, 0], lfp[:, 1])
+    assert np.isfinite(csd(broken, smooth=True, bad=bad)[:, 1:-1]).all()

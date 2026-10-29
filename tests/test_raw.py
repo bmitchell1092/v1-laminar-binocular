@@ -110,6 +110,8 @@ def test_dataset_layout_and_depths():
     assert ds.time.values[0] == -200 and ds.time.values[-1] == 499
     assert ds.channel.values[0] == "eA01" and ds.depth_l45.values[0] == 22.5      # ascending, L4/5 at 23.5
     assert ds.depth_l45.values[-1] == -8.5 and not ds.in_cortex.values[1] and ds.in_cortex.values[2]
+    assert ds.depth_below_toc.values[2] == 0 and ds.depth_below_toc.values[-1] == 29     # top of cortex = eA03
+    assert ds.bad_lfp.dtype == bool
     assert np.isnan(ds.csd.values[:, :, 0]).all() and np.isfinite(ds.csd.values[:, :, 1]).all()
     assert ds.spikes.sum() > 0 and ds.attrs["orientation"] == "ascending"
     assert set(ds.condition.values) <= {"blank", "mono_contra", "mono_ipsi", "dioptic", "dichoptic"}

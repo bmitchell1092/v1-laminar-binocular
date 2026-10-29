@@ -1,0 +1,31 @@
+penetration,include,depth_usable,tier,orientation,orientation_votes,spi_margin,top_of_cortex,top_contact_in_cortex,l45,l45_minus_toc,l45_flash,l45_spi,l45_v1,basis,n_usable_evps,evp_spread,deep_limit,flags
+221212_J_eA,True,True,A,ascending,asce/asce/asce,0.015,5,False,17.5,12.5,17.5,17.5,17.5,flash,1,0.0,,
+211008_B_eA,True,True,B,ascending,asce/asce/asce,0.096,3,False,22.0,19.0,22.0,23.5,23.5,flash (SPI agrees),4,1.0,,L4/5 19 contacts below top of cortex (outside 5-17)
+211012_B_eA,True,True,B,descending,desc/desc/desc,0.212,32,True,25.5,6.5,12.5,25.5,25.5,spi (flash implausible depth),3,0.0,,top contact already in cortex
+211027_B_eA,True,True,B,descending,desc/desc/asce,0.071,32,True,18.5,13.5,18.5,26.5,26.5,flash,2,0.0,,"orientation by 2-of-3 vote: descending, descending, ascending; top contact already in cortex"
+211103_B_eA,True,True,B,ascending,asce/asce/asce,0.322,11,False,19.5,8.5,19.5,29.5,29.5,flash,2,0.0,,
+211208_B_eA,True,True,B,ascending,asce/asce/asce,0.276,6,False,19.5,13.5,19.5,28.5,13.5,flash,4,0.0,,v1 deep limit 18 dropped (L4/5 below it)
+211210_B_eA,True,True,B,ascending,asce/asce/asce,0.094,14,False,22.5,8.5,22.5,,,flash,5,5.0,,evps disagree by 5 contacts (closest evp used)
+211217_B_eA,True,True,B,descending,desc/asce/desc,0.278,29,False,18.5,10.5,18.5,27.5,27.5,flash,3,5.0,,"evps disagree by 5 contacts (closest evp used); orientation by SPI (decisive): descending, ascending, descending"
+221118_J_eA,True,True,B,ascending,asce/asce/asce,0.002,14,False,21.5,7.5,21.5,26.5,26.5,flash,1,0.0,,
+221119_J_eA,True,True,B,ascending,asce/asce/asce,0.18,4,False,9.5,5.5,9.5,15.5,15.5,flash,1,0.0,,
+221121_J_eA,True,True,B,ascending,asce/asce/asce,0.375,8,False,18.5,10.5,8.5,18.5,18.5,spi (flash implausible depth),1,0.0,,
+221123_J_eA,True,True,B,ascending,asce/asce/asce,0.005,13,False,22.5,9.5,,22.5,22.5,spi (flash unusable),0,,,
+221128_J_eA,True,True,B,descending,desc/desc/asce,0.132,31,False,24.5,6.5,4.5,24.5,24.5,spi (flash implausible depth),1,0.0,,"orientation by SPI (decisive): descending, descending, ascending"
+221130_J_eA,True,True,B,ascending,asce/asce/asce,0.319,10,False,18.5,8.5,31.5,18.5,18.5,spi (flash implausible depth),1,0.0,,
+221202_J_eA,True,True,B,ascending,asce/asce/asce,0.015,15,False,23.5,8.5,23.5,,,flash,2,0.0,,
+221202_J_eB,True,True,B,ascending,asce/asce/asce,0.201,10,False,21.5,11.5,21.5,17.5,17.5,flash,2,6.0,,evps disagree by 6 contacts (closest evp used)
+221204_J_eB,True,True,B,ascending,desc/asce/asce,0.079,5,False,19.5,14.5,19.5,,,flash,1,0.0,,"orientation by 2-of-3 vote: descending, ascending, ascending"
+221206_J_eA,True,True,B,ascending,asce/asce/asce,0.113,14,False,22.5,8.5,,22.5,22.5,spi (flash unusable),0,,,
+221209_J_eA,True,True,B,descending,desc/desc/asce,0.001,32,True,22.5,9.5,22.5,,,flash,3,7.0,,"evps disagree by 7 contacts (closest evp used); orientation by 2-of-3 vote: descending, descending, ascending; top contact already in cortex"
+221209_J_eB,True,True,B,ascending,asce/asce/asce,0.191,5,False,14.5,9.5,14.5,21.5,21.5,flash,3,1.0,,
+221214_J_eA,True,True,B,descending,desc/desc/asce,0.078,32,True,29.5,2.5,29.5,11.5,11.5,flash,2,0.0,,"orientation by 2-of-3 vote: descending, descending, ascending; top contact already in cortex"
+221214_J_eB,True,True,B,ascending,asce/asce/asce,0.039,24,False,28.5,4.5,28.5,27.5,27.5,flash (SPI agrees),2,0.0,,L4/5 4.5 contacts below top of cortex (outside 5-17)
+211009_B_eA,False,False,C,descending,desc/asce/asce,0.117,21,False,,,20.5,,,none,5,11.0,,"evps disagree by 11 contacts (closest evp used); decisive SPI contradicted by spectral and legacy: descending, ascending, ascending"
+211025_B_eA,False,True,C,ascending,asce/asce/asce,0.042,4,False,,,28.5,,,none,3,16.0,,evps disagree by 16 contacts (closest evp used)
+211102_B_eA,False,False,C,ascending,asce/desc/desc,0.158,12,False,19.5,7.5,19.5,29.5,29.5,flash,3,0.0,,"decisive SPI contradicted by spectral and legacy: ascending, descending, descending"
+211213_B_eA,False,False,C,descending,desc/asce/asce,0.397,32,True,20.5,11.5,20.5,18.5,18.5,flash,5,21.0,,"evps disagree by 21 contacts (closest evp used); decisive SPI contradicted by spectral and legacy: descending, ascending, ascending; top contact already in cortex"
+221109_J_eA,False,True,C,descending,desc/desc/asce,0.04,32,True,,,13.5,,,none,2,0.0,,"orientation by 2-of-3 vote: descending, descending, ascending; top contact already in cortex"
+221206_J_eB,False,True,C,ascending,desc/asce/asce,0.003,10,False,,,,,,none,0,,,"orientation by 2-of-3 vote: descending, ascending, ascending"
+221215_J_eA,False,True,C,ascending,desc/asce/asce,0.049,11,False,,,,,,none,0,,,"orientation by 2-of-3 vote: descending, ascending, ascending"
+221215_J_eB,False,False,C,descending,desc/asce/asce,0.176,28,False,22.5,5.5,8.5,22.5,22.5,spi (flash implausible depth),1,0.0,,"decisive SPI contradicted by spectral and legacy: descending, ascending, ascending"

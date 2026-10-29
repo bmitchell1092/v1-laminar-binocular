@@ -1,7 +1,8 @@
-"""Build the per-penetration data files for every included penetration in the laminar alignment.
+"""Build the per-penetration data files for every depth-usable penetration in the laminar alignment
+(layer labels only where it has an L4/5; depth below the top of cortex everywhere).
 
 Usage: .venv\\Scripts\\python scripts\\build_datasets.py [penetration ...] [--overwrite]
-Writes <out_root>/datasets/<pen>.nc and <pen>_presentations.parquet.
+Writes <out_root>/datasets/<pen>.nc, <pen>_presentations.parquet and <pen>_eye.nc.
 """
 
 import sys
@@ -17,7 +18,8 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     overwrite = "--overwrite" in sys.argv
     align = pd.read_csv(metadata_dir() / ALIGNMENT_FILE)
-    pens = args or align.loc[align.include, "penetration"].tolist()
+    use = align["depth_usable"] if "depth_usable" in align else align["include"]
+    pens = args or align.loc[use, "penetration"].tolist()
     out = out_root() / "datasets"
     for pen in pens:
         if (out / f"{pen}.nc").exists() and not overwrite:

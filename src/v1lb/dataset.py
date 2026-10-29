@@ -2,11 +2,14 @@
 
 Layout of `<out_root>/datasets/<penetration>.nc`:
   dims        presentation, time (ms, 1 kHz, 0 = photodiode flash), channel (superficial -> deep)
-  data vars   lfp [uV], csd [nA/mm^3], mua [uV, analog envelope], spikes [threshold-crossing counts/ms]
+  data vars   lfp [uV], csd [nA/mm^3], mua [uV, analog envelope], spikes [threshold-crossing counts/ms],
+              eye_x, eye_y [deg re fixation cross], pupil [mV]
   coords      presentation: every column of `bminteroc.presentation_table` (contrast_L/R/ipsi/contra,
               condition, NSP ticks, frames, previous presentation, outcome, ...)
-              channel: contact (1-based label number), depth_l45 (contacts, + = superficial),
-              depth_um, in_cortex, beyond_deep_limit
+              channel: contact (1-based label number), depth_l45 (contacts, + = superficial; NaN when the
+              penetration has no L4/5 landmark), depth_um, depth_below_toc (contacts below the top of
+              cortex, + = deeper; a lower bound when the top contact is already in cortex), in_cortex,
+              beyond_deep_limit, bad_lfp (outlier contacts, interpolated for the CSD)
   attrs       provenance and definitions
 Only presentations with a detected photodiode flash are included; filter on `completed` as needed.
 """
@@ -25,7 +28,7 @@ from . import __version__
 from .bminteroc import presentation_table
 from .config import metadata_dir, out_root, recording_files
 from .io import NsxFile
-from .laminar import csd as compute_csd
+from .laminar import bad_channels, csd as compute_csd
 from .signals import analog_mua_epochs, probe_labels, threshold_spikes
 from . import eye as eyemod
 
@@ -42,14 +45,17 @@ def _git_hash() -> str:
 
 
 def channel_table(n: int, orientation: str, l45: float, top_of_cortex: int, deep_limit: float) -> pd.DataFrame:
-    """Contacts ordered superficial -> deep with depth relative to L4/5 (positive = superficial)."""
+    """Contacts ordered superficial -> deep with depth relative to L4/5 (positive = superficial; NaN if
+    l45 is NaN) and below the top of cortex (positive = deeper)."""
     contacts = np.arange(1, n + 1) if orientation == "ascending" else np.arange(n, 0, -1)
     sign = 1 if orientation == "ascending" else -1
     depth = sign * (l45 - contacts)
-    in_cortex = sign * (contacts - top_of_cortex) >= 0 if top_of_cortex > 0 else np.ones(n, bool)
+    below_toc = sign * (contacts - top_of_cortex) if top_of_cortex > 0 else np.full(n, np.nan)
+    in_cortex = below_toc >= 0 if top_of_cortex > 0 else np.ones(n, bool)
     beyond = sign * (contacts - deep_limit) > 0 if np.isfinite(deep_limit) else np.zeros(n, bool)
     return pd.DataFrame({"contact": contacts, "depth_l45": depth.astype(float), "depth_um": depth * 100.0,
-                         "in_cortex": in_cortex, "beyond_deep_limit": beyond})
+                         "depth_below_toc": below_toc.astype(float), "in_cortex": in_cortex,
+                         "beyond_deep_limit": beyond})
 
 
 def lfp_epochs(ns2: NsxFile, labels: list[str], onsets: np.ndarray, window_ms=WINDOW_MS) -> np.ndarray:
@@ -105,7 +111,11 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
     onsets = P["pd_on_tick"].to_numpy()
 
     lfp = lfp_epochs(ns2, ordered, onsets, window_ms)
-    csd = compute_csd(lfp).astype(np.float32)                    # along channels (superficial -> deep)
+    t_ms = np.arange(window_ms[0], window_ms[1]).astype(float)
+    evoked = lfp.mean(axis=0) - lfp[:, t_ms < 0].mean(axis=(0, 1))
+    chans["bad_lfp"] = bad_channels(evoked[(t_ms >= 20) & (t_ms <= 150)])
+    # along channels (superficial -> deep); outlier contacts interpolated, 3-point Hamming smoothing (05 C12)
+    csd = compute_csd(lfp, smooth=True, bad=chans["bad_lfp"].to_numpy()).astype(np.float32)
     mua = analog_mua_epochs(ns6, ordered, onsets, pre_ms=-window_ms[0], post_ms=window_ms[1]).astype(np.float32)
     span = (int(onsets.min()) + window_ms[0] * 30 - 30000, int(onsets.max()) + window_ms[1] * 30 + 30000)
     spikes = bin_spikes(threshold_spikes(ns6, ordered, max(span[0], ns6.t_start), min(span[1], ns6.t_stop)),
@@ -117,7 +127,6 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
     eye_x, eye_y = eyemod.to_degrees(cal, eye_raw[:, :, 0], eye_raw[:, :, 1])
     pupil = eye_raw[:, :, 2] if eye_raw.shape[2] > 2 else np.full(eye_x.shape, np.nan, np.float32)
 
-    t_ms = np.arange(window_ms[0], window_ms[1]).astype(float)
     pres_coords = {}
     for col in P.columns:
         v = P[col]
@@ -126,7 +135,8 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
         data_vars=dict(
             lfp=(("presentation", "time", "channel"), lfp, {"units": "uV", "source": "ns2 (0.3-500 Hz hardware band)"}),
             csd=(("presentation", "time", "channel"), csd,
-                 {"units": "nA/mm^3", "definition": "-sigma d2V/dz2, sigma 0.4 S/m, 0.1 mm spacing; sinks negative; edge channels NaN"}),
+                 {"units": "nA/mm^3", "definition": "-sigma d2V/dz2, sigma 0.4 S/m, 0.1 mm spacing; sinks negative; edge channels NaN; "
+                                                  "bad_lfp contacts interpolated and 3-point Hamming spatial smoothing (0.23/0.54/0.23) first"}),
             mua=(("presentation", "time", "channel"), mua,
                  {"units": "uV", "definition": "ns6: 500-5000 Hz band-pass, rectify, 200 Hz low-pass (4th-order, zero-phase), 1 kHz"}),
             eye_x=(("presentation", "time"), eye_x.astype(np.float32), {"units": "deg re fixation cross", "source": cal.x_channel}),
@@ -143,6 +153,8 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
         attrs=dict(penetration=penetration, session=session, recording=rec, bank=bank,
                    hemisphere=meta["hemisphere"], orientation=al["orientation"], l45=float(al["l45"]),
                    top_of_cortex=int(al["top_of_cortex"]),
+                   top_contact_in_cortex=int(bool(al.get("top_contact_in_cortex", False))),
+                   laminar_tier=str(al.get("tier", "")),
                    deep_limit=float(al["deep_limit"]) if pd.notna(al["deep_limit"]) else np.nan,
                    alignment=f"{alignment_file} ({al['basis']})", contact_spacing_um=100.0,
                    time_zero=("first backlight flash at the photodiode (bottom-right of the screen), "

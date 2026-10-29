@@ -105,13 +105,66 @@ def band_profile(f: np.ndarray, relpow: np.ndarray, band: tuple[float, float]) -
 
 
 # ----------------------------------------------------------------------------- CSD
-def csd(lfp: np.ndarray, spacing_mm: float = 0.1, conductivity: float = 0.4) -> np.ndarray:
+HAMMING3 = np.array([0.23, 0.54, 0.23])
+
+
+def hamming_smooth(x: np.ndarray) -> np.ndarray:
+    """3-point Hamming smoothing along the last axis (channels), edges replicated.
+
+    Standard before a laminar CSD (Ulbert et al. 2001): it passes 8% of a pattern that
+    alternates between neighbouring contacts, the signature of contact gain mismatch."""
+    v = np.asarray(x, float)
+    p = np.concatenate([v[..., :1], v, v[..., -1:]], axis=-1)
+    return HAMMING3[0] * p[..., :-2] + HAMMING3[1] * p[..., 1:-1] + HAMMING3[2] * p[..., 2:]
+
+
+def bad_channels(evoked: np.ndarray, lo: float = 0.6, hi: float = 1.6, half_width: int = 2) -> np.ndarray:
+    """Contacts whose evoked LFP amplitude is out of line with their neighbours.
+
+    `evoked` is a mean evoked LFP [time, channel] (channels in contact order). A contact is bad
+    when its SD over time is outside [lo, hi] x the median SD of the contacts within
+    `half_width` on either side. The LFP is smooth over a few hundred um, so a lone weak or
+    strong contact is a contact or gain problem, not a laminar feature."""
+    amp = np.nanstd(np.asarray(evoked, float), axis=0)
+    n = amp.size
+    bad = np.zeros(n, bool)
+    for k in range(n):
+        nb = [j for j in range(k - half_width, k + half_width + 1) if j != k and 0 <= j < n]
+        ref = np.nanmedian(amp[nb])
+        bad[k] = not (lo * ref <= amp[k] <= hi * ref)
+    return bad
+
+
+def interpolate_channels(x: np.ndarray, bad: np.ndarray) -> np.ndarray:
+    """Replace bad channels (last axis) by linear interpolation between the nearest good ones;
+    bad channels at either end copy the nearest good channel."""
+    v = np.array(x, float, copy=True)
+    good = np.flatnonzero(~np.asarray(bad, bool))
+    if good.size == 0 or good.size == v.shape[-1]:
+        return v
+    for k in np.flatnonzero(bad):
+        below, above = good[good < k], good[good > k]
+        if below.size and above.size:
+            g0, g1 = below[-1], above[0]
+            v[..., k] = v[..., g0] + (v[..., g1] - v[..., g0]) * (k - g0) / (g1 - g0)
+        else:
+            v[..., k] = v[..., below[-1] if below.size else above[0]]
+    return v
+
+
+def csd(lfp: np.ndarray, spacing_mm: float = 0.1, conductivity: float = 0.4, smooth: bool = False,
+        bad: np.ndarray | None = None) -> np.ndarray:
     """Standard CSD, -sigma d2V/dz2, along the last axis (channels in contact order).
 
     lfp in uV, spacing in mm, sigma in S/m -> nA/mm^3. Edge channels are NaN.
-    Negative values are sinks.
+    Negative values are sinks. `bad` contacts are interpolated and `smooth` applies
+    3-point Hamming smoothing before the second difference.
     """
     v = np.asarray(lfp, float)
+    if bad is not None and np.any(bad):
+        v = interpolate_channels(v, bad)
+    if smooth:
+        v = hamming_smooth(v)
     out = np.full_like(v, np.nan)
     # (S/m) x (uV/mm^2) = 1e-6 A/(m mm^2) = 1 nA/mm^3
     out[..., 1:-1] = -conductivity * (v[..., 2:] - 2 * v[..., 1:-1] + v[..., :-2]) / spacing_mm ** 2
