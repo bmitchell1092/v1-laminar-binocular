@@ -58,3 +58,19 @@ def test_two_stage_model_selected_when_true():
     f1 = fit(t, cd, cn, y, "full", starts=3)
     assert f2.sse < f1.sse
     assert np.allclose(predict(f2.params, t, cd, cn), predict_two_stage(f2.params, t, cd, cn))
+
+
+def test_full2_nests_single_stage_and_seeded_fit_is_never_worse():
+    t = np.arange(0, 220.0)
+    cd, cn = grid()
+    p1 = dict(g=2.0, sigma=0.1, n=1.3, delta=22.0, tau1=4.0, tau2=30.0, a=0.8, w=1.1)
+    S = 400.0
+    p2 = p1 | dict(S=S, sigma=p1["sigma"] / S, omega=1.0, tau_s=20.0)
+    r1, r2 = predict(p1, t, cd, cn), predict(p2, t, cd, cn)
+    assert np.nanmax(np.abs(r1 - r2)) < 0.02 * np.nanmax(r1)          # large-S limit = single-stage 'full'
+    rng = np.random.default_rng(4)
+    y = r1 + rng.normal(0, 0.02, r1.shape)
+    f1 = fit(t, cd, cn, y, "full", starts=2)
+    init = f1.params | dict(S=S, sigma=f1.params["sigma"] / S, omega=1.0, tau_s=20.0)
+    f2 = fit(t, cd, cn, y, "full2", starts=1, init=init)
+    assert f2.sse <= f1.sse * 1.01

@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from scipy import optimize, stats
+from scipy import optimize, signal, stats
 
 K_GAMMA = 3.0
 PARAMS = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "w", "beta", "S", "omega", "tau_s"]
@@ -29,15 +29,14 @@ BOUNDS = {"g": (0.05, 50.0), "sigma": (0.005, 3.0), "n": (0.5, 6.0), "delta": (5
           "tau2": (0.5, 300.0), "a": (0.0, 1.5), "w": (0.0, 3.0),
           "beta": (0.0, 50.0), "S": (0.001, 5.0), "omega": (0.0, 3.0), "tau_s": (0.5, 300.0)}
 TWO_STAGE = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "S", "omega", "tau_s"]
+TWO_STAGE_FULL = TWO_STAGE + ["w"]               # 'full2': stage-2 pool with its own non-dominant weight
+FULL2_BOUNDS = {"sigma": (1e-5, 3.0), "S": (0.001, 500.0)}   # wide enough to reach the single-stage limit
 
 
 def lowpass(x: np.ndarray, tau: float, dt: float = 1.0) -> np.ndarray:
     """First-order low-pass along the last axis (zero initial state)."""
     alpha = 1 - np.exp(-dt / tau)
-    y = np.zeros_like(x, dtype=float)
-    for i in range(1, x.shape[-1]):
-        y[..., i] = y[..., i - 1] + alpha * (x[..., i] - y[..., i - 1])
-    return y
+    return signal.lfilter([alpha], [1.0, -(1.0 - alpha)], np.asarray(x, float), axis=-1)
 
 
 def predict_two_stage(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
@@ -47,14 +46,16 @@ def predict_two_stage(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray) ->
         b_D = c_D u / (S + v_s (c_D + omega c_N)),   b_N = a c_N u / (S + v_s (c_N + omega c_D))
     Stage 2, delayed binocular normalization of the sum B = b_D + b_N:
         R = g B^n / (sigma^n + lowpass(B, tau2)^n)
-    As S grows, stage 1 becomes linear and the model reduces to single-stage normalization with w = a."""
+    As S grows, stage 1 becomes linear and the model reduces to single-stage normalization with w = a; with a
+    pool weight "w" in p ('full2'), the pool is lowpass(b_D + w b'_N) and the limit is single-stage 'full'."""
     u, _ = step_responses(t, p["delta"], p["tau1"], p["tau2"], static=True)
     dt = t[1] - t[0]
     vs = lowpass(u[None, :], p["tau_s"], dt)[0]
     bd = cd[:, None] * u / (p["S"] + vs[None, :] * (cd + p["omega"] * cn)[:, None])
-    bn = p["a"] * cn[:, None] * u / (p["S"] + vs[None, :] * (cn + p["omega"] * cd)[:, None])
-    b = bd + bn
-    pool = lowpass(b, p["tau2"], dt)
+    bn1 = cn[:, None] * u / (p["S"] + vs[None, :] * (cn + p["omega"] * cd)[:, None])   # unweighted non-dominant
+    b = bd + p["a"] * bn1
+    # 'full2' (p has "w"): the pool weights the non-dominant stage-1 output by w; otherwise the pool is b itself
+    pool = lowpass(bd + p["w"] * bn1 if "w" in p else b, p["tau2"], dt)
     with np.errstate(over="ignore", invalid="ignore"):
         return p["g"] * b ** p["n"] / (p["sigma"] ** p["n"] + pool ** p["n"])
 
@@ -104,17 +105,21 @@ class Fit:
 
 
 def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str = "full",
-        starts: int = 6, seed: int = 0) -> Fit:
+        starts: int = 6, seed: int = 0, init: dict | None = None) -> Fit:
     """Least-squares fit to responses y [condition, time]. model: 'full', 'static' (no pool delay), 'w=a', or
     'tau_c' (full + a pool time constant that shortens with contrast; the others fix beta = 0), or '2stage'
-    (predict_two_stage)."""
+    (predict_two_stage), or 'full2' (two-stage with a stage-2 pool weight w; nests 'full'). `init` adds a first
+    start at the given parameters (e.g. a single-stage solution embedded at the S bound)."""
     if model == "2stage":
         free = list(TWO_STAGE)
+    elif model == "full2":
+        free = list(TWO_STAGE_FULL)
     else:
         free = [k for k in PARAMS if not (model == "static" and k == "tau2") and not (model == "w=a" and k == "w")
                 and not (model != "tau_c" and k == "beta") and k not in ("S", "omega", "tau_s")]
-    lo = np.array([BOUNDS[k][0] for k in free])
-    hi = np.array([BOUNDS[k][1] for k in free])
+    bounds = BOUNDS | (FULL2_BOUNDS if model == "full2" else {})
+    lo = np.array([bounds[k][0] for k in free])
+    hi = np.array([bounds[k][1] for k in free])
     ok = np.isfinite(y)
     rng = np.random.default_rng(seed)
 
@@ -124,7 +129,7 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
             p["tau2"] = BOUNDS["tau2"][0]
         if model == "w=a":
             p["w"] = p["a"]
-        if model != "2stage":
+        if model not in ("2stage", "full2"):
             p.setdefault("beta", 0.0)
         return p
 
@@ -135,10 +140,14 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
     base = {"g": 1.5, "sigma": 0.15, "n": 2.0, "delta": 30.0, "tau1": 4.0, "tau2": 40.0, "a": 0.7, "w": 1.0,
             "beta": 2.0, "S": 0.2, "omega": 1.0, "tau_s": 20.0}
     best = None
-    for s in range(starts):
-        x0 = np.array([base[k] for k in free], float)
-        if s:
-            x0 = np.exp(np.log(np.clip(x0, lo + 1e-9, hi)) + rng.normal(0, 0.4, len(x0)))
+    for s in range(starts + (1 if init else 0)):
+        first_base = 1 if init else 0                     # with init: start 0 = init, start 1 = base, then random
+        if init and s == 0:
+            x0 = np.array([init.get(k, base[k]) for k in free], float)
+        else:
+            x0 = np.array([base[k] for k in free], float)
+            if s > first_base:
+                x0 = np.exp(np.log(np.clip(x0, lo + 1e-9, hi)) + rng.normal(0, 0.4, len(x0)))
         x0 = np.clip(x0, lo + 1e-6, hi - 1e-6)
         try:
             res = optimize.least_squares(resid, x0, bounds=(lo, hi), x_scale="jac", max_nfev=3000)
