@@ -286,6 +286,43 @@ interpretable rather than explained away.
     * **What a fair second test would need:** an analysis fixed in advance and powered for it, e.g.
       channel-level hierarchical fits rather than channel averages, or new data with denser low contrasts. Not a
       re-run of this comparison with a relaxed criterion.
+    * **Flaws in the first pre-registration (identified 2026-10-29, after the result; Blake raised the question).**
+      1. **Not nested, and handicapped.** The single-stage model had a free pool weight w, strongly supported
+         (w > a in 24/25). The two-stage model had none, so it nested only the w = a single-stage model. It fit
+         even the *training* data worse than single-stage 'full' in 3/25 penetrations. The optimizer was not the
+         problem: training SSE ≤ its nested special case in 25/25.
+      2. **Criterion 3 used L.** L is a derived, heavy-tailed ratio that the models were not fitted to, and it is
+         very noisy per penetration × window. It largely measures noise.
+      3. **The 70% threshold was arbitrary** (17/25 vs 17.5/25) and redundant with the significance test.
+
+      The first result stands as reported (failed as specified).
+  * **Second, corrected pre-registration: channel-level two-stage test (registered 2026-10-29, before implementing
+    or fitting).** Blake approved trying it.
+    * **Models:**
+      * Single-stage 'full' (as before, 8 parameters).
+      * Two-stage 'full2' (11 parameters). Stage 1 is unchanged: b_D = c_D·u / (S + v_s·(c_D + ω·c_N)) and
+        b'_N = c_N·u / (S + v_s·(c_N + ω·c_D)). Stage 2 has numerator B = b_D + a·b'_N and pool
+        P = lowpass(b_D + w·b'_N, τ₂); R = g·B^n / (σ^n + P^n).
+      * 'full2' nests 'full' exactly as S → ∞.
+    * **Optimizer:** each 'full2' fit includes a start at the fitted single-stage solution embedded at the S bound,
+      plus random starts. More starts than the first test for both models.
+    * **Data:**
+      * Each driven in-cortex MUA channel separately, under the same driven rule as before.
+      * Oriented to its dominant eye and normalised by its dominant .9 peak.
+      * 0–219 ms, all 35 non-blank cells.
+      * Excluded a priori: 211008 (~4 presentations per cell per half; register #32) and 211210 (2 driven
+        channels).
+    * **Cross-validation:** fit odd presentations and score even ones, and the reverse; CV = summed held-out SSE.
+      Per channel, r = log(CV_full / CV_full2), so positive favours two-stage.
+    * **Unit of replication: the penetration** (median r over its channels).
+    * **Pass criterion (both must hold):**
+      1. One-sided Wilcoxon signed-rank test of penetration medians > 0, at **α = .025** (Bonferroni for a second
+         attempt at the same question).
+      2. The median of penetration medians is > 0 in both monkeys separately.
+    * **Reported regardless (no pass/fail):** median % change in held-out error; fraction of channels favouring
+      two-stage; fitted ω, S and τ_s; L(t) agreement.
+    * **Reporting:** both tests appear in the paper, the first with its flaws stated. If this one fails, two-stage
+      is not claimed and there is no third attempt on these data.
   * **Controls:** aggregation bias (register #31) is negligible. 211008 is unstable under cross-validation (#32).
 ## Decisions to lock before running (analysis plan)
 
