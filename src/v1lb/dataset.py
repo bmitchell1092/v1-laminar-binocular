@@ -91,11 +91,15 @@ def bin_spikes(spike_ticks: list[np.ndarray], onsets: np.ndarray, window_ms=WIND
 
 def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=WINDOW_MS,
                       max_presentations: int | None = None, write: bool = True,
-                      alignment_file: str = ALIGNMENT_FILE) -> xr.Dataset:
+                      alignment_file: str = ALIGNMENT_FILE, recording: str | None = None) -> xr.Dataset:
+    """`recording` overrides the penetration's bminteroc run (dual-probe days: the run whose grating sat on the
+    other probe's RF); files are then named <penetration>__<recording>."""
     pens = pd.read_csv(metadata_dir() / "penetrations.csv", dtype=str).set_index("penetration")
     align = pd.read_csv(metadata_dir() / alignment_file).set_index("penetration")
     meta, al = pens.loc[penetration], align.loc[penetration]
-    session, bank, rec = meta["session"], meta["bank"], meta["bminteroc"]
+    session, bank = meta["session"], meta["bank"]
+    rec = recording or meta["bminteroc"]
+    name = penetration if recording is None else f"{penetration}__{recording}"
 
     files = recording_files(session, rec)
     ns2, ns6 = NsxFile(files[".ns2"]), NsxFile(files[".ns6"])
@@ -170,14 +174,14 @@ def build_penetration(penetration: str, out_dir: Path | None = None, window_ms=W
         out_dir = Path(out_dir or out_root() / "datasets")
         out_dir.mkdir(parents=True, exist_ok=True)
         enc = {v: {"zlib": True, "complevel": 4} for v in ("lfp", "csd", "mua", "spikes", "eye_x", "eye_y", "pupil")}
-        ds.to_netcdf(out_dir / f"{penetration}.nc", engine="h5netcdf", encoding=enc)
-        P.to_parquet(out_dir / f"{penetration}_presentations.parquet")
+        ds.to_netcdf(out_dir / f"{name}.nc", engine="h5netcdf", encoding=enc)
+        P.to_parquet(out_dir / f"{name}_presentations.parquet")
         tk, ex, ey, pu = eyemod.continuous(ns2, cal)
         xr.Dataset(dict(eye_x=("tick", ex, {"units": "deg re fixation cross"}), eye_y=("tick", ey, {"units": "deg re fixation cross"}),
                         pupil=("tick", pu, {"units": "mV (uncalibrated)"})),
                    coords=dict(tick=("tick", tk, {"units": "NSP ticks (30 kHz clock), 1 kHz samples"})),
                    attrs=dict(penetration=penetration, recording=rec, calibration=ds.attrs["eye_calibration"])
-                   ).to_netcdf(out_dir / f"{penetration}_eye.nc", engine="h5netcdf",
+                   ).to_netcdf(out_dir / f"{name}_eye.nc", engine="h5netcdf",
                                encoding={v: {"zlib": True, "complevel": 4} for v in ("eye_x", "eye_y", "pupil")})
     return ds
 
