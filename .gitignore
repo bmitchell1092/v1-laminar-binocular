@@ -25,6 +25,7 @@ output/
 *.svg
 *.pdf
 *.docx
+!manuscript/*.docx
 *.pptx
 *.xls*
 
