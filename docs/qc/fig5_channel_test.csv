@@ -1,18 +1,18 @@
 item,value
-channels,533
+channels,538
 penetrations,24
-one-sided Wilcoxon p (penetration medians > 0),3.2782554626464844e-06
-median of penetration medians r,0.01101497349517535
-"median r, monkey B",0.006342297716458073
-"median r, monkey J",0.015322732878494696
-penetrations with median r > 0,0.875
-channels with r > 0,0.7560975609756098
-median % change in held-out error (full2 vs full),-1.1456935980307836
+one-sided Wilcoxon p (penetration medians > 0),4.172325134277344e-07
+median of penetration medians r,0.015076389004554075
+"median r, monkey B",0.0063871685447536705
+"median r, monkey J",0.02200163954223427
+penetrations with median r > 0,0.9583333333333334
+channels with r > 0,0.79182156133829
+median % change in held-out error (full2 vs full),-1.534647838061598
 training SSE full2 <= full (fraction of channels),1.0
 PRE-REGISTERED RESULT,PASS
-full2 omega: median [IQR],"0.86 [0.517, 1.33]"
-full2 S: median [IQR],"0.179 [0.0857, 0.368]"
-full2 tau_s: median [IQR],"30.8 [17.2, 65.4]"
-full2 w: median [IQR],"1.12 [0.839, 1.51]"
-full2 a: median [IQR],"0.915 [0.738, 1.04]"
-full2 tau2: median [IQR],"35.7 [19.4, 73.9]"
+full2 omega: median [IQR],"0.886 [0.561, 1.34]"
+full2 S: median [IQR],"0.182 [0.093, 0.375]"
+full2 tau_s: median [IQR],"30.4 [17.7, 53.7]"
+full2 w: median [IQR],"1.12 [0.845, 1.5]"
+full2 a: median [IQR],"0.908 [0.762, 1.04]"
+full2 tau2: median [IQR],"36.2 [20, 85.9]"

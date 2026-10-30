@@ -40,7 +40,7 @@ COVER = [
            "Pre-registered held-out test failed as run (6/7, p = .06); 7/8 (p = .035) after artifact rejection, "
            "a sensitivity analysis. Not demonstrably earlier at higher contrast."),
     ("li", "Fig 4, same sequence at every depth and in the earliest current sink: consistent, modest statistics."),
-    ("li", "Fig 5, delayed pool with w > a: robust (23/25, 24/25). Two-stage gain ~1%, consistent. "
+    ("li", "Fig 5, delayed pool with w > a: robust (23/25, 24/25). Two-stage gain ~1.5%, consistent. "
            "No fitted model captures the late collapse."),
     ("li", "Fig 6, the fitted model rises too fast at low contrast, and the offset transient is unexplained. "
            "A recurrent-normalization test is planned, not run."),
@@ -99,7 +99,7 @@ FIGURES = [
      "variant first divides each eye by both eyes' contrasts (Meese, Georgeson & Baker 2006, made dynamic). Fitted "
      "per penetration to the full 6 × 6 time courses. (b) Delayed normalization predicts held-out presentations "
      "(odd/even) better than static normalization. (c) The pool weights the other eye more than excitation does "
-     "(w > a). (d) The two-stage model predicts held-out responses consistently but only slightly better (~1%), "
+     "(w > a). (d) The two-stage model predicts held-out responses consistently but only slightly better (~1.5%), "
      "under two loss functions; both tests were pre-registered at the channel level. (e) The pre-registered capture "
      "test: late L of each model's fit minus the data. A model would capture the collapse only if every 90% CI lay "
      "within the ±0.25 band; none does, and the two-stage model stays too linear late."),
@@ -107,7 +107,7 @@ FIGURES = [
      "transient it cannot produce",
      "(a) Dominant-eye responses, each penetration scaled to its peak: the rise steepens with contrast. (b) 10–90% "
      "rise time: data (penetrations grey; median and 95% CI) against the fitted delayed-normalization model of Fig 5, "
-     "which was fitted to 0–219 ms, so this is out of sample. The model rises about 2.4× too fast at low contrast. "
+     "which was fitted to 0–219 ms, so this is out of sample. The model rises about 2.3× too fast at low contrast. "
      "(c) After the response offset, the data show an offset transient (about 1.8× the sustained level, in 88–100% "
      "of penetrations) that the model cannot produce. Decay statistics taken over this period mostly measure the "
      "transient, so they are not used to compare mechanisms. Whether recurrent or shunting normalization explains the "

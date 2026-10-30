@@ -61,6 +61,23 @@ compartments and the J-only inverted U, per monkey, no supersaturation, the conf
 Supplementary beyond S1: S2 per monkey; S3 no supersaturation at any depth (07); S4 the main results under each
 laminar marker; S5 unit isolation and spike-time verification (05 A7, C14).
 
+**Sensitivity: every result after MUA artifact rejection (2026-10-29; register #34, 05 C16).** All analyses were
+rerun with `clean_presentations`. Pre-registered results stay as run; these reruns are sensitivity analyses. The
+figures (`scripts/figures/`) use the cleaned outputs.
+
+| Result | As first reported | After artifact rejection |
+|---|---|---|
+| Claim 2, early → late L (.11 / .225 / .45) | 1.18 → 0.74 (p = .016) / 1.20 → 0.49 / 0.97 → −0.12 | 1.19 → 0.61 (p = .001) / 1.20 → 0.47 / 0.97 → −0.12 (both p < .001) |
+| Claim 3, transition slope < 0 | 26/26, median −0.92 | 26/26, median −0.95; odd/even 25/25 and 23/24 |
+| Claim 3, held-out (registered) | 6/7, p = .063, **failed** | 7/8, p = .035 (221209_J_eB now has driven channels); sensitivity only |
+| "Sooner at higher contrast" | not supported (p = .23) | not supported (p = .25; Friedman p = .19) |
+| Laminar timing, normalization above / below the sink | +5.5 ms (p = .026) / +6.5 ms (p = .006) | +6 ms (p = .016) / +7 ms (p = .003) |
+| Delayed vs static; w > a | 23/25; 24/25 | 23/25; 24/25 |
+| Two-stage vs single-stage, raw error (registered) | PASS, 21/24, ~1.1% | PASS, 23/24, ~1.5% (538 channels) |
+| Two-stage vs single-stage, interaction loss | p = 7 × 10⁻⁶ | p = 6 × 10⁻⁸ |
+| Capture of the late collapse (registered) | no model | no model |
+| Rise time .11 → .9, data vs fitted model | 48 → 20.5 vs 20 → 11 ms | 46.5 → 20 vs 20 → 11 ms |
+
 ## Core figures (essential: 1–3; strengthening: 4–5; optional: 6)
 
 Each figure answers one question. The criteria are set now, before the final analysis, so that a null is

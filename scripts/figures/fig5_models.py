@@ -168,8 +168,7 @@ def capture(ax, L):
     ax.set_ylabel("late L, model − data")
     ax.set_xlim(-0.5, 2.5)
     ax.set_ylim(-0.6, 0.8)
-    ax.text(2.48, MARGIN - 0.02, "equivalence\nmargin", ha="right", va="top", fontsize=5.5, color=fs.INK2,
-            linespacing=0.95)
+    ax.text(-0.45, MARGIN - 0.02, "equivalence margin", ha="left", va="top", fontsize=5.5, color=fs.INK2)
     ax.text(-0.45, 0.78, "model too linear", fontsize=5.5, color=fs.INK2, va="top")
     ax.text(-0.45, -0.58, "model too suppressive", fontsize=5.5, color=fs.INK2, va="bottom")
     fs.line_key(ax, [(lab, fs.MODEL["fixed-delay"], "none", mk, mfc) for _, lab, mk, mfc in MODELS], x=0.68, y=0.96,
