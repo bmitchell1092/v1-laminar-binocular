@@ -102,3 +102,14 @@ def test_interaction_loss_runs_and_prefers_truth():
     y = predict(true, t, cd, cn) + rng.normal(0, 0.01, (len(cd), len(t)))
     f = fit(t, cd, cn, y, "ds", starts=2, loss="interaction")
     assert loss_value(f.params, t, cd, cn, y) <= loss_value(true, t, cd, cn, y) * 1.05
+
+
+def test_org_steady_state_and_contrast_dependent_rise():
+    from v1lb.dynorm import predict_org
+    t = np.arange(0, 400.0)
+    p = dict(g=1.0, b=1.0, sigma=0.1, n=2.0, delta=10.0, tau1=2.0, tau_y=2.0, tau_a=5.0, a=0.0, w=0.0)
+    r = predict_org(p, t, np.array([0.03, 0.3]), np.array([0.0, 0.0]))
+    z = np.array([0.03, 0.3])
+    assert np.allclose(r[:, -1], z ** 2 / (0.01 + z ** 2), rtol=1e-3)      # Naka-Rushton steady state
+    half = [t[np.flatnonzero(x >= 0.5 * x[-1])[0]] for x in r]
+    assert half[0] > half[1] + 5                                           # weak input rises later and slower

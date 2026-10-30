@@ -655,6 +655,58 @@ covariates.
 * **Next:** a theory-driven fourth model test (recurrent/shunting normalization vs the fixed-delay model). It
   needs its own pre-registration after the sweep. The condition set earlier ("no more model tests without a new
   reason") is met by this theoretical reason.
+* **Fourth model test: binocular ORGaNICs (registered internally 2026-10-30, before implementing or fitting; Blake
+  asked for a model of the slow low-contrast rise and the high-contrast collapse).**
+  * **Why:** Heeger & Zemlianova 2020 (Figs 3–4, verified in the PDF) show the effective time constant long at low
+    contrast and short at high, giving slow, gradual rises and a phase advance (shorter latency) with contrast: the
+    feature the fixed-delay model lacks (Fig 6). An exploratory hand-set simulation (scratch, not reported) of two
+    eye-preferring populations with pooled modulators gave rise times 41.5 → 11.8 ms (11 → 90%), a binocular
+    latency advantage of ~4.5 ms, and add-then-normalize with a faster, deeper collapse at higher contrast; it
+    normalized too little at 11%.
+  * **Model 'org' (10 parameters):** populations D (recorded; drive z_D = (c_D + a·c_N)·u(t)) and N (drive
+    z_N = (c_N + a·c_D)·u(t)); u = gamma-filtered step (δ, τ1) as in 'full'. Rawat form:
+    τ_y dy_i/dt = −√a_i·y_i + b·z_i;  τ_a da_i/dt = −a_i + σ² + y_i²·a_i + w·y_j²·a_j.  R = g·max(y_D, 0)^n.
+    Parameters g, b, σ, n, δ, τ1, τ_y, τ_a, a, w. Exponential (exact for piecewise-constant coefficients)
+    integration at 1 ms.
+  * **Data and fitting:** identical to 'full' in fig5_model.py: channel-averaged, dominant-oriented 6 × 6 time
+    courses per penetration, 0–219 ms, 35 non-blank cells, odd/even cross-validation, cleaned data; same starts
+    policy (base + random), least squares.
+  * **Primary (architecture):** per penetration r = log(CV_full / CV_org); one-sided Wilcoxon over penetrations,
+    org better if p < .05 and the median r > 0 in both monkeys.
+  * **Secondary (dynamics; the reason for the test):** from the all-presentation fits, 10–90% rise time of the
+    dominant eye alone at 11% and 90% (same metric as dynamics_diagnostics.py, on the model prediction).
+    Data rise is measured identically on the same channel-averaged time course the model was fitted to (amended
+    before fitting: per-channel medians are not comparable with a channel-average fit). 'org' passes if the median
+    over penetrations of (model − data) rise at 11% lies within ±10 ms and the median ratio of model rise
+    11%/90% is at least 1.5; the fixed-delay fits are scored the same way for comparison.
+  * **Tertiary (collapse):** late linearity index (windows starting 50, 75, 100 ms after onset, channel-average
+    readout as in fig5_model_L) model minus data at 11, 22.5, 45%; reported with 90% bootstrap CIs and the ±0.25
+    equivalence margin, as for the other models.
+  * **Reported regardless:** parameters (τ_y, τ_a, σ, w vs a), binocular-vs-monocular latency in the model, and
+    the offset (no OFF drive is modelled, so no offset transient is expected).
+  * **Result (2026-10-30; `scripts/fig5_org_model.py`, [qc/fig5_org.csv](qc/fig5_org.csv); 25 penetrations).**
+
+    | Criterion | Result | Verdict |
+    |---|---|---|
+    | Primary: held-out error, org vs full | org better in 10/25; median log ratio −0.026; p = .75 (B +0.031, J −0.040) | **fails**: no better overall |
+    | Secondary: rise at 11%, model − data; rise ratio 11/90% | org −5 ms, ratio 2.06 (data 33 ms, ratio 2.13); full −13 ms, ratio 1.88 | **org passes**, full fails |
+    | Tertiary: late linearity index within ±0.25 | neither model at any contrast (both ~+0.4 at 11%) | fails, both |
+
+    * **Parameters:** τ_y 2.1 ms, τ_a 82 ms (IQR 59–96), σ 0.22, n 1.02; pool weight w 1.40 > excitatory a 0.83
+      (the same w > a as the delayed model).
+    * **Binocular latency advantage, a prediction rather than a fitted parameter:** binocular − dominant half-max
+      latency at 45% is −2 ms in the model and −1 ms in the data (−1 to −2 ms across 11–45%, earlier in 69–81% of
+      penetrations).
+  * **Check after the result (descriptive, not a rescue): the late 11% index is mostly noise.** Adding the data's
+    own noise sample ((odd − even)/2) to each model's prediction moves the late 11% index by roughly ±0.4–0.7
+    depending only on the sign of the noise (full: 1.46 vs 0.71; org: 1.24 vs 0.81), against a model − data gap of
+    ~0.4. At 22.5 and 45% the noise moves it by ±0.1–0.2, and both models lie within that range of the data. The
+    late linearity index at low contrast cannot discriminate models; the significant early-to-late drop at 11% stands.
+  * **Reading:** recurrent (ORGaNICs) normalization reproduces the timing signatures that the fixed-delay model
+    cannot: the slow rise at low contrast, the latency advance with contrast, and the earlier onset of binocular
+    responses. It fits the full time courses no better overall. Candidate next model (needs its own registration):
+    delayed normalization whose integration time shortens with the pooled input (conductance-based, Carandini,
+    Heeger & Movshon 1997), which nests 'full'.
 
 ## Competitive landscape (checked 2026-10-29)
 
