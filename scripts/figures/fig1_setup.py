@@ -1,16 +1,17 @@
 """Figure 1: binocular combination measured with millisecond and laminar precision (docs/09).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetration, default 221212_J_eA]
-(a) mirror stereoscope (schematic); (b) the 6 x 6 dichoptic contrast design and the trial sequence;
+(a) mirror stereoscope (schematic, top view): two mirrors per eye shift each eye's line of sight onto its own half of
+    one monitor, divided by a black septum; (b) the 6 x 6 dichoptic contrast design and the trial sequence;
 (c) example penetration: flash-evoked CSD (bad contacts interpolated, Hamming-smoothed), registered to the grating
     recording by the alignment's depth shift, with the top of cortex and the L4/5 boundary below the flash sink
     (laminar alignment v2);
-(d) photodiode-measured onset minus the event code, all presentations (onset jitters by whole 120 Hz frames);
-(e) example penetration, channel mean (each channel oriented to its dominant eye, divided by its dominant-eye peak
+(d) example penetration, channel mean (each channel oriented to its dominant eye, divided by its dominant-eye peak
     at .9): each eye alone at .45, both eyes at .45, and the dominant eye at .9, about what linear summation of
     contrast predicts ((1 + a) c with a ~ 0.9);
-(f) monocular contrast response per eye, 40-250 ms, penetration means (95% bootstrap CI over penetrations);
-(g) ocular dominance index at .9 for driven MUA channels and isolated single units.
+(e) monocular contrast response per eye, 40-250 ms, penetration means (95% bootstrap CI over penetrations);
+(f) ocular dominance index at .9 for driven MUA channels and isolated single units.
+Photodiode timing (onset jitter by whole frames) is no longer a panel (standard practice; docs/01).
 Inputs: figure_data.py, datasets, flash CSD, laminar alignment v2, run_crf.py, run_dichoptic.py.
 Writes <out_root>/figures/fig1_setup.pdf and .png.
 """
@@ -37,21 +38,29 @@ REPO = Path(__file__).resolve().parents[2]
 
 
 def stereoscope(ax):
-    """Top-down schematic: each eye sees its own monitor through a mirror."""
-    ax.set_xlim(-1.1, 1.1)
-    ax.set_ylim(-0.2, 1.3)
+    """Top-down schematic: two mirrors per eye shift each line of sight outward onto its own half of one monitor,
+    and a black septum divides the monitor between the eyes."""
+    ax.set_xlim(-1.05, 1.05)
+    ax.set_ylim(-0.25, 1.5)
     ax.set_aspect("equal")
     ax.axis("off")
-    for s, lab in ((-1, "left\nmonitor"), (1, "right\nmonitor")):
-        ax.add_patch(mpatches.Rectangle((s * 0.98 - 0.04, 0.5), 0.08, 0.55, color=fs.INK2, lw=0))
-        ax.text(s * 0.98, 1.1, lab, ha="center", va="bottom", fontsize=5.5, color=fs.INK2, linespacing=0.9)
-        ax.plot([s * 0.06, s * 0.32], [0.62, 0.88], color=fs.INK, lw=1.6, solid_capstyle="butt")   # mirror
-        ex = s * 0.19
-        ax.plot([ex, ex], [0.12, 0.75], color=fs.MUTED, lw=0.6, ls=(0, (2, 1.5)))
-        ax.plot([ex, s * 0.94], [0.75, 0.75], color=fs.MUTED, lw=0.6, ls=(0, (2, 1.5)))
-        ax.add_patch(mpatches.Circle((ex, 0.04), 0.08, fc="white", ec=fs.INK, lw=0.8))
-    ax.text(0, -0.08, "eyes", ha="center", va="top", fontsize=5.5, color=fs.INK2)
-    ax.text(0, 0.95, "mirrors", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
+    ax.add_patch(mpatches.Rectangle((-0.95, 1.2), 1.9, 0.07, color=fs.INK2, lw=0))
+    ax.text(0, 1.31, "monitor", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
+    ax.plot([0, 0], [1.2, 0.5], color=fs.INK, lw=2.2, solid_capstyle="butt")                 # septum
+    ax.text(0.04, 0.82, "septum", ha="left", va="center", fontsize=5.5, color=fs.INK2, rotation=90)
+    for s in (-1, 1):
+        ex, mx = s * 0.17, s * 0.6
+        sight = dict(color=fs.MUTED, lw=0.6, ls=(0, (2, 1.5)))
+        ax.plot([ex, ex], [0.1, 0.35], **sight)
+        ax.plot([ex, mx], [0.35, 0.35], **sight)
+        ax.plot([mx, mx], [0.35, 1.2], **sight)
+        for x in (ex, mx):                                                                     # 45-degree mirrors
+            ax.plot([x - s * 0.09, x + s * 0.09], [0.26, 0.44], color=fs.INK, lw=1.6, solid_capstyle="butt")
+        ax.add_patch(mpatches.Circle((ex, 0.02), 0.08, fc="white", ec=fs.INK, lw=0.8))
+        ax.text(mx, 1.1, "left half" if s < 0 else "right half", ha="center", va="top", fontsize=5,
+                color=fs.INK2)
+    ax.text(0, -0.1, "eyes", ha="center", va="top", fontsize=5.5, color=fs.INK2)
+    ax.text(0.6, 0.18, "mirrors", ha="center", va="top", fontsize=5.5, color=fs.INK2)
 
 
 def design(ax, tax):
@@ -240,12 +249,11 @@ def main():
     design(dax, tax)
     cax_ = t3.subplots(1, 2, gridspec_kw=dict(width_ratios=[1, 0.05]))
     flash_csd(cax_[0], cax_[1], pen, al)
-    ba = bot.subplots(1, 4, gridspec_kw=dict(width_ratios=[1, 1.15, 1, 1]))
-    photodiode(ba[0])
-    example(ba[1], pop, k)
-    crfs(ba[2], pop)
-    ocular_dominance(ba[3])
-    for ax, letter in zip((sax, dax, cax_[0], ba[0], ba[1], ba[2], ba[3]), "abcdefg"):
+    ba = bot.subplots(1, 3, gridspec_kw=dict(width_ratios=[1.15, 1, 1]))
+    example(ba[0], pop, k)
+    crfs(ba[1], pop)
+    ocular_dominance(ba[2])
+    for ax, letter in zip((sax, dax, cax_[0], ba[0], ba[1], ba[2]), "abcdef"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "fig1_setup"))
 

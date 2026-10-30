@@ -53,6 +53,13 @@ dominant eye alone" is the solid light rule at L = 0 (k = 1).
 
 ## Conventions of content
 
+* **No shorthand in figures or text.** Measures are named in words on every axis ("linearity index", not "L"); a
+  symbol may appear only in a formula in the Methods (Blake, 2026-10-30).
+* **Population readouts for noisy ratios.** Where a per-channel ratio is heavy-tailed (the linearity index), time
+  courses are read out from population-average responses with penetration-bootstrap bands, and per-penetration
+  statistics are shown separately (Fig 2c vs 2d).
+* **CSD shown as population averages** aligned on a landmark (the earliest sink), not single noisy examples.
+
 * **Time axes** say their zero: "time from stimulus onset" (photodiode), "time from response onset" (each channel's
   half-max onset, dominant eye at 90%), "time from sink onset", "time from response offset".
 * **Contrast** is shown in percent: 5.5, 11, 22.5, 45, 90.

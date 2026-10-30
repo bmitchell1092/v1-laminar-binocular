@@ -119,7 +119,7 @@ def weights(ax, M):
 
 def two_stage(ax, C, I):
     rows = []
-    for x, (lab, D) in enumerate((("raw error\n(registered)", C), ("interaction\nloss", I))):
+    for x, (lab, D) in enumerate((("raw\nerror", C), ("interaction\nloss", I))):
         r = np.log(D.cv_full / D.cv_full2)
         per = r.groupby([D.penetration, D.monkey]).median()
         pct = 100 * (1 - np.exp(-per))
@@ -138,7 +138,7 @@ def two_stage(ax, C, I):
         rows.append(dict(test=lab.replace("\n", " "), n=len(per), positive=int((per > 0).sum()), median_pct=pct.median(),
                          p=p, clipped=int((pct > GAIN_MAX).sum())))
     fs.zero_line(ax, color=fs.INK2)
-    ax.set_xticks([0, 1], ["raw error\n(registered)", "interaction\nloss"], fontsize=5.5)
+    ax.set_xticks([0, 1], ["raw\nerror", "interaction\nloss"], fontsize=5.5)
     ax.tick_params(axis="x", length=0)
     ax.set_xlim(-0.5, 1.5)
     ax.set_ylim(-2, GAIN_MAX)
@@ -165,7 +165,7 @@ def capture(ax, L):
     fs.zero_line(ax, color=fs.INK2)
     ax.set_xticks(range(3), ["11", "22.5", "45"])
     ax.set_xlabel("contrast, both eyes (%)")
-    ax.set_ylabel("late L, model − data")
+    ax.set_ylabel("late linearity index,\nmodel − data")
     ax.set_xlim(-0.5, 2.5)
     ax.set_ylim(-0.6, 0.8)
     ax.text(-0.45, MARGIN - 0.02, "equivalence margin", ha="left", va="top", fontsize=5.5, color=fs.INK2)

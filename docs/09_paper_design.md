@@ -736,8 +736,12 @@ suppression, one contrast pair); Dougherty et al. 2019 (binocular modulation of 
 | 1 Setup | `fig1_setup.py` | `figure_data.py`, flash CSD + alignment v2, `run_crf.py`, `run_dichoptic.py` |
 | 2 Add, then normalize | `fig2_add_then_normalize.py` | `figure_data.py`, `equivalent_contrast.py` |
 | 3 Contrast sets the collapse | `fig3_contrast.py` | `figure_data.py`, `normalization_timing.py` (incl. `--tag cross`) |
-| 4 Depth and earliest sink | `fig4_depth_input.py` | `equivalent_contrast.py`, `dichoptic_csd.py`, `laminar_timing.py` |
+| 4 Depth and earliest sink | `fig4_depth_input.py` | `sink_data.py`, `equivalent_contrast.py`, `dichoptic_csd.py`, `laminar_timing.py` |
 | 5 Delayed normalization models | `fig5_models.py` | `fig5_model.py`, `fig5_channel_test.py`, `fig5_interaction_test.py` |
 | 6 Dynamics | `fig6_dynamics.py` | `figure_data.py`, `dynamics_diagnostics.py`, `fig5_model.py` |
 
 Units (old Fig 5: units net-suppressed while MUA is facilitated) go to the supplement.
+
+**Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
+tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on
+the same (artifact-cleaned) data without registration language; the as-run registered outcomes stay in docs/09-10.

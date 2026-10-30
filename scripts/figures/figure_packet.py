@@ -1,5 +1,8 @@
 """Figure packet: one PDF with a cover page and each figure with its title and legend (for discussion).
 
+Superseded for review by the Word manuscript (manuscript/draft_vN.docx), whose captions are current; the
+legends below describe the 2026-10-29 figures and lag later figure changes.
+
 Usage: .venv\\Scripts\\python scripts\\figures\\figure_packet.py
 Run after the figure scripts. Legends below are the reviewed text; numbers in them were checked against the figure
 scripts' printed statistics on the date in COVER. Writes <out_root>/figures/figure_packet.pdf.

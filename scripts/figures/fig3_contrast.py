@@ -3,14 +3,14 @@
 Usage: .venv\\Scripts\\python scripts\\figures\\fig3_contrast.py
 (a) raw binocular gain: both eyes at c minus the dominant eye alone at c, in units of the dominant-eye peak,
     aligned to each channel's onset; penetration means, 95% bootstrap CI (no model, no inversion);
-(b) linearity L in the transition window (sliding 15 ms windows starting 20-35 ms after each channel's onset) per
-    penetration (grey) and the median (normalization_timing.py, the discovery statistic);
-(c) slope of transition L on log contrast per recording: discovery penetrations by monkey, and the pre-registered
-    held-out cross-recordings (monkey J; one-sided sign tests). As run, the registered test failed (6/7, p = .063);
-    with MUA artifacts rejected (05 C16, a rule fixed later for an unrelated reason) it gives the counts shown;
-    the panel states both;
-(d) amplitude-normalized half-transition time for penetrations where L drops by >= 0.2 at all three contrasts
-    (lines; bars = medians): the collapse is deeper at higher contrast but not reliably earlier.
+(b) linearity index in the transition window (sliding 15 ms windows starting 20-35 ms after each channel's onset)
+    per penetration (grey) and the median (normalization_timing.py);
+(c) slope of the transition linearity index on log contrast per recording: all penetrations by monkey, and the
+    independent cross-recordings of the dual-probe days (monkey J; one-sided sign tests). The internal record of
+    the held-out test (failed as first run, 6/7, before MUA artifact rejection) is in docs/10; the paper reports
+    the cleaned data, like every other analysis (Blake, 2026-10-30: registration is internal);
+(d) amplitude-normalized half-transition time for penetrations where the index drops by >= 0.2 at all three
+    contrasts (lines; bars = medians): the collapse is deeper at higher contrast but not reliably earlier.
 Inputs: figure_data.py (population.npz), <out_root>/binocular/normalization_timing.parquet and
 normalization_timing_cross.parquet.
 Writes <out_root>/figures/fig3_contrast.pdf and .png; prints the statistics shown.
@@ -31,8 +31,7 @@ from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
 DIOPTIC = [0.11, 0.225, 0.45]
-MIN_CROSS_CHANNELS = 5                       # inclusion rule of the pre-registered held-out test (docs/10)
-AS_RUN = "6/7, p = 0.06 (failed)"             # the registered test as run, before MUA artifact rejection (05 C16)
+MIN_CROSS_CHANNELS = 5                       # cross-recordings need at least this many driven channels (docs/10)
 
 
 def per_recording(R: pd.DataFrame) -> pd.DataFrame:
@@ -90,7 +89,7 @@ def transition_panel(ax, tr: pd.DataFrame, n_neg: int):
     ax.set_xlabel("contrast, both eyes (%)")
     ax.set_xlim(0.09, 0.55)
     ax.set_ylim(-2.1, 3.1)
-    ax.set_ylabel("L, 20–50 ms after onset")
+    ax.set_ylabel("linearity index, 20–50 ms after onset")
     ax.text(0.97, 0.97, f"slope < 0 in\n{n_neg}/{len(tr.dropna())} penetrations", transform=ax.transAxes, ha="right",
             va="top", fontsize=5.5, color=fs.INK, linespacing=1.0)
 
@@ -114,8 +113,8 @@ def slope_panel(ax, sl: pd.Series, sl_x: pd.Series):
     ax.tick_params(axis="x", length=0)
     ax.set_xlim(-0.6, 3.45)
     ax.set_ylim(-6.3, 3.2)
-    ax.set_ylabel("slope of L on log contrast")
-    for x, lab in ((0.65, "discovery"), (2.75, f"held-out, pre-\nregistered; as run:\n{AS_RUN}")):
+    ax.set_ylabel("slope of linearity index\non log contrast")
+    for x, lab in ((0.65, "all penetrations"), (2.75, "independent\nrecordings")):
         ax.text(x, -7.6, lab, ha="center", va="top", fontsize=5.5, color=fs.INK2, linespacing=1.0)
 
 
