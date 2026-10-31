@@ -696,15 +696,17 @@ covariates.
       (the same w > a as the delayed model).
     * **Binocular latency advantage, a prediction rather than a fitted parameter:** binocular − dominant half-max
       latency at 45% is −2 ms in the model and −1 ms in the data (−1 to −2 ms across 11–45%, earlier in 69–81% of
-      penetrations).
+      penetrations). *(Corrected in the fifth test: the fixed-delay model gives the same −2 ms, so this is not
+      specific to ORGaNICs.)*
   * **Check after the result (descriptive, not a rescue): the late 11% index is mostly noise.** Adding the data's
     own noise sample ((odd − even)/2) to each model's prediction moves the late 11% index by roughly ±0.4–0.7
     depending only on the sign of the noise (full: 1.46 vs 0.71; org: 1.24 vs 0.81), against a model − data gap of
     ~0.4. At 22.5 and 45% the noise moves it by ±0.1–0.2, and both models lie within that range of the data. The
     late linearity index at low contrast cannot discriminate models; the significant early-to-late drop at 11% stands.
-  * **Reading:** recurrent (ORGaNICs) normalization reproduces the timing signatures that the fixed-delay model
-    cannot: the slow rise at low contrast, the latency advance with contrast, and the earlier onset of binocular
-    responses. It fits the full time courses no better overall. Candidate next model (needs its own registration):
+  * **Reading:** recurrent (ORGaNICs) normalization reproduces the slow rise at low contrast better than the
+    fixed-delay model. *(Corrected in the fifth test: the latency advance with contrast and the earlier binocular
+    onset, listed here originally, are produced by the fixed-delay model too.)* It fits the full time courses no
+    better overall. Candidate next model (needs its own registration):
     delayed normalization whose integration time shortens with the pooled input (conductance-based, Carandini,
     Heeger & Movshon 1997), which nests 'full'.
 * **Fifth model test: conductance-based delayed normalization, reconciling 'full' and 'org' (registered internally
@@ -737,6 +739,34 @@ covariates.
     90% (the latency shift with contrast) for data and all three models; binocular − dominant latency at 45%.
   * **If the primary fails:** the ending is descriptive (which model reproduces which signature), not a winning
     model; no further variants on these data without a new theoretical reason.
+  * **Result (2026-10-30; `scripts/fig5_cond_model.py`, [qc/fig5_cond.csv](qc/fig5_cond.csv); 25 penetrations).**
+
+    | Criterion | Result | Verdict |
+    |---|---|---|
+    | Primary: held-out error, cond vs full | cond better in 21/25 (2 ties at τ_m floor); median log ratio 0.015 (1.5% less error; 3.3% where τ_m > 1 ms); p = .0002; J median 0.022 (15/18), B median 0.0002 (6/7) | **passes**; the gain is small and mostly in J |
+    | Secondary: rise at 11%, model − data; ratio 11/90% | cond −10 ms, ratio 1.87 (full −13, 1.88; org −5, 2.06; data 33 ms, 2.13) | **passes at the margin** (−10 is the bound) |
+    | Tertiary: late index at 22.5, 45% within ±0.25 | medians −0.21, +0.10; 90% CIs −0.33 to +0.29, −0.33 to +0.34 | **fails** (imprecise, not biased) |
+
+    * **Descriptive, cond vs org:** cond has less held-out error in 18/25 (median log ratio 0.047, p = .002); J 16/18
+      favour cond, B 5/7 favour org.
+    * **Parameters:** τ_m 13 ms (IQR 0.4–32; at the floor, i.e. identical to 'full', in 5/25); pool delay τ2 38 ms;
+      w > a in 24/25 (1.07 vs 0.88, p < 10⁻⁷), as in 'full'. Effective time constant at 11% vs 90%: 13 vs 8 ms at
+      onset (15 ms after δ), 6.7 vs 1.2 ms once the pool is up (120 ms).
+    * **Rise time (10–90%) by contrast, medians in ms, data / full / org / cond:** 5.5% 41/22/31/27; 11% 33/20/28/22;
+      22.5% 28/16/24/19; 45% 20/14/18/16; 90% 18/11/14/12. Every model rises too fast at every contrast; ORGaNICs is
+      closest throughout; cond slows the 11% rise by 3 ms over 'full' (paired: slower in 19/25, never faster).
+  * **Correction to the fourth test's reading (found in this run):** the latency advance with contrast and the
+    earlier binocular onset are *not* ORGaNICs-specific. Half-max latency 11% − 90% is 5 ms in the data and 6, 7 and
+    6 ms in full, org and cond; binocular − dominant latency at 45% is −1 ms in the data and −2 ms in all three
+    models. Every normalization model fitted here produces both, because a stronger drive reaches half its peak
+    sooner. They do not discriminate models and should not be presented as a recurrent prediction. The rise time
+    is the timing signature that discriminates.
+  * **Reading:** delayed normalization acting as a conductance (the pool both divides the response and shortens its
+    integration time) fits the time courses better than the fixed-delay model and than ORGaNICs, keeps the delayed
+    pool weighted toward the other eye, and shares ORGaNICs' core mechanism (the normalization signal sets the
+    response's speed). It moves the slow low-contrast rise only part of the way; ORGaNICs, whose normalization
+    signal grows with the response itself, gets closer on rise but fits worse. Discussion candidate (no further
+    model test on these data): a pool with a recurrent, response-driven component would combine the two.
 
 ## Competitive landscape (checked 2026-10-29)
 

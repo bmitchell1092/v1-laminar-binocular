@@ -113,3 +113,18 @@ def test_org_steady_state_and_contrast_dependent_rise():
     assert np.allclose(r[:, -1], z ** 2 / (0.01 + z ** 2), rtol=1e-3)      # Naka-Rushton steady state
     half = [t[np.flatnonzero(x >= 0.5 * x[-1])[0]] for x in r]
     assert half[0] > half[1] + 5                                           # weak input rises later and slower
+
+
+def test_cond_nests_full_and_slows_weak_inputs():
+    from v1lb.dynorm import predict_cond
+    t = np.arange(0, 220.0)
+    cd, cn = grid()
+    p = dict(g=2.0, sigma=0.12, n=2.0, delta=30.0, tau1=4.0, tau2=35.0, a=0.6, w=1.2)
+    assert np.allclose(predict_cond(p | {"tau_m": 0.05}, t, cd, cn), predict(p, t, cd, cn), atol=1e-6)
+    assert np.allclose(predict(p | {"tau_m": 0.05}, t, cd, cn), predict(p, t, cd, cn), atol=1e-6)
+    c = np.array([0.055, 0.9])
+    slow = predict_cond(p | {"tau_m": 20.0}, t, c, np.zeros(2))
+    fast = predict(p, t, c, np.zeros(2))
+    lag = [t[np.flatnonzero(s >= 0.5 * s.max())[0]] - t[np.flatnonzero(f >= 0.5 * f.max())[0]]
+           for s, f in zip(slow, fast)]
+    assert lag[0] > lag[1] + 3                                             # integration slows weak inputs more

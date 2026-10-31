@@ -11,6 +11,8 @@ Because the drive is linear in contrast, every condition is a scaled copy of the
 
 Reduced models: static normalization (tau2 -> 0, so v = u) and w = a (the pool weighted like excitation).
 Extended model 'tau_c': the pool time constant shortens with pool contrast, tau2 / (1 + beta (c_D + w c_N)).
+Extended model 'cond' (predict_cond): the response integrates against the pool as a conductance, with membrane time
+constant tau_m; it reduces to 'full' as tau_m -> 0.
 Derived consequences (not fitted assumptions): the response is linear in the eye-weighted contrast at onset,
 before v catches up; the pool reaches sigma sooner at higher contrast; and at high contrast the binocular response
 falls below the dominant eye alone only if w > a.
@@ -27,7 +29,7 @@ K_GAMMA = 3.0
 PARAMS = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "w", "beta", "S", "omega", "tau_s"]
 BOUNDS = {"g": (0.05, 50.0), "sigma": (0.005, 3.0), "n": (0.5, 6.0), "delta": (5.0, 70.0), "tau1": (0.5, 25.0),
           "tau2": (0.5, 300.0), "a": (0.0, 1.5), "w": (0.0, 3.0),
-          "beta": (0.0, 50.0), "S": (0.001, 5.0), "omega": (0.0, 3.0), "tau_s": (0.5, 300.0)}
+          "beta": (0.0, 50.0), "S": (0.001, 5.0), "omega": (0.0, 3.0), "tau_s": (0.5, 300.0), "tau_m": (0.05, 60.0)}
 TWO_STAGE = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "S", "omega", "tau_s"]
 TWO_STAGE_FULL = TWO_STAGE + ["w"]               # 'full2': stage-2 pool with its own non-dominant weight
 FULL2_BOUNDS = {"sigma": (1e-5, 3.0), "S": (0.001, 500.0)}   # wide enough to reach the single-stage limit
@@ -138,6 +140,31 @@ def predict_org(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray, dur: flo
         return p["g"] * np.maximum(out, 0.0) ** p["n"]
 
 
+def predict_cond(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
+    """Conductance-based delayed normalization (shunting form of Carandini & Heeger 1994; Carandini, Heeger &
+    Movshon 1997). With E and P as in 'full':
+        tau_m sigma^n dR/dt = g E^n - (sigma^n + P^n) R
+    R relaxes toward the 'full' prediction g E^n / (sigma^n + P^n) with effective time constant
+    tau_m / (1 + (P / sigma)^n): slow while the pool is weak (low contrast, and at every contrast before the delayed
+    pool arrives), fast once it is strong. The same structure as the ORGaNICs response equation with the modulator
+    replaced by the delayed feedforward pool. tau_m -> 0 gives 'full' exactly. Integrated exactly for coefficients
+    held constant over each time step."""
+    u, v = step_responses(t, p["delta"], p["tau1"], p["tau2"])
+    e = (cd + p["a"] * cn)[:, None] * u[None, :]
+    q = (cd + p["w"] * cn)[:, None] * v[None, :]
+    dt = t[1] - t[0]
+    with np.errstate(over="ignore", invalid="ignore"):
+        qn = (q / p["sigma"]) ** p["n"]
+        target = p["g"] * (e / p["sigma"]) ** p["n"] / (1 + qn)
+        f = np.exp(-dt * (1 + qn) / p["tau_m"])
+    r = np.empty_like(target)
+    x = np.zeros(len(cd))
+    for i in range(len(t)):
+        x = target[:, i] + (x - target[:, i]) * f[:, i]
+        r[:, i] = x
+    return r
+
+
 def interaction_residuals(pred: np.ndarray, y: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
     """Residuals for the interaction-targeted loss: monocular time courses (one eye at 0) and the binocular
     interaction I(c_D, c_N, t) = R(c_D, c_N, t) - R(c_D, 0, t), each part divided by sqrt(data variance x number
@@ -167,9 +194,11 @@ def predict(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray, static: bool
 
     If p has "beta" (> 0), the pool time constant shortens with pool contrast, tau2 / (1 + beta (c_D + w c_N)),
     so normalization is faster at higher contrast ('tau_c' model). If p has "S", the two-stage model is used; if it
-    has "tau_a", binocular ORGaNICs (predict_org)."""
+    has "tau_a", binocular ORGaNICs (predict_org); if it has "tau_m", conductance-based normalization (predict_cond)."""
     if "tau_a" in p:
         return predict_org(p, t, cd, cn)
+    if "tau_m" in p:
+        return predict_cond(p, t, cd, cn)
     if "S" in p:
         return predict_two_stage(p, t, cd, cn)
     if "rho" in p:
@@ -203,7 +232,8 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
         starts: int = 6, seed: int = 0, init: dict | None = None, loss: str = "sse") -> Fit:
     """Least-squares fit to responses y [condition, time]. model: 'full', 'static' (no pool delay), 'w=a', or
     'tau_c' (full + a pool time constant that shortens with contrast; the others fix beta = 0), or '2stage'
-    (predict_two_stage), or 'full2' (two-stage with a stage-2 pool weight w; nests 'full'). `init` adds a first
+    (predict_two_stage), or 'full2' (two-stage with a stage-2 pool weight w; nests 'full'), 'ds', 'org', or 'cond'
+    (full + membrane time constant tau_m; nests 'full'). `init` adds a first
     start at the given parameters (e.g. a single-stage solution embedded at the S bound)."""
     if model == "2stage":
         free = list(TWO_STAGE)
@@ -216,6 +246,8 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
     else:
         free = [k for k in PARAMS if not (model == "static" and k == "tau2") and not (model == "w=a" and k == "w")
                 and not (model != "tau_c" and k == "beta") and k not in ("S", "omega", "tau_s")]
+        if model == "cond":
+            free.append("tau_m")
     bounds = (BOUNDS | (FULL2_BOUNDS if model == "full2" else {}) | (DS_BOUNDS if model == "ds" else {})
               | (ORG_BOUNDS if model == "org" else {}))
     lo = np.array([bounds[k][0] for k in free])
@@ -229,7 +261,7 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
             p["tau2"] = BOUNDS["tau2"][0]
         if model == "w=a":
             p["w"] = p["a"]
-        if model not in ("2stage", "full2", "ds", "org"):
+        if model not in ("2stage", "full2", "ds", "org", "cond"):
             p.setdefault("beta", 0.0)
         return p
 
@@ -242,7 +274,7 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
 
     base = {"g": 1.5, "sigma": 0.15, "n": 2.0, "delta": 30.0, "tau1": 4.0, "tau2": 40.0, "a": 0.7, "w": 1.0,
             "beta": 2.0, "S": 0.2, "omega": 1.0, "tau_s": 20.0, "rho": 5.0, "gamma": 1.2, "tau_g": 50.0,
-            "b": 0.5, "tau_y": 2.0, "tau_a": 10.0}
+            "b": 0.5, "tau_y": 2.0, "tau_a": 10.0, "tau_m": 10.0}
     if model == "org":
         base = base | {"sigma": 0.1, "delta": 25.0}
     best = None
