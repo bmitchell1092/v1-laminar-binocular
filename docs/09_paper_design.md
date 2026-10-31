@@ -863,6 +863,102 @@ dependence of binocular summation and contrast matching in psychophysics; the ci
 (Smith et al. 1997; Macknik & Martinez-Conde 2004; Legge & Rubin 1981; Baker, Meese & Georgeson 2007; Menz &
 Freeman 2003).
 
+### V3 analysis results
+
+* **D, timing measures and noise (2026-10-31; `scripts/v3_timing_noise.py`, [qc/v3_D.csv](qc/v3_D.csv)).**
+  **Laminar-order criterion fails.** Fig 4d's numbers reproduce exactly. Halves recomputed with
+  `equivalent_contrast.penetration` on odd and even presentations (dominance, a and onset re-estimated per half);
+  SNR matched by adding λ × the noise sample (both signs) to higher-SNR groups (group SNR: above 2.17, sink 2.77,
+  below 1.51).
+  * Normalization on the stimulus clock (group − sink): all +6 / +7 ms (p = .016 / .003); odd half +3 / +3.5
+    (p = .19 / .069); even half +4 / +1 (p = .75 / .31); SNR-matched above vs sink p = .33 (+noise) / .055
+    (−noise), below vs sink p = .026 / .004. Signs replicate; significance does not.
+  * Time after each group's own onset: median difference 0 for both groups (ties in 16/21 and 11/23
+    penetrations). The stimulus-clock order is the onset order plus 15 ms window quantization; noise shifts the
+    timings by only 0 to −1 ms.
+  * Onset order: sink channels first by 2–4 ms; same sign in both halves (odd p = .014 / .032, even p = .07 / .13).
+  * Fig 3d half-transition times: 35 / 30 / 15 ms (Friedman p = .19) do not replicate (halves 25/35/25 and
+    25/22.5/25) and do not survive SNR matching (contrast SNR 0.73 / 1.20 / 2.80; p = .66 / .19).
+  * **For the paper:** keep "channels at the earliest sink respond first" and "every depth normalizes a similar
+    time after its own onset"; drop "normalization reaches the input layer first" (abstract, Fig 4 title,
+    Discussion). Fig 3d and Fig 4d go to the supplement. Deviations: noise added to group-median index curves, not
+    raw responses; sink depth from all presentations in both halves.
+* **C, iso-response contours (2026-10-31; `scripts/v3_iso_contours.py`, [qc/v3_C.csv](qc/v3_C.csv), diagnostic
+  `<out_root>/figures/diagnostics/v3_iso_contours.png`; 25 penetrations). Criterion passes at every c*.**
+  * Median Minkowski exponent m early / 20–50 / late: 11% 1.15 / 1.01 / 1.38 (late > early in 60%, p = .009);
+    22.5% 1.00 / 1.13 / 2.18 (84%, p < .001); 45% 0.90 / 1.33 / 2.39 (76%, p < .001); early medians within
+    0.7–1.5 at every c*; both monkeys' median changes positive.
+  * Population contours (Fig 2b readout, penetration bootstrap): early m 1.12 / 1.00 / 0.89 with CIs including 1;
+    late 1.41 [1.08, 2.12], 2.30 [1.53, 20], 1.81 [0.96, 20]. Late contours move partway toward the
+    dominant-eye-alone line, not to an L shape, with wide CIs.
+  * Suppression (contour points needing more dominant-eye contrast than c*): none early; late at low other-eye
+    contrast (up to 1.36× at 22.5%), per-penetration fractions 0 / 0.4 / 0.4.
+  * Undefined points: "below axis" (other eye alone reaches the target) 151 / 127 / 98 of 375, almost all where
+    a·c_N ≥ c*; censored (target beyond the dominant eye at 90%) 0 / 31 / 52, set to 90% as lower bounds.
+  * Deviations: `fig5_model.T` extended to 0–280 ms inside the script so the late window is complete; each c*
+    tested separately; rows with c_N > 0 inverted from their own value at c_D = 0; population contours from
+    population-average responses. Caveat: the Minkowski form cannot represent suppression, so suppressed and
+    censored points push m to its bound; m mixes "closer to the dominant eye alone" with "suppressive".
+  * **For the paper:** a strong main-panel candidate beside Fig 2a–b (within-window, so latency-proof; uses the
+    dichoptic cells; the language of the psychophysics). Show 45% (or 22.5 and 45%), early vs late; give m in the
+    text.
+* **A2–A4, dominance, ocular-dominance strata, units (2026-10-31; `scripts/v3_dominance_cv.py`,
+  `scripts/v3_units_index.py`, [qc/v3_A2.csv](qc/v3_A2.csv), [v3_A3](qc/v3_A3.csv), [v3_A4](qc/v3_A4.csv)).**
+  The all-presentation variant reproduces Fig 2d exactly.
+  * **A2 passes.** Cross-validated (dominance, a and onset from one half, index from the other, both directions
+    averaged; 25 penetrations, 211008 drops out for too few presentations per half): 45% early 0.99 → late −0.32
+    (p < .001); same-data on halves 0.90 → −0.25. Selection-bias shift (late, paired) +0.015 [−0.026, 0.040] at
+    45%, +0.02 to +0.023 elsewhere (CIs include 0). Dominance flips between halves in 26% of channel-halves (43% in
+    the most balanced tercile) yet the index barely moves.
+  * **A3:** the sequence holds in every |ODI| tercile at 45% (balanced 0.99 → 0.40; middle 1.03 → −0.10;
+    monocular 0.78 → −0.56; all p < .001) and deepens with monocularity; at 22.5% the balanced tercile does not
+    collapse significantly (1.37 → 1.15, p = .08). Small eye weights in monocular channels magnify the index.
+  * **A4 (descriptive):** lenient units (55–61 in 19 penetrations): 22.5% 1.50 → 0.19 (p < .001); 45% 0.19 → −0.78
+    (p = .001), with very noisy early values (IQR −1.2 to 1.2). Strict and cross-validated variants weaker
+    (p = .051–.08 at 45%). Net binocular modulation at 45%: transient −0.05, sustained −0.01, both n.s. (41–44%
+    facilitated): **V2's "units mostly net-suppressed" overstates; correct it.**
+  * **Noted:** halving the data lowers the late 45% index (−0.25 on halves vs −0.12 on all presentations): noise
+    pushes the per-channel late index down (running maximum, censoring). With the channel-average (−0.04) and
+    population (+0.1) readouts, "below the dominant eye alone" is partly noise: write "matched".
+* **A1, B1, B4, null, model index time courses, parameter recovery (2026-10-31; `scripts/v3_null_model_index.py`,
+  `scripts/v3_param_recovery.py`, [qc/v3_A1.csv](qc/v3_A1.csv), [v3_B1](qc/v3_B1.csv), [v3_B4](qc/v3_B4.csv)).**
+  * **A1 passes all three criteria: the measure is valid.** Noise-free null (w = a fits): median index 0.96–1.03
+    in every window at every contrast (largest deviation 0.035). Early-minus-late drop at 45%: data 1.25, null +
+    noise 0.11, null − noise 0.23 (paired one-sided Wilcoxon p = .00017 / .0023). Null 20–50 ms slope negative in
+    13/24 and 16/25 (noise-free 7/25) vs data 25/25.
+  * **B1:** only the delayed model declines over time (45%: 0.97 → −0.08; 22.5%: 1.00 → 0.57; 11%: 1.00 → 0.93).
+    The static model is set within ~10 ms and stays flat (45% ≈ 0.50, 22.5% ≈ 0.82, 11% ≈ 1.02), but **it
+    reproduces the contrast dependence** (20–50 ms slope negative in 25/25; delayed 24/25; w = a 3/25). So the
+    contrast dependence (Fig 3b–c) is not evidence for delay; the decline over time is. Answers the cold read's
+    main model question.
+  * **B4 passes:** synthetic w = a data refitted with 'full' (100 sets × 25 penetrations) give median w − a 0.000
+    (5–95% of set medians −0.006 to 0.006; w > a in 12/25 per set) vs data 0.191 (24/25). Rules out an optimizer or
+    noise artefact, not model misspecification.
+  * **Observed (B1 readout, not registered):** at 45% the channel-average index undershoots (−0.61 at windows
+    starting 35 ms, −0.28 at 50) and partly recovers (0.43 at 75–150 ms); at 22.5% 0.31 at 35–75 ms, 0.79 at
+    100–150. The delayed model declines monotonically and misses it. The per-channel late window (50–200 ms)
+    averages over the undershoot and the recovery. Logged in docs/10 as a candidate; needs a noise check before
+    any claim.
+  * Deviations: early / 20–50 / late = channel-average windows starting 0+10 / 20+35 / 50+75+100 ms; both noise
+    signs required to pass; static and w = a refitted here (starts = 4); B4 noise added to all-presentation
+    predictions with random sign per condition.
+* **B2, B3, interocular delay (2026-10-31; `scripts/v3_interocular_delay.py`, `dynorm` model 'sep',
+  [qc/v3_B2.csv](qc/v3_B2.csv), [v3_B3](qc/v3_B3.csv)).**
+  * **B2 passes: the binocular interaction itself needs the delay.** Fitted and scored on the interaction loss,
+    delayed beats static held out in 23/24 penetrations (B 5/6, J 18/18), median log ratio 0.72 (~52% less
+    error; B 0.53, J 0.74), p = 1.2 × 10⁻⁷; in-sample delayed ≤ static in 24/24; τ2 under this loss 24 ms (IQR
+    20–39).
+  * **B3 passes its criterion on a negligible effect.** τ2N − τ2 = +2.1 ms (positive in 20/25; B +3.8, J +1.6;
+    p = 9.4 × 10⁻⁵); τ2 28.7 ms, τ2N 31.0 ms; odd/even sign agreement 76%; no bound hits. Held out, 'sep' does not
+    beat 'full' (13/25, p = .33). **For the paper:** monocular and interocular normalization share essentially one
+    delay (the interocular term lags by ~2 ms at most); drop "interocular normalization is slower than monocular".
+* **Correction found by B2 (applies to every held-out model comparison): 211008's even half is empty** (no
+  condition has the 2 presentations `population()` requires), so its even-split fits never touch data and its
+  "held-out error" is that of an unfitted model (cv_full 67 278 vs cv_org 1 985). This, not the 217 ms stimulus,
+  is the Fig 5b outlier. Rechecked without 211008: cond vs full 20/24, median +0.016, p = .0002 (B +0.004, J
+  +0.022); org vs full 9/24, p = .86; cond vs org 18/24, p = .0002; delayed vs static 23/24, p = 1.2 × 10⁻⁷.
+  Conclusions unchanged; the paper reports held-out comparisons on 24 penetrations and says why.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the

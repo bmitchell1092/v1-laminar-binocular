@@ -128,3 +128,17 @@ def test_cond_nests_full_and_slows_weak_inputs():
     lag = [t[np.flatnonzero(s >= 0.5 * s.max())[0]] - t[np.flatnonzero(f >= 0.5 * f.max())[0]]
            for s, f in zip(slow, fast)]
     assert lag[0] > lag[1] + 3                                             # integration slows weak inputs more
+
+
+def test_sep_nests_full_and_delays_other_eye_only():
+    from v1lb.dynorm import predict_sep
+    t = np.arange(0, 220.0)
+    cd, cn = grid()
+    p = dict(g=2.0, sigma=0.12, n=2.0, delta=30.0, tau1=4.0, tau2=35.0, a=0.6, w=1.2, beta=0.0)
+    assert np.allclose(predict_sep(p | {"tau2N": 35.0}, t, cd, cn), predict(p, t, cd, cn))
+    assert np.allclose(predict(p | {"tau2N": 35.0}, t, cd, cn), predict(p, t, cd, cn))
+    slow = predict(p | {"tau2N": 120.0}, t, cd, cn)
+    dom_only = cn == 0
+    assert np.allclose(slow[dom_only], predict(p, t, cd, cn)[dom_only])  # dominant eye alone unchanged
+    both = (cd == 0.45) & (cn == 0.45)
+    assert slow[both, 120] > predict(p, t, cd, cn)[both, 120]             # slower other-eye pool: less suppression

@@ -29,7 +29,8 @@ K_GAMMA = 3.0
 PARAMS = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "w", "beta", "S", "omega", "tau_s"]
 BOUNDS = {"g": (0.05, 50.0), "sigma": (0.005, 3.0), "n": (0.5, 6.0), "delta": (5.0, 70.0), "tau1": (0.5, 25.0),
           "tau2": (0.5, 300.0), "a": (0.0, 1.5), "w": (0.0, 3.0),
-          "beta": (0.0, 50.0), "S": (0.001, 5.0), "omega": (0.0, 3.0), "tau_s": (0.5, 300.0), "tau_m": (0.05, 60.0)}
+          "beta": (0.0, 50.0), "S": (0.001, 5.0), "omega": (0.0, 3.0), "tau_s": (0.5, 300.0), "tau_m": (0.05, 60.0),
+          "tau2N": (0.5, 300.0)}
 TWO_STAGE = ["g", "sigma", "n", "delta", "tau1", "tau2", "a", "S", "omega", "tau_s"]
 TWO_STAGE_FULL = TWO_STAGE + ["w"]               # 'full2': stage-2 pool with its own non-dominant weight
 FULL2_BOUNDS = {"sigma": (1e-5, 3.0), "S": (0.001, 500.0)}   # wide enough to reach the single-stage limit
@@ -165,6 +166,17 @@ def predict_cond(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.n
     return r
 
 
+def predict_sep(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
+    """'full' with separate pool delays for the two eyes: P(t) = c_D v(t; tau2) + w c_N v(t; tau2N). The dominant
+    eye's pool term keeps tau2; the other eye's term has its own low-pass tau2N. tau2N = tau2 gives 'full'."""
+    u, v = step_responses(t, p["delta"], p["tau1"], p["tau2"])
+    _, vn = step_responses(t, p["delta"], p["tau1"], p["tau2N"])
+    e = (cd + p["a"] * cn)[:, None] * u[None, :]
+    q = cd[:, None] * v[None, :] + p["w"] * cn[:, None] * vn[None, :]
+    with np.errstate(over="ignore", invalid="ignore"):
+        return p["g"] * e ** p["n"] / (p["sigma"] ** p["n"] + q ** p["n"])
+
+
 def interaction_residuals(pred: np.ndarray, y: np.ndarray, cd: np.ndarray, cn: np.ndarray) -> np.ndarray:
     """Residuals for the interaction-targeted loss: monocular time courses (one eye at 0) and the binocular
     interaction I(c_D, c_N, t) = R(c_D, c_N, t) - R(c_D, 0, t), each part divided by sqrt(data variance x number
@@ -199,6 +211,8 @@ def predict(p: dict, t: np.ndarray, cd: np.ndarray, cn: np.ndarray, static: bool
         return predict_org(p, t, cd, cn)
     if "tau_m" in p:
         return predict_cond(p, t, cd, cn)
+    if "tau2N" in p:
+        return predict_sep(p, t, cd, cn)
     if "S" in p:
         return predict_two_stage(p, t, cd, cn)
     if "rho" in p:
@@ -233,7 +247,8 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
     """Least-squares fit to responses y [condition, time]. model: 'full', 'static' (no pool delay), 'w=a', or
     'tau_c' (full + a pool time constant that shortens with contrast; the others fix beta = 0), or '2stage'
     (predict_two_stage), or 'full2' (two-stage with a stage-2 pool weight w; nests 'full'), 'ds', 'org', or 'cond'
-    (full + membrane time constant tau_m; nests 'full'). `init` adds a first
+    (full + membrane time constant tau_m; nests 'full'), or 'sep' (full + a separate pool delay tau2N for the
+    other eye; nests 'full'). `init` adds a first
     start at the given parameters (e.g. a single-stage solution embedded at the S bound)."""
     if model == "2stage":
         free = list(TWO_STAGE)
@@ -248,6 +263,8 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
                 and not (model != "tau_c" and k == "beta") and k not in ("S", "omega", "tau_s")]
         if model == "cond":
             free.append("tau_m")
+        if model == "sep":
+            free.append("tau2N")
     bounds = (BOUNDS | (FULL2_BOUNDS if model == "full2" else {}) | (DS_BOUNDS if model == "ds" else {})
               | (ORG_BOUNDS if model == "org" else {}))
     lo = np.array([bounds[k][0] for k in free])
@@ -274,7 +291,7 @@ def fit(t: np.ndarray, cd: np.ndarray, cn: np.ndarray, y: np.ndarray, model: str
 
     base = {"g": 1.5, "sigma": 0.15, "n": 2.0, "delta": 30.0, "tau1": 4.0, "tau2": 40.0, "a": 0.7, "w": 1.0,
             "beta": 2.0, "S": 0.2, "omega": 1.0, "tau_s": 20.0, "rho": 5.0, "gamma": 1.2, "tau_g": 50.0,
-            "b": 0.5, "tau_y": 2.0, "tau_a": 10.0, "tau_m": 10.0}
+            "b": 0.5, "tau_y": 2.0, "tau_a": 10.0, "tau_m": 10.0, "tau2N": 40.0}
     if model == "org":
         base = base | {"sigma": 0.1, "delta": 25.0}
     best = None

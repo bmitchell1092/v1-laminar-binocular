@@ -1,0 +1,13 @@
+criterion,n,value,stat,p,passed
+"A1(i) noise-free null median index per window, c=0.11",25,0:0.96; 10:0.98; 20:0.99; 35:1.00; 50:1.00; 75:1.01; 100:1.00,0.03525387406707947,,True
+"A1(i) noise-free null median index per window, c=0.225",25,0:0.98; 10:1.00; 20:1.01; 35:1.02; 50:1.03; 75:1.02; 100:1.02,0.028424322732669483,,True
+"A1(i) noise-free null median index per window, c=0.45",25,0:1.00; 10:1.01; 20:1.01; 35:1.02; 50:1.02; 75:1.00; 100:1.00,0.019288666362537565,,True
+"A1(ii) early-late drop at 45%: data - null+noise (median), paired one-sided Wilcoxon",25,data drop 1.25; null+noise drop 0.11; noise-free null drop -0.00,1.146645703310734,0.00016453862190246582,True
+"A1(ii) early-late drop at 45%: data - null-noise (median), paired one-sided Wilcoxon",25,data drop 1.25; null-noise drop 0.23; noise-free null drop -0.00,0.609637333960914,0.002302318811416626,True
+A1(iii) 20-50 ms slope vs log contrast negative: data (reported),25,25/25 negative; median slope -0.61,25.0,,
+A1(iii) 20-50 ms slope vs log contrast negative: null (reported),25,7/25 negative; median slope 0.02,7.0,,
+A1(iii) 20-50 ms slope vs log contrast negative: null+noise,24,13/24 negative; median slope -0.03,13.0,,True
+A1(iii) 20-50 ms slope vs log contrast negative: null-noise,25,16/25 negative; median slope -0.11,16.0,,True
+A1(iii) 20-50 ms slope vs log contrast negative: static (reported),25,25/25 negative; median slope -0.38,25.0,,
+A1(iii) 20-50 ms slope vs log contrast negative: w=a (reported),25,3/25 negative; median slope 0.05,3.0,,
+A1(iii) 20-50 ms slope vs log contrast negative: full (reported),25,24/25 negative; median slope -0.32,24.0,,

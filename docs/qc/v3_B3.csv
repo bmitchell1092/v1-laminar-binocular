@@ -1,0 +1,11 @@
+test,n,median,n_positive,B_median,J_median,B_positive,J_positive,p,passed,median_pct_less_error
+"B3 interocular pool slower: tau2N - tau2 (all-presentation 'sep' fits, ms)",25,2.0755990804394706,20.0,3.7732373372366474,1.5620978560156136,6/7,14/18,9.393692016601562e-05,True,
+"B3 held-out: sep beats full, log(CV_full / CV_sep) (reported, not a criterion)",25,2.2204460492503128e-16,13.0,-0.000243512124583646,9.692734434551448e-05,3/7,10/18,0.32642054557800293,False,2.220446049250313e-14
+"B3 held-out, excluding penetrations with an empty half (211008)",24,6.905005228619432e-06,12.0,-0.00034118530676186833,9.692734434551448e-05,2/6,10/18,0.32157111167907715,False,
+"B3 sep tau2 (ms): median [IQR in B_median, J_median columns]",25,28.66698583071305,,22.088289441938112,38.16409201811941,,,,,
+"B3 sep tau2N (ms): median [IQR in B_median, J_median columns]",25,31.000435381869323,,25.86152677917476,38.62760975637341,,,,,
+B3 full tau2 (ms): median [IQR],25,30.00990090163856,,23.760730607687076,38.41823083559689,,,,,
+B3 tau2N at a bound (fraction),25,0.0,,,,,,,,
+B3 sign of tau2N - tau2 agrees between odd and even fits (fraction),25,0.76,,,,,,,,
+"B3 tau2N - tau2, monkey B: median [IQR]",7,3.7732373372366474,,2.1832162230103087,6.145491347256932,,,,,
+"B3 tau2N - tau2, monkey J: median [IQR]",18,1.5620978560156136,,0.5904901679056422,4.916069305996416,,,,,

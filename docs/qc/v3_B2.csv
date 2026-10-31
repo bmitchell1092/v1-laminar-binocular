@@ -1,0 +1,4 @@
+test,n,median,n_positive,B_median,J_median,B_positive,J_positive,p,passed,median_pct_less_error
+B2 delayed beats static on the interaction loss: log(CV_static / CV_full),24,0.7249309768110943,23.0,0.5298136502832897,0.7351651906836534,5/6,18/18,1.1920928955078125e-07,True,51.56368997434599
+B2 in-sample check: full loss <= static loss (fraction of penetrations),24,1.0,,,,,,,,
+B2 fitted tau2 of the delayed model (odd/even fits): median [IQR],48,24.378813967658594,,19.74971920808021,39.27698915624244,,,,,

@@ -1,0 +1,26 @@
+test,n,early,mid,late,p,p_two_sided,frac_late_gt_early,B,J,passed
+REGISTERED c*=0.11: late m > early m (one-sided Wilcoxon); early median in 0.7-1.5,25,1.149044688845562,1.0095417600575738,1.3824221338255869,0.009292311879531225,0.01858462375906245,0.6,0.057053614528214114,0.2391327113723269,True
+"per-penetration c*=0.11 early: median m / suppression fraction / a; m at bounds: 0 at 0.5, 3 at 20",25,1.149044688845562,0.0,0.720892774708847,,,,77.0,0.0,
+"per-penetration c*=0.11 mid: median m / suppression fraction / a; m at bounds: 0 at 0.5, 2 at 20",25,1.0095417600575738,0.0,0.720892774708847,,,,78.0,1.0,
+"per-penetration c*=0.11 late: median m / suppression fraction / a; m at bounds: 0 at 0.5, 6 at 20",25,1.3824221338255869,0.0,0.720892774708847,,,,66.0,4.0,
+population c*=0.11 early: m [95% CI] / suppression,25,1.1176127709895887,0.9910462270734434,1.3199720610758747,,,0.0,,,
+population c*=0.11 mid: m [95% CI] / suppression,25,0.9910462270734434,0.87072553582171,1.1813606029171742,,,0.0,,,
+population c*=0.11 late: m [95% CI] / suppression,25,1.4082217721024681,1.0770369527374424,2.1156321479963607,,,0.0,,,
+REGISTERED c*=0.225: late m > early m (one-sided Wilcoxon); early median in 0.7-1.5,25,1.0002512446271397,1.1279933616160962,2.174627561827207,0.00024541246694180366,0.0004908249338836073,0.84,0.2856455183004837,0.754752809438513,True
+"per-penetration c*=0.225 early: median m / suppression fraction / a; m at bounds: 0 at 0.5, 2 at 20",25,1.0002512446271397,0.0,0.720892774708847,,,,49.0,0.0,
+"per-penetration c*=0.225 mid: median m / suppression fraction / a; m at bounds: 0 at 0.5, 4 at 20",25,1.1279933616160962,0.0,0.720892774708847,,,,37.0,14.0,
+"per-penetration c*=0.225 late: median m / suppression fraction / a; m at bounds: 0 at 0.5, 7 at 20",25,2.174627561827207,0.4,0.720892774708847,,,,24.0,22.0,
+population c*=0.225 early: m [95% CI] / suppression,25,1.0002512446271397,0.895213958133503,1.149044688845562,,,0.0,,,
+population c*=0.225 mid: m [95% CI] / suppression,25,1.0770369527374424,0.878812992917792,1.632728831155838,,,0.0,,,
+population c*=0.225 late: m [95% CI] / suppression,25,2.2986667602999558,1.53040982829085,20.0,,,0.4,,,
+REGISTERED c*=0.45: late m > early m (one-sided Wilcoxon); early median in 0.7-1.5,25,0.895213958133503,1.3322322015826116,2.3852657246633613,0.00012490153312683105,0.0002498030662536621,0.76,5.246702928332117,1.0033404749362371,True
+"per-penetration c*=0.45 early: median m / suppression fraction / a; m at bounds: 0 at 0.5, 1 at 20",25,0.895213958133503,0.0,0.720892774708847,,,,25.0,0.0,
+"per-penetration c*=0.45 mid: median m / suppression fraction / a; m at bounds: 2 at 0.5, 6 at 20",25,1.3322322015826116,0.2,0.720892774708847,,,,12.0,16.0,
+"per-penetration c*=0.45 late: median m / suppression fraction / a; m at bounds: 0 at 0.5, 8 at 20",25,2.3852657246633613,0.4,0.720892774708847,,,,8.0,26.0,
+population c*=0.45 early: m [95% CI] / suppression,25,0.8869755677858815,0.7721182859502658,1.0379342717557065,,,0.0,,,
+population c*=0.45 mid: m [95% CI] / suppression,25,1.369700110157197,0.7792898609803126,20.0,,,0.0,,,
+population c*=0.45 late: m [95% CI] / suppression,25,1.8075117498444078,0.9550655076033168,20.0,,,0.4,,,
+"contour points early (all c*, c_N > 0): total / below axis / censored (fitted range: below 5, censored 0)",375,151.0,0.0,,,,,,,
+"contour points late (all c*, c_N > 0): total / below axis / censored (fitted range: below 10, censored 38)",375,98.0,52.0,,,,,,,
+"contour points mid (all c*, c_N > 0): total / below axis / censored (fitted range: below 9, censored 16)",375,127.0,31.0,,,,,,,
+penetrations with the late window truncated at 280 ms,25,0.0,,,,,,,,
