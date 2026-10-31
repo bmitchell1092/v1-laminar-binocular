@@ -95,26 +95,27 @@ FIGURES = [
      "(± 2 contacts) and below the earliest sink. (d) The sink channels respond first. (e) Each depth normalizes a "
      "similar time after its own onset (first 15 ms window with L < 0.5). (f) On the stimulus clock, normalization "
      "therefore arrives first at the input layer. Wilcoxon tests against the sink group, uncorrected."),
-    ("fig5_models", "Figure 5. A delayed binocular normalization pool explains the direction, but not the full "
-     "strength, of the collapse",
-     "(a) Single-stage delayed normalization (after Zhou et al. 2019). The drive E sums the eyes, with weight a for "
-     "the other eye; the pool sums them with its own weight w and acts through a low-pass delay τ2. The two-stage "
-     "variant first divides each eye by both eyes' contrasts (Meese, Georgeson & Baker 2006, made dynamic). Fitted "
-     "per penetration to the full 6 × 6 time courses. (b) Delayed normalization predicts held-out presentations "
-     "(odd/even) better than static normalization. (c) The pool weights the other eye more than excitation does "
-     "(w > a). (d) The two-stage model predicts held-out responses consistently but only slightly better (~1.5%), "
-     "under two loss functions; both tests were pre-registered at the channel level. (e) The pre-registered capture "
-     "test: late L of each model's fit minus the data. A model would capture the collapse only if every 90% CI lay "
-     "within the ±0.25 band; none does, and the two-stage model stays too linear late."),
-    ("fig6_dynamics", "Figure 6. The fitted model rises too fast at low contrast, and responses carry an offset "
-     "transient it cannot produce",
-     "(a) Dominant-eye responses, each penetration scaled to its peak: the rise steepens with contrast. (b) 10–90% "
-     "rise time: data (penetrations grey; median and 95% CI) against the fitted delayed-normalization model of Fig 5, "
-     "which was fitted to 0–219 ms, so this is out of sample. The model rises about 2.3× too fast at low contrast. "
-     "(c) After the response offset, the data show an offset transient (about 1.8× the sustained level, in 88–100% "
-     "of penetrations) that the model cannot produce. Decay statistics taken over this period mostly measure the "
-     "transient, so they are not used to compare mechanisms. Whether recurrent or shunting normalization explains the "
-     "slow, contrast-dependent rise is the subject of a planned, pre-registered model test."),
+    ("fig5_models", "Figure 5. Binocular normalization behaves like a delayed conductance",
+     "(a) The conductance model. The drive E sums the two eyes' contrasts, with weight a for the other eye; a "
+     "normalization pool sums them with its own weight w and arrives after a low-pass delay τ2. The response R "
+     "approaches the normalized value E^n/(σ^n + P^n) with a time constant that shortens as the pool grows, so the "
+     "pool both divides the response and sets its speed, as a shunting conductance would (Carandini & Heeger 1994). "
+     "As τm approaches 0 the model reduces to fixed-delay normalization (after Zhou et al. 2019); in the recurrent "
+     "model (binocular ORGaNICs, after Heeger & Zemlianova 2020) the normalization signal is built from the "
+     "responses themselves. Each model was fitted per penetration to the full 6 × 6 time courses (0–219 ms). "
+     "(b) Delayed normalization predicts held-out presentations (odd/even) better than static normalization. "
+     "(c) In the conductance model the pool weights the other eye more than the excitatory drive does (w > a); the "
+     "fixed-delay model gives the same result. (d) Dominant eye alone at 11% and 90%: mean over 25 penetrations "
+     "(95% bootstrap CI) and the mean model fits. (e) Rise time (10–90% of the peak) of the population-mean "
+     "response. Rise times measured per penetration are not used, because at low contrast noise inflates them: "
+     "adding the data's own noise to a model's prediction lengthens its rise at 11% from 20 to 33–44 ms. The "
+     "fixed-delay model rises 3–4 ms too fast at 45–90%; the conductance and recurrent models come within about "
+     "2 ms. (f) Held-out error of each model relative to another, per penetration (one-sided Wilcoxon). The "
+     "recurrent model predicts no better than the fixed-delay model; the conductance model predicts better than "
+     "both. (g) Late linearity index (50–150 ms after onset) of each fit minus the data, median with 90% bootstrap "
+     "CI. At 22.5% and 45% all three models lie within the data's uncertainty, but none is resolved inside the "
+     "±0.25 band; at 11% the data's own noise moves the index by ±0.4–0.7, so that comparison is uninformative "
+     "(open symbols)."),
 ]
 
 

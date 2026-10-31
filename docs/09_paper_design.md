@@ -767,6 +767,31 @@ covariates.
     response's speed). It moves the slow low-contrast rise only part of the way; ORGaNICs, whose normalization
     signal grows with the response itself, gets closer on rise but fits worse. Discussion candidate (no further
     model test on these data): a pool with a recurrent, response-driven component would combine the two.
+    *(The rise-time part of this reading is superseded by the correction below.)*
+* **Correction (2026-10-31, found while building the merged model figure): the slow low-contrast rise is mostly
+  measurement noise.** Peak-normalized traces at 11% averaged only ~0.7 of their own peak in the data but ~0.95 in
+  the models, the signature of a noise-inflated peak. The 10–90% rise is measured against that peak, so it was
+  checked like the late linearity index (`scripts/rise_noise_check.py`, [qc/rise_noise.csv](qc/rise_noise.csv)).
+  * **Per-penetration medians (the metric of the fourth and fifth tests' secondary criteria):** adding the data's
+    own noise sample ((odd − even)/2) to a model's prediction lengthens its rise at 11% from 20 to 33–44 ms (full),
+    22 to 36–46 (cond), 28 to 45–50 (org); data 33 ms. At 5.5% the noisy models exceed the data (52–61 vs 41 ms).
+    At 22.5–90% the noise effect is 0–7 ms. The low-contrast rise is noise-dominated, so the secondary criteria of
+    both tests (rise at 11% within ±10 ms) could not discriminate models: the "org passes, full fails" and
+    "cond passes at the margin" verdicts are uninformative, not evidence for either model.
+  * **Population-mean responses (noise ~1/5; descriptive, chosen after the per-penetration metric was shown to be
+    noise-dominated):** data rise 22, 21, 21, 19, 17 ms at 5.5–90%, nearly flat; full 27/23/20/17/13, cond
+    32/25/21/18/15, org 33/29/23/19/16. Model − data (95% penetration-bootstrap CI): every model inside the data's CI
+    at 5.5–22.5%; at 45% full −4 [−6, −1], cond −2 [−4, 0], org −1 [−3, +2]; at 90% full −3 [−5, −1], cond −2
+    [−4, −1], org −2 [−4, 0].
+  * **What is withdrawn:** that the data rise slowly at low contrast and that the fixed-delay model "rises ~2.3×
+    too fast at low contrast" (Fig 6 of drafts V1–V2; the per-channel 46 → 20 ms figures of the dynamics
+    diagnostics are noisier still); that ORGaNICs' advantage is reproducing a slow low-contrast rise.
+  * **What stands:** the fixed-delay model rises 3–4 ms too fast at high contrast; integration (conductance or
+    recurrent) brings it within ~2 ms; the conductance model's held-out advantage (a whole-time-course measure,
+    unaffected by this bias) stands.
+  * **To check next (same bias, not yet tested):** every threshold-crossing time measured per penetration or per
+    channel group at low contrast, i.e. the normalization half-transition times (Fig 3d) and the laminar
+    normalization times ("first window with linearity index < 0.5", Fig 4), should get the same noise check.
 
 ## Competitive landscape (checked 2026-10-29)
 
@@ -849,10 +874,13 @@ suppression, one contrast pair); Dougherty et al. 2019 (binocular modulation of 
 | 2 Add, then normalize | `fig2_add_then_normalize.py` | `figure_data.py`, `equivalent_contrast.py` |
 | 3 Contrast sets the collapse | `fig3_contrast.py` | `figure_data.py`, `normalization_timing.py` (incl. `--tag cross`) |
 | 4 Depth and earliest sink | `fig4_depth_input.py` | `sink_data.py`, `equivalent_contrast.py`, `dichoptic_csd.py`, `laminar_timing.py` |
-| 5 Delayed normalization models | `fig5_models.py` | `fig5_model.py`, `fig5_channel_test.py`, `fig5_interaction_test.py` |
-| 6 Dynamics | `fig6_dynamics.py` | `figure_data.py`, `dynamics_diagnostics.py`, `fig5_model.py` |
+| 5 Normalization as a delayed conductance (2026-10-31: merges old Figs 5 and 6) | `fig5_models.py` | `fig5_model.py`, `fig5_org_model.py`, `fig5_cond_model.py`, `rise_noise_check.py` |
+| S Model variants (old Fig 5d–e: two-stage, Ding–Sperling) | `figS_model_variants.py` | `fig5_channel_test.py`, `fig5_interaction_test.py` |
+| S Offset transient (old Fig 6c) | `figS_offset.py` | `figure_data.py`, `fig5_model.py` |
 
-Units (old Fig 5: units net-suppressed while MUA is facilitated) go to the supplement.
+Units (old Fig 5: units net-suppressed while MUA is facilitated) go to the supplement. The old Fig 6b (per-channel
+rise times vs the fixed-delay fit) is dropped: its low-contrast rise times are noise-dominated (correction of
+2026-10-31 above); the new Fig 5e shows rise times of the population-mean response instead.
 
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on

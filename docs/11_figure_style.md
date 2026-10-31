@@ -9,7 +9,7 @@ All paper figures are built by `scripts/figures/*.py` on top of `v1lb.figstyle`.
 | Step | Command | Output |
 |---|---|---|
 | shared inputs | `scripts/figures/figure_data.py` | `<out_root>/figures/data/population.npz` (per-penetration 6×6 time courses, flash- and onset-aligned) |
-| figures | `scripts/figures/fig1_setup.py` … `fig6_dynamics.py` | `<out_root>/figures/<name>.pdf` (vector, editable text) and `.png` (300 dpi) |
+| figures | `scripts/figures/fig1_setup.py` … `fig5_models.py`; supplementary `figS_*.py` | `<out_root>/figures/<name>.pdf` (vector, editable text) and `.png` (300 dpi) |
 
 Each figure script reads only saved analysis outputs (`<out_root>/binocular/*.parquet`, `docs/qc/*.csv`) or the
 shared cache, and prints the statistics it displays so they can be checked against docs/09.
@@ -40,7 +40,7 @@ shared cache, and prints the statistics it displays so they can be checked again
 | Contrast (ordinal) | one-hue blue ramp, light → dark | 5.5% `#86b6ef`, 11% `#3987e5`, 22.5% `#256abf`, 45% `#184f95`, 90% `#0d366b` |
 | Condition at one contrast | categorical | dominant eye blue `#2a78d6`, other eye orange `#eb6834`, both eyes ink `#0b0b0b` |
 | Linear-summation reference | muted grey, dashed | `#8a8985` |
-| Data vs models | categorical | data ink; fixed-delay (feedforward) models orange; recurrent models aqua `#1baf7a` (below 3:1 on white, so always labelled) |
+| Data vs models | categorical | data ink; fixed-delay (feedforward) models orange; recurrent models aqua `#1baf7a` (below 3:1 on white, so always labelled); conductance model violet `#6250d6` (orange, aqua and violet pass the all-pairs CVD check) |
 | Model variants | marker shape and fill, same hue | single-stage filled circle, two-stage open square, Ding–Sperling open triangle |
 | Monkey | marker shape, never colour | B circle, J square |
 | Epoch (early vs late) | grey ramp | early `#8a8985`, late ink |

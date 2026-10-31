@@ -1,0 +1,86 @@
+measure,c,source,rise,lo,hi
+per-penetration median,0.055,data,41.0,,
+per-penetration median,0.055,full,22.0,,
+per-penetration median,0.055,full+noise,55.0,,
+per-penetration median,0.055,full-noise,52.0,,
+per-penetration median,0.055,cond,27.0,,
+per-penetration median,0.055,cond+noise,54.0,,
+per-penetration median,0.055,cond-noise,52.0,,
+per-penetration median,0.055,org,31.0,,
+per-penetration median,0.055,org+noise,59.0,,
+per-penetration median,0.055,org-noise,61.0,,
+population mean,0.055,data,22.0,16.0,117.0
+population mean,0.055,full,27.0,23.0,35.0
+"population mean, model - data",0.055,full,1.0,-88.0,13.0
+population mean,0.055,cond,32.0,27.0,40.0
+"population mean, model - data",0.055,cond,5.0,-84.0,17.0
+population mean,0.055,org,33.0,28.0,42.0
+"population mean, model - data",0.055,org,7.0,-80.0,19.0
+per-penetration median,0.11,data,33.0,,
+per-penetration median,0.11,full,20.0,,
+per-penetration median,0.11,full+noise,44.0,,
+per-penetration median,0.11,full-noise,33.0,,
+per-penetration median,0.11,cond,22.0,,
+per-penetration median,0.11,cond+noise,46.0,,
+per-penetration median,0.11,cond-noise,36.0,,
+per-penetration median,0.11,org,28.0,,
+per-penetration median,0.11,org+noise,50.0,,
+per-penetration median,0.11,org-noise,45.0,,
+population mean,0.11,data,21.0,18.0,56.024999999999864
+population mean,0.11,full,23.0,20.0,28.0
+"population mean, model - data",0.11,full,0.0,-31.0,6.0
+population mean,0.11,cond,25.0,22.0,30.024999999999864
+"population mean, model - data",0.11,cond,3.0,-28.0,8.0
+population mean,0.11,org,29.0,23.0,35.0
+"population mean, model - data",0.11,org,5.0,-24.0,11.0
+per-penetration median,0.225,data,28.0,,
+per-penetration median,0.225,full,16.0,,
+per-penetration median,0.225,full+noise,19.0,,
+per-penetration median,0.225,full-noise,22.0,,
+per-penetration median,0.225,cond,19.0,,
+per-penetration median,0.225,cond+noise,24.0,,
+per-penetration median,0.225,cond-noise,25.0,,
+per-penetration median,0.225,org,24.0,,
+per-penetration median,0.225,org+noise,26.0,,
+per-penetration median,0.225,org-noise,31.0,,
+population mean,0.225,data,21.0,18.0,25.0
+population mean,0.225,full,20.0,17.0,22.0
+"population mean, model - data",0.225,full,-2.0,-5.0,1.0
+population mean,0.225,cond,21.0,18.0,24.0
+"population mean, model - data",0.225,cond,0.0,-3.0,3.0
+population mean,0.225,org,23.0,19.0,27.0
+"population mean, model - data",0.225,org,2.0,-2.0,6.0
+per-penetration median,0.45,data,20.0,,
+per-penetration median,0.45,full,14.0,,
+per-penetration median,0.45,full+noise,16.0,,
+per-penetration median,0.45,full-noise,14.0,,
+per-penetration median,0.45,cond,16.0,,
+per-penetration median,0.45,cond+noise,18.0,,
+per-penetration median,0.45,cond-noise,17.0,,
+per-penetration median,0.45,org,18.0,,
+per-penetration median,0.45,org+noise,22.0,,
+per-penetration median,0.45,org-noise,21.0,,
+population mean,0.45,data,19.0,17.0,22.0
+population mean,0.45,full,17.0,14.0,19.0
+"population mean, model - data",0.45,full,-4.0,-6.0,-1.0
+population mean,0.45,cond,18.0,15.0,20.0
+"population mean, model - data",0.45,cond,-2.0,-4.0,0.0
+population mean,0.45,org,19.0,16.0,22.0
+"population mean, model - data",0.45,org,-1.0,-3.0,2.0
+per-penetration median,0.9,data,18.0,,
+per-penetration median,0.9,full,11.0,,
+per-penetration median,0.9,full+noise,12.0,,
+per-penetration median,0.9,full-noise,11.0,,
+per-penetration median,0.9,cond,12.0,,
+per-penetration median,0.9,cond+noise,12.0,,
+per-penetration median,0.9,cond-noise,13.0,,
+per-penetration median,0.9,org,14.0,,
+per-penetration median,0.9,org+noise,14.0,,
+per-penetration median,0.9,org-noise,15.0,,
+population mean,0.9,data,17.0,15.0,20.0
+population mean,0.9,full,13.0,12.0,16.0
+"population mean, model - data",0.9,full,-3.0,-5.0,-1.0
+population mean,0.9,cond,15.0,13.0,17.0
+"population mean, model - data",0.9,cond,-2.0,-4.0,-1.0
+population mean,0.9,org,16.0,13.0,18.0
+"population mean, model - data",0.9,org,-2.0,-4.0,0.0
