@@ -707,6 +707,36 @@ covariates.
     responses. It fits the full time courses no better overall. Candidate next model (needs its own registration):
     delayed normalization whose integration time shortens with the pooled input (conductance-based, Carandini,
     Heeger & Movshon 1997), which nests 'full'.
+* **Fifth model test: conductance-based delayed normalization, reconciling 'full' and 'org' (registered internally
+  2026-10-30, before implementing or fitting; Blake asked for a reconciliation of the two models as the paper's
+  ending rather than stopping at the fourth test).**
+  * **Why:** the ORGaNICs response equation, τ_y dy/dt = −√a·y + b·z, is a membrane equation: a drive integrated
+    against a conductance (√a) that both divides the steady state and shortens the effective time constant. The
+    delayed-normalization model 'full' is the same structure with instantaneous integration. Giving 'full' a finite
+    integration time that shortens with the normalization pool (shunting normalization: Carandini & Heeger 1994;
+    Carandini, Heeger & Movshon 1997) should give ORGaNICs' timing while keeping the fixed-delay model's fit.
+    Distinct from the rejected 'tau_c' model, which made the *pool's* delay contrast-dependent; here the pool delay
+    stays fixed and the *response* integrates against the pool.
+  * **Model 'cond' (9 parameters: the 8 of 'full' + τ_m):** E = (c_D + a·c_N)·u(t), P = (c_D + w·c_N)·v(t) as in
+    'full'; τ_m·σⁿ dR/dt = g·Eⁿ − (σⁿ + Pⁿ)·R. R relaxes toward the 'full' prediction g·Eⁿ/(σⁿ + Pⁿ) with
+    effective time constant τ_m / (1 + (P/σ)ⁿ): long at low contrast, short once the pool is strong. τ_m bounds
+    0.05–60 ms; at 0.05 ms the step factor is e^−20, so 'cond' reduces exactly to 'full'. Exact exponential
+    integration at 1 ms (coefficients held over each step).
+  * **Data and fitting:** identical to the fourth test (channel-averaged, dominant-oriented 6 × 6 time courses,
+    0–219 ms, odd/even cross-validation, cleaned data, 4 starts), plus one extra start at the 'full' fit of the
+    same split with τ_m at its lower bound, so 'cond' is never worse than 'full' in-sample.
+  * **Primary (does it fit better than 'full'):** per penetration r = log(CV_full / CV_cond); one-sided Wilcoxon,
+    'cond' better if p < .05 and the median r > 0 in both monkeys.
+  * **Secondary (does it keep ORGaNICs' timing):** exactly as the fourth test: median (model − data) 10–90% rise
+    at 11% within ±10 ms and median model rise ratio 11%/90% ≥ 1.5.
+  * **Tertiary (collapse):** late linearity index (windows starting 50, 75, 100 ms) model − data at 22.5% and 45%
+    within ±0.25 (90% bootstrap CI of the median). The 11% value is reported but not tested, because the fourth
+    test's noise check (above, done before this registration) showed it moves ±0.4–0.7 with the data's own noise.
+  * **Reported regardless:** 'cond' vs 'org' held-out error (descriptive; the 'org' fits from the fourth test on
+    identical data and splits); τ_m and the effective time constant at 11% and 90%; half-max latency at 11% minus
+    90% (the latency shift with contrast) for data and all three models; binocular − dominant latency at 45%.
+  * **If the primary fails:** the ending is descriptive (which model reproduces which signature), not a winning
+    model; no further variants on these data without a new theoretical reason.
 
 ## Competitive landscape (checked 2026-10-29)
 
