@@ -793,6 +793,76 @@ covariates.
     channel group at low contrast, i.e. the normalization half-transition times (Fig 3d) and the laminar
     normalization times ("first window with linearity index < 0.5", Fig 4), should get the same noise check.
 
+## V3 analysis plan (registered internally 2026-10-31, before running; approved by Blake)
+
+Motivated by the two reviews of draft V2 ([manuscript/review_v2.md](../manuscript/review_v2.md)). **Blake's
+guidance:** keep a clear, clean main figure set that carries the central narrative (the eyes add, then normalize
+over time; contrast sets how far; the model). These analyses go to the supplement and are cited in one sentence of
+text unless one changes the story. Fixation (vergence) disparity is argued in the Discussion, not measured (only
+211008 recorded both eyes). Each analysis reports its outcome plainly, pass or fail; no post-hoc rescue.
+
+Common definitions: "channel-average readout" = `fig5_model.population` + `windowed_L` (the model-test readout);
+"per-channel readout" = the Fig 2d pipeline (`equivalent_contrast.py`, penetration medians over channels); early =
+0–20 ms after onset, late = 50–200 ms (per-channel) or windows starting 50, 75, 100 ms (channel-average); noise
+sample = (odd − even)/2 of the same data.
+
+**A. Is the measure valid?**
+* **A1 Fixed-rule null.** Per penetration, the all-presentation 'full' fit with w set to a (the pool weighted like
+  the drive): every binocular response then equals the monocular response at (1 + a)c at every moment, with the
+  fitted transient shapes. Read out with the channel-average readout, noise-free and with the noise sample added
+  and subtracted. *Valid if* (i) noise-free, the median index over penetrations stays within 1 ± 0.25 in every
+  window 0–150 ms at 11, 22.5 and 45%; (ii) with noise, the null's early-minus-late drop at 45% is smaller than the
+  data's (paired one-sided Wilcoxon over penetrations, p < .05, using each sign of the noise); (iii) the null's
+  20–50 ms slope against log contrast is negative in fewer than 20 of 25 penetrations (data: 26/26 per channel).
+* **A2 Cross-validated dominance.** Per channel, dominant eye and eye weight a from odd presentations; equivalent
+  contrast and index from even presentations; and the reverse; averaged. Compared with the same-data pipeline run
+  on the same halves. *Effect stands if* the early-to-late drop at 45% remains significant (Wilcoxon over
+  penetrations, p < .05) and the cross-validated late index at 45% is within 0.25 of the same-data value. The shift
+  (cross-validated − same-data) is the size of the selection bias.
+* **A3 Ocular-dominance strata.** Channels split into terciles of |ocular dominance index| (from odd presentations;
+  index from even). Early and late index at 22.5 and 45% per tercile. Descriptive: does the sequence hold in
+  strongly monocular and in balanced channels?
+* **A4 Isolated units.** Early and late index at 22.5 and 45% for driven units (lenient set), units as the sample,
+  with the net-suppression observation (Discussion of V2) set beside it. Descriptive, small n.
+
+**B. Is the delay specifically interocular?**
+* **B1 Model index time courses.** Static, w = a and delayed ('full') fits read out with the channel-average
+  readout in every window, against the data (median over penetrations). Descriptive; candidate panel for the model
+  figure.
+* **B2 Static vs delayed on the binocular interaction.** Held-out (odd/even) comparison of static and delayed
+  models fitted and scored with the interaction loss (`dynorm.interaction_residuals`: monocular time courses and the
+  binocular interaction weighted equally). *Delay needed for the interaction if* delayed is better with one-sided
+  Wilcoxon p < .05 and median log-ratio > 0 in both monkeys.
+* **B3 Separate pool delays.** Model 'sep' = 'full' with the other eye's pool term delayed by its own time constant:
+  P(t) = c_D·v(t; τ2) + w·c_N·v(t; τ2N). Nests 'full' (τ2N = τ2; extra start at the 'full' fit). *Interocular
+  normalization is slower if* median (τ2N − τ2) > 0, one-sided Wilcoxon p < .05, in both monkeys; held-out error
+  vs 'full' reported. If not, the paper says monocular and interocular normalization share one delay.
+* **B4 Parameter recovery for w > a.** Synthetic data from each penetration's w = a fit plus noise samples
+  (independent random sign flips per condition for the odd and even halves); fit 'full'; distribution of fitted
+  w − a. *w > a is not a fitting artefact if* the data's median w − a exceeds the 95th percentile of the synthetic
+  medians (100 synthetic sets).
+
+**C. Iso-response contours (6 × 6 grid).** Per penetration (channel-average) and window (early, 20–50 ms, late):
+for target levels equal to the dominant eye's response at c* = 11, 22.5, 45%, find for each other-eye contrast the
+dominant-eye contrast giving that response (monotone, log-contrast interpolation, as for equivalent contrast).
+Summarize each contour by the Minkowski exponent m in (c_D/c*)^m + (a·c_N/c*)^m = 1 (m = 1 linear summation,
+large m = dominant eye alone; m bounded 0.5–20), and by the fraction of contour points beyond the dominant-eye-alone
+line (suppression). *Contours change from linear to max-like if* late m > early m (Wilcoxon over penetrations,
+p < .05) with early median m within 0.7–1.5. Main-figure candidate (Blake decides); population contours with
+bootstrap CIs.
+
+**D. Timing measures and noise.** Half-transition times (Fig 3d) and laminar normalization times ("first window
+with index < 0.5", Fig 4d): (i) split-half replication (odd and even presentations each give the same sign of the
+group differences); (ii) noise sensitivity (each measure on all presentations vs on halves, per group); (iii)
+SNR-matched comparison (subsample channels or add the noise sample so groups have equal signal-to-noise). *The
+laminar order stands if* it survives (iii) with p < .05 in the same direction and replicates in both halves;
+otherwise the paper states only that every depth shows the sequence.
+
+**E. Literature.** Binocular vs monocular response latency (human VEP, cat, macaque); contrast–latency; duration
+dependence of binocular summation and contrast matching in psychophysics; the citations flagged by the cold read
+(Smith et al. 1997; Macknik & Martinez-Conde 2004; Legge & Rubin 1981; Baker, Meese & Georgeson 2007; Menz &
+Freeman 2003).
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
