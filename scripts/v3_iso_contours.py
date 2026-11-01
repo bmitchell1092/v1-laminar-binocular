@@ -20,7 +20,9 @@ early median m within 0.7-1.5.
 Population contours: from the population-average window responses (mean over penetrations of each 6 x 6 window
 matrix, as in Fig 2b), with 2000-sample penetration-bootstrap 95% CIs.
 Writes <out_root>/binocular/v3_C_penetration.parquet (one row per penetration x window x c*),
-v3_C_points.parquet (contour points), v3_C_population.parquet, docs/qc/v3_C.csv and the diagnostic figure
+v3_C_points.parquet (contour points), v3_C_population.parquet, v3_C_population_boot.parquet (bootstrap contour
+points, for the figure CIs), v3_C_windows.npz (window matrices [penetration, window, 6, 6]), docs/qc/v3_C.csv and
+the diagnostic figure
 <out_root>/figures/diagnostics/v3_iso_contours.png; prints the tests.
 """
 
@@ -215,6 +217,10 @@ def main():
     S.to_parquet(out / "v3_C_penetration.parquet")
     Pt.to_parquet(out / "v3_C_points.parquet")
     PopPts.merge(Pop, on=["window", "cstar"], suffixes=("", "_summary")).to_parquet(out / "v3_C_population.parquet")
+    Boot.to_parquet(out / "v3_C_population_boot.parquet")
+    np.savez(out / "v3_C_windows.npz", penetrations=np.array([d["penetration"] for d in done], dtype=str),
+             windows=np.array(list(WINDOWS), dtype=str),
+             mats=np.stack([np.stack([d["mats"][w] for w in WINDOWS]) for d in done]))
 
     # registered tests and summaries
     qc = []

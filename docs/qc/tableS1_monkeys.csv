@@ -1,0 +1,18 @@
+statistic,B_n,B_value,B_sign,B_p,J_n,J_value,J_sign,J_p,all_n,all_value,all_sign,all_p
+"linearity index, early (0-20 ms), 11%",8,1.516,,,18,1.124,,,26,1.194,,
+"linearity index, late (50-200 ms), 11%",8,1.409,,,18,0.3609,,,26,0.6143,,
+"linearity index, early - late, 11%",8,0.1047,4/8,0.3711,18,0.6774,17/18,7.629e-06,26,0.5607,21/26,0.0003727
+"linearity index, early (0-20 ms), 22.5%",8,1.396,,,18,1.199,,,26,1.199,,
+"linearity index, late (50-200 ms), 22.5%",8,-0.1917,,,18,0.7648,,,26,0.473,,
+"linearity index, early - late, 22.5%",8,1.214,8/8,0.003906,18,0.5495,13/18,0.005203,26,0.9443,21/26,6.294e-05
+"linearity index, early (0-20 ms), 45%",8,0.9277,,,18,0.9691,,,26,0.9691,,
+"linearity index, late (50-200 ms), 45%",8,-0.7101,,,18,0.5099,,,26,-0.1146,,
+"linearity index, early - late, 45%",8,1.434,7/8,0.09766,18,0.5238,17/18,1.907e-05,26,0.9567,24/26,2.582e-05
+slope of transition-window (20-50 ms) linearity index on log contrast,8,-1.614,8/8,0.003906,18,-0.6054,18/18,3.815e-06,26,-0.9537,26/26,1.49e-08
+"iso-response contour exponent, late - early, 11%",7,0.05705,4/7,0.4219,18,0.2391,11/18,0.008689,25,0.09321,15/25,0.009292
+"iso-response contour exponent, late - early, 22.5%",7,0.2856,4/7,0.1094,18,0.7548,17/18,0.0003357,25,0.6865,21/25,0.0002454
+"iso-response contour exponent, late - early, 45%",7,5.247,5/7,0.03906,18,1.003,14/18,0.001682,25,1.177,19/25,0.0001249
+"delayed vs static, held-out interaction error, % less",6,41.12,5/6,0.03125,18,52.06,18/18,3.815e-06,24,51.56,23/24,1.192e-07
+"pool weight - drive weight of the other eye, conductance fit",7,0.1853,6/7,0.01562,18,0.2202,18/18,3.815e-06,25,0.1914,24/25,5.96e-08
+"pool weight - drive weight of the other eye, fixed-delay fit",7,0.1853,6/7,0.02344,18,0.2169,18/18,3.815e-06,25,0.1914,24/25,8.941e-08
+"conductance vs fixed-delay, held-out error, % less",6,0.4252,5/6,0.07812,18,2.17,15/18,0.001404,24,1.607,20/24,0.0002149

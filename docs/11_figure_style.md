@@ -9,7 +9,7 @@ All paper figures are built by `scripts/figures/*.py` on top of `v1lb.figstyle`.
 | Step | Command | Output |
 |---|---|---|
 | shared inputs | `scripts/figures/figure_data.py` | `<out_root>/figures/data/population.npz` (per-penetration 6×6 time courses, flash- and onset-aligned) |
-| figures | `scripts/figures/fig1_setup.py` … `fig5_models.py`; supplementary `figS_*.py` | `<out_root>/figures/<name>.pdf` (vector, editable text) and `.png` (300 dpi) |
+| figures | `scripts/figures/fig1_setup.py` … `fig4_model.py`; supplementary `figS1_*.py` … `figS6_*.py` (figure set: docs/09) | `<out_root>/figures/<name>.pdf` (vector, editable text) and `.png` (300 dpi) |
 
 Each figure script reads only saved analysis outputs (`<out_root>/binocular/*.parquet`, `docs/qc/*.csv`) or the
 shared cache, and prints the statistics it displays so they can be checked against docs/09.
@@ -40,7 +40,7 @@ shared cache, and prints the statistics it displays so they can be checked again
 | Contrast (ordinal) | one-hue blue ramp, light → dark | 5.5% `#86b6ef`, 11% `#3987e5`, 22.5% `#256abf`, 45% `#184f95`, 90% `#0d366b` |
 | Condition at one contrast | categorical | dominant eye blue `#2a78d6`, other eye orange `#eb6834`, both eyes ink `#0b0b0b` |
 | Linear-summation reference | muted grey, dashed | `#8a8985` |
-| Data vs models | categorical | data ink; fixed-delay (feedforward) models orange; recurrent models aqua `#1baf7a` (below 3:1 on white, so always labelled); conductance model violet `#6250d6` (orange, aqua and violet pass the all-pairs CVD check) |
+| Data vs models | categorical | data ink; static model dark grey `#52514e`, dashed; fixed-delay aqua `#1baf7a`; conductance violet `#6250d6`; recurrent magenta `#e87ba4`. No model uses orange, the other eye's colour (2026-11-01). Aqua and magenta are below 3:1 on white and 6.1 apart for deutans, so always direct-labelled. Inside a panel in the Fig 2a format, a model is a dashed line in the condition's colour |
 | Model variants | marker shape and fill, same hue | single-stage filled circle, two-stage open square, Ding–Sperling open triangle |
 | Monkey | marker shape, never colour | B circle, J square |
 | Epoch (early vs late) | grey ramp | early `#8a8985`, late ink |
@@ -67,7 +67,8 @@ dominant eye alone" is the solid light rule at L = 0 (k = 1).
   otherwise.
 * **Depth** is "depth below top of cortex (mm)", increasing downward. Laminar landmarks are drawn as dashed lines
   labelled "top of cortex" and "L4/5".
-* **Pre-registered tests** are marked as such on the panel, and a failed one is shown as plainly as a passed one
-  (Fig 3c, Fig 5e).
+* **No registration language in figures** (Blake, 2026-10-30: registration is internal). A test that failed is
+  shown as plainly as one that passed.
+* **No session IDs, and "condition", never "cell"** (2026-11-01).
 * **Illustrations** (population means used to explain a measure, hand-set simulations) are labelled as such in
   the panel, not only in the legend.

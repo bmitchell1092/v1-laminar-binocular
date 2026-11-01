@@ -1013,14 +1013,20 @@ They did not invoke divisive normalization, and called the early summation both 
 
 **Their incongruent (dichoptic cross-orientation) results are outside our design.**
 
-## Novelty check (Blake to confirm)
+## Novelty check (resolved by Blake, 2026-11-01)
 
-The dataset underlies Mitchell et al. 2022 (iScience) and 2023 (Curr Biol), which used pooled MUA over 50–200 ms
-(ocular-dominance-weighted interocular normalization, response-gain fits). The claims above depend on
-timing, depth, CSD and units, which those papers did not resolve. Also to check: the laminar chapters of the 2024
-dissertation; the legacy `2024_LaminarCRFs` manuscript (BM-ephys); Cox et al. 2019 (early facilitation, late
-suppression, one contrast pair); Dougherty et al. 2019 (binocular modulation of monocular L4 neurons); Carlson et al.
-2025 preprint (interlaminar coherence).
+* **Mitchell et al. 2022 (iScience) is a separate dataset**: mostly the same contrast in the two eyes, at different
+  contrast levels. The earlier note here, "the dataset underlies Mitchell et al. 2022", was wrong. Its result
+  (summation 50–100 ms, contrast-dependent suppression by 150–250 ms) is prior evidence for the sequence, not
+  overlap: cite it as the starting point.
+* **The 2024 dissertation's third chapter is markedly different** from this paper. No overlap concerns with either.
+* **Framing for V3:** the first millisecond-resolution account of the transition, with the full dichoptic 6 × 6
+  design: linear summation in contrast units for the first ~20 ms; normalization taking hold 20–35 ms after
+  onset; iso-response contours; a model showing the delay is needed for the binocular interaction itself. Cite
+  Mitchell et al. 2022, Cox et al. 2019, Dougherty et al. 2019 and Tanabe & Cumming 2014 for the coarser sequence
+  and the delays already reported.
+* Still to cite or check: the relation of these recordings to Mitchell et al. 2023 (Curr Biol) was not discussed;
+  Carlson et al. 2025 preprint (interlaminar coherence, same sessions; see the Brock coherence paper notes).
 
 ## Order of work
 
@@ -1031,8 +1037,9 @@ suppression, one contrast pair); Dougherty et al. 2019 (binocular modulation of 
 5. Fig 1 assembly; Fig 6 model if 1–3 hold.
 6. Controls and supplementary.
 
-**Figures as built (2026-10-29; style in [11](11_figure_style.md); `scripts/figures/`, packet with legends:
-`figure_packet.py`).** Each figure script only plots saved analysis outputs and prints the statistics it shows.
+**Figures as built (2026-10-29 to 2026-10-31; superseded by the figure set for V3 below, whose scripts replaced
+these on 2026-11-01; the figure packet script was retired, as the Word manuscript carries the legends).** Each figure
+script only plots saved analysis outputs and prints the statistics it shows.
 
 | Figure (as built) | Figure script | Analysis scripts it reads |
 |---|---|---|
@@ -1047,6 +1054,51 @@ suppression, one contrast pair); Dougherty et al. 2019 (binocular modulation of 
 Units (old Fig 5: units net-suppressed while MUA is facilitated) go to the supplement. The old Fig 6b (per-channel
 rise times vs the fixed-delay fit) is dropped: its low-contrast rise times are noise-dominated (correction of
 2026-10-31 above); the new Fig 5e shows rise times of the population-mean response instead.
+
+### Figure set for V3 (approved by Blake 2026-11-01)
+
+Four main figures, each with one claim; everything else is supplementary and cited in the text in a sentence.
+Rules for every figure:
+* no session IDs;
+* "condition", never "cell";
+* no registration language;
+* the other eye's weight in the measure is the "eye weight", and in the model the "drive weight", beside the "pool
+  weight";
+* held-out model comparisons use 24 penetrations (211008 has no usable even half), with the reason in the legend.
+
+| Figure | Claim | Panels | Script |
+|---|---|---|---|
+| 1 | Design and an example | (a) 6 × 6 dichoptic contrast design and trial sequence; (b) example penetration, onset-aligned, in the Fig 2a format; (c) monocular contrast response, dominant vs other eye; (d) ocular dominance index, MUA and units | `fig1_setup.py` |
+| 2 | The eyes add, then normalize | (a) population responses at 45%, onset-aligned; (b) equivalent-contrast readout; (c) iso-response contours at 22.5% and 45%, early vs late (population, penetration-bootstrap CIs; per-penetration exponent in the note); (d) early vs late linearity index per penetration | `fig2_add_then_normalize.py` |
+| 3 | Contrast sets how far it collapses, at every depth and in the input current | (a) transition-window index per penetration vs contrast; (b) slope on log contrast per penetration and in the held-out stimulus-position runs; (c) early and late index by depth; (d) population CSD aligned to the earliest sink; (e) sink current at 45% in the Fig 2a format | `fig3_contrast_depth.py` |
+| 4 | Normalization is delayed, weights the other eye more, and acts like a conductance | (a) model schematic and colour key; (b) data vs conductance fit, Fig 2a format; (c) linearity index over time: data, static, delayed; (d) held-out interaction error, delayed vs static; (e) pool weight vs drive weight of the other eye; (f) held-out comparison of the three dynamic models | `fig4_model.py` |
+| S1 | Apparatus and laminar alignment | (a) stereoscope; (b) example flash CSD with alignment | `figS1_methods.py` |
+| S2 | The linearity index is valid | (a) fixed-rule null through the pipeline (noise-free and with the data's noise) vs data; (b) cross-validated dominance; (c) ocular-dominance terciles; (d) isolated units | `figS2_validity.py` |
+| S3 | Iso-response contours at every target contrast | population contours at 11, 22.5, 45% early / 20–50 ms / late; per-penetration exponents | `figS3_iso_contours.py` |
+| S4 | Timing measures and noise | (a) raw binocular gain (old 3a); (b) half-transition times with halves (old 3d); (c) laminar onset and normalization times, stimulus clock and after own onset (old 4d); (d) binocular gain of the sink current and MUA (old 4c) | `figS4_timing.py` |
+| S5 | Model checks | (a) two-stage gain; (b) capture test; (c) late index, model − data (old 5g); (d) parameter recovery of w − a; (e) separate interocular pool delay | `figS5_model_checks.py` |
+| S6 | Response dynamics | (a) dominant-eye time courses with fits (old 5d); (b) rise time of the population mean (old 5e); (c) offset transient | `figS6_dynamics.py` |
+| Table S1 | Main statistics per monkey | | `tableS1_monkeys.py` |
+
+**Built 2026-11-01** (all scripts in `scripts/figures/`; legends in `manuscript/draft_v3.docx`). What the build
+changed in the claims:
+* **Fig 3e, sink current in the Fig 2a format:** the input current adds at onset (both eyes > dominant eye alone at
+  45% in the first 20 ms after sink onset, 22/26, p = .001; close to the dominant eye at 90%), but the later
+  combination cannot be tested, because the dominant eye's sink currents at 45% and 90% no longer differ after 50 ms
+  (p = .45). Claim narrowed to "the earliest input current sums the two eyes at onset". Display scaling (each
+  penetration by its mean monocular sink current, 0–150 ms) was chosen after seeing that peak scaling let two
+  penetrations dominate the mean; the per-penetration sign counts do not depend on it.
+* **Fig 3c, depth:** at 45% the index falls at every depth; at 11 + 22.5% the drop does not depend on depth (mixed
+  model p = .60); the inverted U of the late index (peak ~1.7–1.9 mm, p = .0002) is monkey J only (B p = .34).
+* **Fig 4b–c, model:** the conductance fit reproduces the Fig 2a sequence but undershoots transient peaks (~8%);
+  the fixed-delay fit misses the decline at 11% (stays ~0.93; data 0.48 [0.18, 0.67]) and the 45% undershoot.
+  Stated in the text.
+* **Monkey split (Table S1):** monkey B shows no early-to-late decline at 11% (4/8) and its 45% test is p = .098
+  (7/8); its iso-contour changes are underpowered. The conductance gain is essentially monkey J's.
+
+Model colours (no model uses orange, the other eye's colour): data ink, static dark grey dashed, fixed-delay aqua,
+conductance violet, recurrent magenta (aqua and magenta below 3:1 on white and close for deutans, so always
+direct-labelled). Inside a Fig 2a-format panel a model is drawn as a dashed line in the condition's colour.
 
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on

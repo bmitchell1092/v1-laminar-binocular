@@ -4,8 +4,9 @@ Colours (validated with the dataviz palette validator, light surface):
 * contrast is ordinal -> one-hue blue ramp, light -> dark, lightest step clears 2:1 on white;
 * conditions at one contrast: dominant eye blue, other eye orange, both eyes ink, linear-summation reference
   muted gray (dashed);
-* models: data ink, fixed-delay (feedforward) orange, recurrent aqua, conductance violet (the three hues pass
-  all-pairs CVD checks; aqua is < 3:1 on white -> always direct-labelled);
+* models: data ink, static dark grey (dashed), fixed-delay aqua, conductance violet, recurrent magenta; no model
+  uses orange, the other eye's colour (2026-11-01). Aqua, violet and magenta pass the all-pairs normal-vision check;
+  aqua-magenta is 6.1 for deutans and both are < 3:1 on white -> always direct-labelled;
 * monkeys are encoded by marker shape, not colour;
 * CSD: diverging blue (sink) <-> red (source) with a gray midpoint.
 Sizes follow journal columns (single 85 mm, 1.5 column 114 mm, double 174 mm); text 7 pt; vector PDF with
@@ -27,10 +28,10 @@ MM = 1 / 25.4
 WIDTH = {"single": 85 * MM, "onehalf": 114 * MM, "double": 174 * MM}
 
 INK, INK2, MUTED, RULE = "#0b0b0b", "#52514e", "#8a8985", "#d9d8d3"
-BLUE, ORANGE, AQUA, VIOLET = "#2a78d6", "#eb6834", "#1baf7a", "#6250d6"
+BLUE, ORANGE, AQUA, VIOLET, MAGENTA = "#2a78d6", "#eb6834", "#1baf7a", "#6250d6", "#e87ba4"
 CONTRAST = {0.055: "#86b6ef", 0.11: "#3987e5", 0.225: "#256abf", 0.45: "#184f95", 0.9: "#0d366b"}
 COND = {"dominant": BLUE, "other": ORANGE, "both": INK, "linear": MUTED}
-MODEL = {"data": INK, "fixed-delay": ORANGE, "recurrent": AQUA, "conductance": VIOLET}
+MODEL = {"data": INK, "static": INK2, "fixed-delay": AQUA, "conductance": VIOLET, "recurrent": MAGENTA}
 MONKEY_MARKER = {"B": "o", "J": "s"}
 CSD_CMAP = LinearSegmentedColormap.from_list("csd", ["#0d366b", "#3987e5", "#f0efec", "#e34948", "#8f1f1e"])
 

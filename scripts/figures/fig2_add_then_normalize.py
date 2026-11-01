@@ -6,16 +6,21 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig2_add_then_normalize.py
 (b) how the equivalent contrast is read (population means, illustration), on one shared response axis: the
     binocular response at 45% is placed on the dominant eye's contrast response measured in the same window and
     read off as the dominant-eye contrast that gives the same response;
-(c) linearity index over time (1 = linear summation, 0 = binocular equals the dominant eye alone) of the
-    population-average response, read as in (b): sliding 15 ms windows every 5 ms from each channel's onset, one eye
-    weight from the whole response; open triangles = binocular above the dominant eye at 90% (a lower bound); 95% CI
-    from 500 bootstrap resamples of penetrations. Averaging responses before the readout avoids the heavy tails of
-    per-channel ratios; the per-penetration statistics are in (d);
+(c) iso-response contours across the dichoptic conditions (v3_iso_contours.py), for targets equal to the dominant
+    eye's response at 22.5% and 45%, early (0-20 ms after each penetration's onset) and late (50-200 ms): for each
+    other-eye contrast, the dominant-eye contrast at which the binocular response reaches the target, from the
+    population-average window responses, with 95% penetration-bootstrap CIs. Axes are fractions of the target
+    contrast, the other eye's contrast multiplied by the eye weight of the same window, so linear summation is the
+    diagonal and "the dominant eye alone" the L-shaped rule; lines = fitted Minkowski contours; open circle on the
+    horizontal axis = the other eye alone already reaches the target; open triangle = CI beyond the axis. The note
+    gives the exponent early -> late for the population and the per-penetration medians (two-sided Wilcoxon);
 (d) per penetration, early (0-20 ms after onset) vs late (50-200 ms) linearity index (mean of the windows' channel
     medians, as in equivalent_contrast.py), including 5.5%; Wilcoxon signed-rank tests; values beyond the axis are
-    drawn at its edge. At 90% the equivalent contrast cannot be measured (the dominant eye has no higher contrast
-    to match); Fig 3a shows the raw binocular gain at 90%.
-Inputs: figure_data.py (population.npz), <out_root>/binocular/k_windows.parquet.
+    drawn at its edge as open triangles and counted. At 90% the equivalent contrast cannot be measured (the
+    dominant eye has no higher contrast to match).
+The linearity index over time (formerly panel c) is Fig 4c, with the model predictions.
+Inputs: figure_data.py (population.npz), <out_root>/binocular/k_windows.parquet, v3_C_population.parquet,
+v3_C_population_boot.parquet, v3_C_penetration.parquet.
 Writes <out_root>/figures/fig2_add_then_normalize.pdf and .png; prints the statistics shown.
 """
 
@@ -26,17 +31,19 @@ import matplotlib
 matplotlib.use("Agg")
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
+from matplotlib.transforms import blended_transform_factory  # noqa: E402
 from scipy import stats  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
-from v1lb.binocular import CONTRASTS, equivalent_contrast, eye_weight, invert_crf  # noqa: E402
+from v1lb.binocular import CONTRASTS, invert_crf  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
-DIOPTIC = [0.11, 0.225, 0.45]
 PAIRED = [0.055, 0.11, 0.225, 0.45]
 EARLY, LATE = [0, 10], [50, 75, 100, 150]             # window starts: 0-20 ms and 50-200 ms after onset
-SLIDE = 15                                            # sliding-window width (ms), as in normalization_timing.py
+CONTOUR_TARGETS = (0.225, 0.45)
+EPOCH = {"early": fs.MUTED, "late": fs.INK}           # docs/11: epoch grey ramp
+XMAX, YMAX = 1.5, 1.6                                 # contour axes (fractions of the target contrast)
 
 
 def timecourses(ax, pop):
@@ -56,8 +63,8 @@ def timecourses(ax, pop):
     ax.set_xlabel("time from response onset (ms)")
     ax.set_ylabel("MUA (dominant-eye peak = 1)")
     fs.line_key(ax, [(lab, col, ls) for lab, col, ls, _ in items], x=0.42, y=0.93)
-    ax.text(10, ax.get_ylim()[1] * 0.98, "first\n20 ms", ha="center", va="top", fontsize=5.5, color=fs.INK2,
-            linespacing=0.95)
+    ax.set_ylim(top=ax.get_ylim()[1] * 1.1)
+    ax.text(10, ax.get_ylim()[1] * 0.99, "first 20 ms", ha="center", va="top", fontsize=5.5, color=fs.INK2)
 
 
 def equivalent_contrast_sketch(ax, pop, w, title, a_med, ymax):
@@ -85,54 +92,65 @@ def equivalent_contrast_sketch(ax, pop, w, title, a_med, ymax):
     return kc / 0.45
 
 
-def population_L(O, rel, c, starts):
-    """Linearity index of the population-average response (as in panel b) in sliding windows; O [pen, 6, 6, rel].
-    One eye weight from the whole response (0-200 ms after onset), as for the per-penetration statistic in (d): a
-    weight refitted in the first windows, before the other eye has fully responded, would inflate the index.
-    Returns the index and whether k was top-censored (binocular above the dominant eye at 90%: a lower bound)."""
-    i = list(CONTRASTS).index(c)
-    M = np.nanmean(O, axis=0)
-    whole = (rel >= 0) & (rel < 200)
-    a = eye_weight(M[:, 0, whole].mean(axis=1), M[0, :, whole].mean(axis=1))
-    out, censored = np.full(len(starts), np.nan), np.zeros(len(starts), bool)
-    for k, s0 in enumerate(starts):
-        sel = (rel >= s0) & (rel < s0 + SLIDE)
-        d, b = M[:, 0, sel].mean(axis=1), M[i, i, sel].mean()
-        kk, cens = equivalent_contrast(d[:, None], np.array([b]), c)
-        censored[k] = cens[0] == 1
-        kk = CONTRASTS[-1] / c if censored[k] else float(kk[0])
-        out[k] = (kk - 1) / a
-    return out, censored
+def minkowski(y, m):
+    """Dominant-eye contrast (fraction of target) on the Minkowski contour of exponent m, for weighted other-eye
+    contrast y (fraction of target) in [0, 1]."""
+    return (1 - np.clip(y, 0, 1) ** m) ** (1 / m)
 
 
-def linearity_time(axs, pop, n_boot=500):
-    """One small panel per contrast (shared axes), 0-120 ms after onset."""
-    rel, O = pop["rel"], pop["onset"]
-    starts = np.arange(0, 106, 5)
-    x = starts + SLIDE / 2
-    rng = np.random.default_rng(0)
-    out = {}
-    for ax, c in zip(axs, PAIRED):
-        m, cens = population_L(O, rel, c, starts)
-        B = np.array([population_L(O[rng.integers(0, len(O), len(O))], rel, c, starts)[0] for _ in range(n_boot)])
-        lo, hi = np.nanpercentile(B, [2.5, 97.5], axis=0)
-        ax.fill_between(x, lo, hi, color=fs.CONTRAST[c], alpha=0.2, lw=0)
-        ax.plot(x, m, color=fs.CONTRAST[c], lw=1.4)
-        ax.plot(x[cens], m[cens], ls="none", marker="^", ms=3, mfc="white", mec=fs.CONTRAST[c], mew=0.7)
-        ax.axhline(1, color=fs.COND["linear"], lw=0.8, ls=(0, (3, 1.5)), zorder=0)
-        fs.zero_line(ax)
-        ax.set_xlim(0, 120)
-        ax.set_xticks([0, 50, 100])
-        ax.set_ylim(-1.2, 2.0)
-        ax.set_title(f"both eyes {fs.contrast_label(c)}", fontsize=6.5)
-        out[c] = (x, m)
-    for ax in axs[1:]:
-        ax.tick_params(labelleft=False)
-    axs[0].set_ylabel("linearity index")
-    axs[-1].text(123, 1, "linear\nsum", ha="left", va="center", fontsize=5.5, color=fs.INK2, linespacing=0.95)
-    axs[-1].text(123, 0, "dominant\neye alone", ha="left", va="center", fontsize=5.5, color=fs.INK2,
-                 linespacing=0.95)
-    return out
+def iso_contours(axs, Pop, Boot, Pen):
+    """Population iso-response contours (v3_iso_contours.py) at 22.5% and 45%, early vs late, with 95%
+    penetration-bootstrap CIs of the dominant-eye contrast needed; per-penetration exponents in the note."""
+    out = []
+    for ax, cs in zip(axs, CONTOUR_TARGETS):
+        yy = np.linspace(0, 1, 101)
+        ax.plot([0, 1], [1, 0], color=fs.COND["linear"], lw=0.8, ls=(0, (3, 1.5)), zorder=1)
+        ax.plot([0, 1, 1], [1, 1, 0], color=fs.RULE, lw=0.9, zorder=0)
+        for k, w in enumerate(("early", "late")):
+            col = EPOCH[w]
+            p = Pop[(Pop.window == w) & (Pop.cstar == cs)].sort_values("c_N")
+            b = Boot[(Boot.window == w) & (Boot.cstar == cs)].groupby("c_N").x
+            lo = b.quantile(0.025).reindex(p.c_N).to_numpy()
+            hi = b.quantile(0.975).reindex(p.c_N).to_numpy()
+            m = float(p.m.iloc[0])
+            ax.plot(yy, minkowski(yy, m), color=col, lw=0.8, zorder=2)
+            show = p.y.to_numpy() <= XMAX
+            xo, yd = p.y.to_numpy()[show] + (k - 0.5) * 0.025, p.x.to_numpy()[show]
+            lo, hi = np.minimum(lo[show], YMAX), np.minimum(hi[show], YMAX)
+            bound = p.status.to_numpy()[show] != "ok"
+            ax.vlines(xo, lo, hi, color=col, lw=0.6, zorder=3)
+            ax.scatter(xo[~bound], yd[~bound], s=10, color=col, zorder=4, lw=0)
+            ax.scatter(xo[bound], np.minimum(yd[bound], YMAX), s=10, facecolor="white", edgecolor=col, lw=0.7,
+                       zorder=4, clip_on=False)
+            ax.scatter(xo[hi >= YMAX], np.full((hi >= YMAX).sum(), YMAX), marker="^", s=9, facecolor="white",
+                       edgecolor=col, lw=0.6, zorder=4, clip_on=False)
+            r = p.iloc[0]
+            out.append(dict(target=cs, window=w, eye_weight=r.a, m=r.m, m_lo=r.m_lo, m_hi=r.m_hi,
+                            suppression=r.suppression, n_bound=int(bound.sum()), n_ci_at_top=int((hi >= YMAX).sum())))
+        g = Pen[Pen.cstar == cs].pivot(index="penetration", columns="window", values="m")[["early", "late"]].dropna()
+        pw = stats.wilcoxon(g.late, g.early).pvalue
+        out[-1].update(pen_n=len(g), pen_early=g.early.median(), pen_late=g.late.median(),
+                       pen_k=int((g.late > g.early).sum()), pen_p=pw)
+        pe, pl = out[-2], out[-1]
+        ax.text(0.0, 1.03, f"exponent, early → late:\npopulation {pe['m']:.1f} → {pl['m']:.1f}; penetrations "
+                f"{g.early.median():.1f} → {g.late.median():.1f}\n({int((g.late > g.early).sum())}/{len(g)} larger, "
+                f"{fs.fmt_p(pw)})", transform=ax.transAxes, fontsize=5, color=fs.INK2, va="bottom", ha="left",
+                linespacing=1.05, in_layout=False)
+        ax.set_xlim(0, XMAX + 0.05)
+        ax.set_ylim(0, YMAX)
+        ax.set_xticks([0, 0.5, 1.0, 1.5])
+        ax.set_yticks([0, 0.5, 1.0, 1.5])
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_title(f"target: dominant eye at {fs.contrast_label(cs)}", fontsize=6.5, pad=22)
+        ax.text(0.27, 0.46, "linear sum", rotation=-45, fontsize=5, color=fs.INK2, ha="center", va="center",
+                rotation_mode="anchor", in_layout=False)
+        ax.text(1.045, 0.45, "dominant eye alone", rotation=90, fontsize=5, color=fs.INK2, ha="left",
+                va="center", in_layout=False)
+    axs[0].set_ylabel("dominant-eye contrast\n(fraction of target)")
+    axs[1].tick_params(labelleft=False)
+    fs.line_key(axs[1], [("0–20 ms", EPOCH["early"], "-", "o"), ("50–200 ms", EPOCH["late"], "-", "o")],
+                x=0.55, y=0.95, dy=0.085, length=0.1, fontsize=5)
+    return pd.DataFrame(out)
 
 
 def early_late(ax, W):
@@ -148,20 +166,33 @@ def early_late(ax, W):
         x0, x1 = g * gap, g * gap + 1
         for a, b in zip(e.clip(lo_clip, hi_clip), l_.clip(lo_clip, hi_clip)):
             ax.plot([x0, x1], [a, b], color=fs.RULE, lw=0.5, zorder=1)
+        for xx, v in ((x0, e.to_numpy()), (x1, l_.to_numpy())):
+            for sel, mk, yv in ((v > hi_clip, "^", hi_clip), (v < lo_clip, "v", lo_clip)):
+                ax.scatter(np.full(sel.sum(), xx), np.full(sel.sum(), yv), marker=mk, s=8, facecolor="white",
+                           edgecolor=fs.INK2, lw=0.5, zorder=2, clip_on=False)
+        n_clip = int(((e > hi_clip) | (e < lo_clip)).sum() + ((l_ > hi_clip) | (l_ < lo_clip)).sum())
         ax.plot([x0, x1], [e.median(), l_.median()], color=fs.CONTRAST[c], lw=1.6, marker="o", ms=3.2, zorder=3)
-        ax.text((x0 + x1) / 2, hi_clip + 0.15, fs.fmt_p(p), ha="center", va="bottom", fontsize=5.5, color=fs.INK)
+        ax.text((x0 + x1) / 2, hi_clip + 0.2, fs.fmt_p(p), ha="center", va="bottom", fontsize=5.5, color=fs.INK)
         ax.text((x0 + x1) / 2, lo_clip - 0.55, fs.contrast_label(c), ha="center", va="top", fontsize=6.5,
                 color=fs.INK)
+        ax.text((x0 + x1) / 2, -0.21, f"{n_clip} off axis" if n_clip else "", ha="center", va="top", fontsize=5,
+                color=fs.INK2, transform=blended_transform_factory(ax.transData, ax.transAxes))
         out.append(dict(c=c, n=int(ok.sum()), early=e.median(), late=l_.median(), drop=(e - l_).median(),
-                        frac_drop=float((e > l_).mean()), p=p))
+                        frac_drop=float((e > l_).mean()), p=p, off_axis=n_clip))
     ax.axhline(1, color=fs.COND["linear"], lw=0.8, ls=(0, (3, 1.5)), zorder=0)
     fs.zero_line(ax)
     ax.set_xticks([x for g in range(len(PAIRED)) for x in (g * gap, g * gap + 1)], ["early", "late"] * len(PAIRED),
                   fontsize=5.5)
     ax.set_xlim(-0.6, (len(PAIRED) - 1) * gap + 1.6)
-    ax.set_ylim(lo_clip - 0.1, hi_clip + 0.1)
+    ax.set_ylim(lo_clip - 0.1, hi_clip + 0.75)
+    ax.set_yticks([-1, 0, 1, 2, 3])
+    ax.spines["left"].set_bounds(lo_clip - 0.1, hi_clip + 0.1)
     ax.set_ylabel("linearity index")
     ax.tick_params(axis="x", length=0)
+    ax.text(x1 + 0.7, 1, "linear\nsum", ha="left", va="center", fontsize=5.5, color=fs.INK2, linespacing=0.95,
+            clip_on=False)
+    ax.text(x1 + 0.7, 0, "dominant\neye alone", ha="left", va="center", fontsize=5.5, color=fs.INK2,
+            linespacing=0.95, clip_on=False)
     return pd.DataFrame(out)
 
 
@@ -170,9 +201,12 @@ def main():
     pop = dict(np.load(out_root() / "figures" / "data" / "population.npz"))
     meta = pd.read_parquet(out_root() / "figures" / "data" / "population_meta.parquet")
     W = pd.read_parquet(out_root() / "binocular" / "k_windows.parquet")
+    Pop = pd.read_parquet(out_root() / "binocular" / "v3_C_population.parquet")
+    Boot = pd.read_parquet(out_root() / "binocular" / "v3_C_population_boot.parquet")
+    Pen = pd.read_parquet(out_root() / "binocular" / "v3_C_penetration.parquet")
     a_med = float(meta.a.median())
 
-    fig = fs.figure("double", 112)
+    fig = fs.figure("double", 122)
     top, bot = fig.subfigures(2, 1, height_ratios=[1, 1], hspace=0.04)
     ax_a, ax_b1, ax_b2 = top.subplots(1, 3, gridspec_kw=dict(width_ratios=[1.6, 1, 1]))
     timecourses(ax_a, pop)
@@ -183,24 +217,27 @@ def main():
     ax_b1.set_ylabel("MUA (dominant-eye peak = 1)")
     ax_b2.tick_params(labelleft=False)
     for k, (mk, col, lab) in enumerate((("D", fs.INK, "both eyes, 45% each"), ("o", fs.COND["dominant"], "dominant eye alone"),
-                                        ("^", fs.MUTED, "linear sum, (1 + a)·45%"))):
+                                        ("^", fs.MUTED, "linear sum, (1 + eye weight) × 45%"))):
         y = 0.62 - k * 0.075
         ax_b2.plot([0.06], [y], marker=mk, color=col, ms=2.8, transform=ax_b2.transAxes, clip_on=False)
         ax_b2.text(0.11, y, lab, transform=ax_b2.transAxes, va="center", fontsize=5.5, color=fs.INK)
-    left, right = bot.subfigures(1, 2, width_ratios=[1.45, 1.0], wspace=0.02)
-    axs_c = left.subplots(1, len(PAIRED), sharey=True)
-    curves = linearity_time(axs_c, pop)
-    left.supxlabel("time from response onset (ms, window centre)", fontsize=7)
-    ax_c = axs_c[0]
+    left, right = bot.subfigures(1, 2, width_ratios=[1.25, 1.0], wspace=0.03)
+    axs_c = left.subplots(1, 2)
+    C = iso_contours(axs_c, Pop, Boot, Pen)
+    left.supxlabel("other-eye contrast × eye weight (fraction of target)", fontsize=7)
     ax_d = right.subplots()
     S = early_late(ax_d, W)
-    for ax, letter in zip((ax_a, ax_b1, ax_c, ax_d), "abcd"):
+    for ax, letter in zip((ax_a, ax_b1, ax_d), "abd"):
         fs.panel_label(ax, letter)
+    fs.panel_label(axs_c[0], "c", y=33)                  # above the title and the exponent note
     print(fs.save(fig, "fig2_add_then_normalize"))
-    print(f"illustration k: early {k_early:.2f}, late {k_late:.2f}; median eye weight a {a_med:.2f}; "
-          f"{len(meta)} penetrations")
-    for c, (x, m) in curves.items():
-        print(f"sliding L at {c}: first window {m[0]:.2f}; min {np.nanmin(m):.2f} at {x[np.nanargmin(m)]:.1f} ms")
+    pd.set_option("display.width", 220)
+    print(f"illustration equivalent contrast / 45%: early {k_early:.2f}, late {k_late:.2f}; median eye weight "
+          f"{a_med:.2f}; {len(meta)} penetrations")
+    print("(c) iso-response contours (population exponent [95% CI], suppression fraction, bounds; per-penetration "
+          "medians, k/n larger late, two-sided Wilcoxon):")
+    print(C.round(3).to_string(index=False))
+    print("(d) early vs late per penetration:")
     print(S.round(3).to_string(index=False))
 
 
