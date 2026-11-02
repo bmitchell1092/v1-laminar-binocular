@@ -31,7 +31,14 @@ shared cache, and prints the statistics it displays so they can be checked again
 * **Statistics on the panel:** counts as "k/n penetrations", tests as "p = 0.02" or "p < 0.001"
   (`fs.fmt_p`). The test is named in the legend.
 * **Clipping:** when a few penetrations fall outside sensible limits, they are drawn at the axis edge as open
-  triangles, and the legend says so. No silent clipping.
+  triangles, and the legend says so and gives the count (the script prints it). No silent clipping, and no count
+  text on the panel.
+* **One reading per panel** (2026-11-02, after Fig 2c): a panel should be readable at first glance without the
+  legend. Prefer one condition shown well to two crammed side by side (the rest go to the supplement); put at most
+  one short statistic on the panel; leave fitted curves out of a main panel when they fit the late data poorly.
+  Check every label against every line, error bar and key in the rendered PNG: no text may cross a mark.
+* **Images:** colour maps (CSD) are drawn with `imshow(..., interpolation="bilinear")`. A Gouraud-shaded
+  `pcolormesh` leaves saw-tooth seams between channel rows at 300 dpi.
 
 ## Colour (validated with the dataviz palette validator on a white surface)
 
@@ -40,7 +47,7 @@ shared cache, and prints the statistics it displays so they can be checked again
 | Contrast (ordinal) | one-hue blue ramp, light → dark | 5.5% `#86b6ef`, 11% `#3987e5`, 22.5% `#256abf`, 45% `#184f95`, 90% `#0d366b` |
 | Condition at one contrast | categorical | dominant eye blue `#2a78d6`, other eye orange `#eb6834`, both eyes ink `#0b0b0b` |
 | Linear-summation reference | muted grey, dashed | `#8a8985` |
-| Data vs models | categorical | data ink; static model dark grey `#52514e`, dashed; fixed-delay aqua `#1baf7a`; conductance violet `#6250d6`; recurrent magenta `#e87ba4`. No model uses orange, the other eye's colour (2026-11-01). Aqua and magenta are below 3:1 on white and 6.1 apart for deutans, so always direct-labelled. Inside a panel in the Fig 2a format, a model is a dashed line in the condition's colour |
+| Data vs models | categorical | data ink; static model dark grey `#52514e`, dashed; fixed-delay aqua `#1baf7a`; conductance violet `#6250d6`; recurrent magenta `#e87ba4`. No model uses orange, the other eye's colour (2026-11-01). Aqua and magenta are below 3:1 on white and 6.1 apart for deutans, so always direct-labelled. Inside a panel in the Fig 2a format, a model is a dashed line in the condition's colour; every data trace there is solid (the 90% one too) and the key reads "solid: data / dashed: fit" |
 | Model variants | marker shape and fill, same hue | single-stage filled circle, two-stage open square, Ding–Sperling open triangle |
 | Monkey | marker shape, never colour | B circle, J square |
 | Epoch (early vs late) | grey ramp | early `#8a8985`, late ink |
@@ -57,12 +64,17 @@ dominant eye alone" is the solid light rule at L = 0 (k = 1).
   symbol may appear only in a formula in the Methods (Blake, 2026-10-30).
 * **Population readouts for noisy ratios.** Where a per-channel ratio is heavy-tailed (the linearity index), time
   courses are read out from population-average responses with penetration-bootstrap bands, and per-penetration
-  statistics are shown separately (Fig 2c vs 2d).
+  statistics are shown separately (Fig 4c vs Fig 2d).
 * **CSD shown as population averages** aligned on a landmark (the earliest sink), not single noisy examples.
 
 * **Time axes** say their zero: "time from stimulus onset" (photodiode), "time from response onset" (each channel's
   half-max onset, dominant eye at 90%), "time from sink onset", "time from response offset".
 * **Contrast** is shown in percent: 5.5, 11, 22.5, 45, 90.
+* **Iso-response contours** are drawn in percent contrast with equal axes: "dominant-eye contrast needed (%)"
+  against "other-eye contrast × eye weight (%)". Linear summation is the grey dashed diagonal; "dominant eye alone"
+  is the light horizontal rule at the target contrast (no L-shaped rule).
+* **Early vs late per penetration** (paired panels): tick labels give the windows ("0–20", "50–200") over "window
+  after onset (ms)"; the condition ("both eyes 45%") and its test head each pair.
 * **Responses** are MUA scaled per channel to the dominant-eye peak at 90% (40–250 ms) unless the axis says
   otherwise.
 * **Depth** is "depth below top of cortex (mm)", increasing downward. Laminar landmarks are drawn as dashed lines

@@ -13,8 +13,9 @@ onset; v1lb.dynorm; dominant eye on axis 0, each channel scaled by its dominant-
 * recurrent ('org'): binocular ORGaNICs, whose normalization signal is built recurrently from the responses.
 (a) the model in words, and the colour key;
 (b) data and conductance fit at 45% in the format of Fig 2a, on the stimulus clock: dominant eye at 90%, each eye
-    alone at 45% and both eyes at 45%; data = mean over penetrations of the channel-averaged responses with 95%
-    bootstrap CI (v3_A1_population.npz, all presentations), fit = mean over penetrations of each penetration's
+    alone at 45% and both eyes at 45% (the text's comparison with 90% rests on this panel; here every data trace is
+    solid and every fit dashed, so the 90% data trace is solid, unlike Fig 2a, and the key says so); data = mean over
+    penetrations of the channel-averaged responses with 95% bootstrap CI (v3_A1_population.npz, all presentations), fit = mean over penetrations of each penetration's
     all-presentation conductance fit (fig5_cond.parquet, predicted here with dynorm.predict);
 (c) linearity index over time (channel-average readout fig5_model.windowed_L, windows 0-10 ... 100-150 ms after the
     response onset, plotted at their centres) of the data and of the static and delayed (fixed-delay) fits; median
@@ -80,7 +81,7 @@ def schematic(ax, tau2):
                     arrowprops=dict(arrow, patchA=src.get_bbox_patch() if is_node else None,
                                     patchB=dst.get_bbox_patch()))
 
-    yd, yp, bus = 0.86, 0.58, 0.34
+    yd, yp, bus = 0.86, 0.58, 0.365
     for y, lab, col in ((0.77, "dominant eye", fs.COND["dominant"]), (0.67, "other eye", fs.COND["other"])):
         ax.text(0.0, y + 0.012, lab, ha="left", va="bottom", fontsize=6, color=fs.INK)
         ax.plot([0.0, bus], [y, y], color=col, lw=1.4, solid_capstyle="butt")
@@ -96,14 +97,12 @@ def schematic(ax, tau2):
     arr(delay, resp)
     ax.text(0.37, yd + 0.075, "dominant + drive weight × other", fontsize=5.3, color=fs.INK2, ha="left", va="bottom")
     ax.text(0.37, yp - 0.095, "dominant + pool weight × other", fontsize=5.3, color=fs.INK2, ha="left", va="top")
-    ax.text(0.0, 0.335, "conductance: the delayed pool also shortens the\nresponse's time constant",
-            fontsize=5.5, color=fs.INK, ha="left", va="center", linespacing=1.0)
     items = [("data", fs.MODEL["data"], "-"),
              ("static: pool without delay", *MODELS["static"][1:]),
-             ("fixed-delay", *MODELS["full"][1:]),
-             ("conductance", *MODELS["cond"][1:]),
+             ("fixed-delay: pool delayed", *MODELS["full"][1:]),
+             ("conductance: delayed pool also speeds the response", *MODELS["cond"][1:]),
              ("recurrent: pool built from the responses", *MODELS["org"][1:])]
-    fs.line_key(ax, items, x=0.0, y=0.215, dy=0.055, length=0.07)
+    fs.line_key(ax, items, x=0.0, y=0.31, dy=0.068, length=0.07, fontsize=5.5)
 
 
 def fit_vs_data(ax, Y, pens, F):
@@ -124,8 +123,8 @@ def fit_vs_data(ax, Y, pens, F):
     ax.set_xlabel("time from stimulus onset (ms)")
     ax.set_ylabel("MUA (dominant-eye peak = 1)")
     fs.line_key(ax, [(lab, col, "-") for lab, col, _ in conds], x=0.40, y=0.97, dy=0.075, length=0.08)
-    fs.line_key(ax, [("data (95% CI)", fs.INK2, "-"), ("conductance fit", fs.INK2, (0, (2.2, 1.2)))], x=0.40,
-                y=0.62, dy=0.075, length=0.08)
+    fs.line_key(ax, [("solid: data (95% CI)", fs.INK, "-"), ("dashed: conductance fit", fs.INK, (0, (2.2, 1.2)))],
+                x=0.40, y=0.62, dy=0.075, length=0.08)
     # numbers for the text: both eyes relative to the dominant eye at 90% (early) and 45% (late), data and fit
     D = {lab: Y[:, a, b].mean(axis=0) for lab, _, (a, b) in conds}
     M = {lab: P[:, k].mean(axis=0) for k, (lab, _, _) in enumerate(conds)}
@@ -168,12 +167,10 @@ def index_time_course(axs, L):
         ax.tick_params(labelleft=False)
     axs[0].set_ylabel("linearity index")
     axs[1].set_xlabel("time from response onset (ms, window centre)")
-    # direct labels at the right end of the last panel (45%)
-    last = {s: float(g) for s, g in pd.DataFrame(rows).query("c == 0.45 and w0 == 100").set_index("source")
-            ["median"].items()}
-    for y, lab, col in ((1.0, "linear sum", fs.INK2), (last["static"], "static", MODELS["static"][1]),
-                        (0.17, "dominant\neye alone", fs.INK2), (last["full"] - 0.1, "fixed-delay", fs.INK)):
-        axs[2].text(153, y, lab, ha="left", va="center", fontsize=5.3, color=col, linespacing=0.95, clip_on=False)
+    for y, lab in ((1.0, "linear sum"), (0.0, "dominant\neye alone")):
+        axs[2].text(153, y, lab, ha="left", va="center", fontsize=5.5, color=fs.INK2, linespacing=0.95, clip_on=False)
+    fs.line_key(axs[0], [("data", fs.MODEL["data"], "-", "o"), ("static", *MODELS["static"][1:]),
+                         ("fixed-delay", *MODELS["full"][1:])], x=0.08, y=0.22, dy=0.075, length=0.16)
     return pd.DataFrame(rows), clipped
 
 

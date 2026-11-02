@@ -137,10 +137,11 @@ def crfs(ax, pop):
     fs.log_contrast_axis(ax, c)
     ax.set_xticklabels(["5.5", "11", "22.5", "45", "90"])
     ax.set_xlabel("contrast, one eye (%)")
-    ax.set_ylabel("MUA, 40–250 ms\n(dominant-eye peak = 1)")
+    ax.set_ylabel("MUA (dominant-eye peak = 1)")
     ax.set_ylim(0, None)
     ax.set_xlim(0.045, 1.0)
-    ax.text(0.05, 0.98 * ax.get_ylim()[1], f"{F.shape[0]} penetrations\nmean, 95% CI", fontsize=5.5,
+    ax.set_title("40–250 ms after stimulus onset", fontsize=6, color=fs.INK)
+    ax.text(0.05, 0.98 * ax.get_ylim()[1], f"mean, 95% CI,\n{F.shape[0]} penetrations", fontsize=5.5,
             color=fs.INK2, va="top", linespacing=1.0)
     ratio = F[:, 0, 5] / F[:, 5, 0]
     return out, ratio
@@ -172,7 +173,7 @@ def ocular_dominance(ax):
     ax.set_xlim(-1, 1)
     ax.set_xticks([-1, 0, 1], ["−1", "0", "1"])
     ax.set_xlabel("ocular dominance index", labelpad=1)
-    ax.set_ylabel("fraction of sites")
+    ax.set_ylabel("fraction")
     top = max(hm.max(), hu.max()) * 1.3
     ax.set_ylim(0, top)
     ax.text(-0.97, top * 0.62, "ipsilateral\neye only", fontsize=5.5, color=fs.INK2, ha="left", va="top",

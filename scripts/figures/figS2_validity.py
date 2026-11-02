@@ -13,7 +13,7 @@ Usage: .venv\\Scripts\\python scripts\\figures\\figS2_validity.py
 (c) ocular-dominance terciles at 45% (|ODI| from the selection half; index from the other half);
 (d) isolated single units (lenient set; v3_units_index.py), per unit, same readout as Fig 2d.
 (b-d): lines = penetrations (units in d), coloured line = median; Wilcoxon signed-rank tests, early vs late; values
-beyond the axis are drawn at its edge as open triangles and counted.
+beyond the axis are drawn at its edge as open triangles (counted in the printout, for the legend).
 Inputs: <out_root>/binocular/v3_A1_L.parquet, v3_A2_penetrations.parquet, v3_A3_penetrations.parquet,
 v3_A4_units.parquet; docs/qc/v3_A2.csv, v3_A3.csv.
 Writes <out_root>/figures/figS2_validity.pdf and .png; prints the statistics shown.
@@ -27,7 +27,6 @@ import matplotlib
 matplotlib.use("Agg")
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
-from matplotlib.transforms import blended_transform_factory  # noqa: E402
 from scipy import stats  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
@@ -68,8 +67,8 @@ def null_panel(axs, L):
     for ax in axs[1:]:
         ax.tick_params(labelleft=False)
     axs[0].set_ylabel("linearity index")
-    fs.line_key(axs[0], [("data", fs.INK, "-", "o"), ("fixed rule, noise-free", NULL_COL, (0, (3, 1.5))),
-                         ("fixed rule + data noise (both signs)", fs.MUTED, "-", "o")], x=0.08, y=0.2, dy=0.09)
+    fs.line_key(axs[0], [("data (median, 95% CI)", fs.INK, "-", "o"), ("fixed rule, noise-free", NULL_COL, (0, (3, 1.5))),
+                         ("fixed rule + the data's noise (±)", fs.MUTED, "-", "o")], x=0.08, y=0.2, dy=0.09)
     axs[-1].text(132, 1, "linear\nsum", ha="left", va="center", fontsize=5.5, color=fs.INK2, linespacing=0.95)
     axs[-1].text(132, 0, "dominant\neye alone", ha="left", va="center", fontsize=5.5, color=fs.INK2,
                  linespacing=0.95)
@@ -111,13 +110,11 @@ def paired(ax, groups, gap=2.6):
         n_clip = int(((e > HI) | (e < LO)).sum() + ((l_ > HI) | (l_ < LO)).sum())
         ax.text((x0 + x1) / 2, HI + 0.2, fs.fmt_p(p), ha="center", va="bottom", fontsize=5.5, color=fs.INK)
         ax.text((x0 + x1) / 2, LO - 0.6, lab, ha="center", va="top", fontsize=6, color=fs.INK, linespacing=0.95)
-        ax.text((x0 + x1) / 2, -0.2, f"{n_clip} off axis" if n_clip else "", ha="center", va="top", fontsize=5,
-                color=fs.INK2, transform=blended_transform_factory(ax.transData, ax.transAxes))
         out.append(dict(group=lab.replace("\n", " "), n=len(d), early=np.median(e), late=np.median(l_),
                         frac_drop=float((e > l_).mean()), p=p, clipped=n_clip))
     ax.axhline(1, color=fs.COND["linear"], lw=0.8, ls=(0, (3, 1.5)), zorder=0)
     fs.zero_line(ax)
-    ax.set_xticks([x for k in range(len(groups)) for x in (k * gap, k * gap + 1)], ["early", "late"] * len(groups),
+    ax.set_xticks([x for k in range(len(groups)) for x in (k * gap, k * gap + 1)], ["0–20", "50–200"] * len(groups),
                   fontsize=5.5)
     ax.set_xlim(-0.6, (len(groups) - 1) * gap + 1.6)
     ax.set_ylim(LO - 0.1, HI + 0.75)
@@ -158,7 +155,7 @@ def main():
     ax_b.set_ylabel("linearity index")
     ax_b.set_title("dominant eye chosen on the other half", fontsize=6.5)
     ax_b.text(0.02, 0.03, f"late index at 45%, cross-validated − same half:\n{sh.shift_late:+.3f} "
-              f"[{sh.lo:.3f}, {sh.hi:.3f}]", transform=ax_b.transAxes, fontsize=5.2, color=fs.INK2, va="bottom",
+              f"[{sh.lo:.3f}, {sh.hi:.3f}]", transform=ax_b.transAxes, fontsize=5.5, color=fs.INK2, va="bottom",
               linespacing=1.0)
 
     t45 = P3.xs(0.45, level="c")
@@ -178,6 +175,7 @@ def main():
     print(f"(d) units shown: {n_units} units in {n_pen} penetrations")
     ax_d.tick_params(labelleft=False)
 
+    bot.supxlabel("window after onset (ms)", fontsize=7)
     for ax, letter in zip((axs_a[0], ax_b, ax_c, ax_d), "abcd"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "figS2_validity"))

@@ -1,12 +1,12 @@
 """Supplementary Figure S3: iso-response contours at every target contrast, early, during the transition and late
-(docs/09, V3 analysis C; the main-text version at 22.5% and 45% is Fig 2c).
+(docs/09, V3 analysis C; the main-text version, 45% early and late without fitted contours, is Fig 2c).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\figS3_iso_contours.py
 Contours from v3_iso_contours.py: for a target equal to the dominant eye's response at 11, 22.5 or 45% in a window
 (0-20, 20-50 or 50-200 ms after each penetration's response onset), each other-eye contrast gives the dominant-eye
-contrast at which the binocular response reaches the target. Axes are fractions of the target contrast; the other
+contrast at which the binocular response reaches the target. Axes are in percent contrast, as in Fig 2c; the other
 eye's contrast is multiplied by the eye weight fitted in the same window, so linear summation is the diagonal and
-"the dominant eye alone" is the L-shaped rule.
+"the dominant eye alone" the horizontal line at the target contrast.
 (a) population contours (population-average window responses), 95% penetration-bootstrap CIs of the dominant-eye
     contrast; filled = measured; open circle on the horizontal axis = the other eye alone already reaches the target
     (the contour meets the axis at or before that point); open triangle = CI beyond the axis; lines = fitted Minkowski
@@ -20,6 +20,7 @@ Writes <out_root>/figures/figS3_iso_contours.pdf and .png; prints the statistics
 import warnings
 
 import matplotlib
+import matplotlib.ticker
 
 matplotlib.use("Agg")
 import numpy as np  # noqa: E402
@@ -33,7 +34,7 @@ warnings.filterwarnings("ignore")
 TARGETS = (0.11, 0.225, 0.45)
 WINDOWS = {"early": "0–20 ms", "mid": "20–50 ms", "late": "50–200 ms"}
 SHADE = {"early": fs.MUTED, "mid": fs.INK2, "late": fs.INK}
-XMAX, YMAX = 1.5, 1.6
+XMAX, YMAX = 1.55, 1.33                               # axis limits as multiples of the target contrast (Fig 2c)
 
 
 def minkowski(y, m):
@@ -44,46 +45,44 @@ def contour_panels(axs, Pop, Boot):
     out = []
     yy = np.linspace(0, 1, 101)
     for ax, cs in zip(axs, TARGETS):
-        ax.plot([0, 1], [1, 0], color=fs.COND["linear"], lw=0.8, ls=(0, (3, 1.5)), zorder=1)
-        ax.plot([0, 1, 1], [1, 1, 0], color=fs.RULE, lw=0.9, zorder=0)
+        T = 100 * cs
+        ax.plot([0, T], [T, 0], color=fs.COND["linear"], lw=0.8, ls=(0, (3, 1.5)), zorder=1)
+        ax.plot([0, XMAX * T], [T, T], color=fs.RULE, lw=0.9, zorder=0)
         for k, w in enumerate(WINDOWS):
             col = SHADE[w]
             p = Pop[(Pop.window == w) & (Pop.cstar == cs)].sort_values("c_N")
             b = Boot[(Boot.window == w) & (Boot.cstar == cs)].groupby("c_N").x
-            lo = b.quantile(0.025).reindex(p.c_N).to_numpy()
-            hi = b.quantile(0.975).reindex(p.c_N).to_numpy()
+            lo = T * b.quantile(0.025).reindex(p.c_N).to_numpy()
+            hi = T * b.quantile(0.975).reindex(p.c_N).to_numpy()
             r = p.iloc[0]
-            ax.plot(yy, minkowski(yy, r.m), color=col, lw=0.8, zorder=2)
+            ax.plot(T * yy, T * minkowski(yy, r.m), color=col, lw=0.8, zorder=2)
             show = p.y.to_numpy() <= XMAX
-            xo, yd = p.y.to_numpy()[show] + (k - 1) * 0.025, p.x.to_numpy()[show]
-            lo, hi = np.minimum(lo[show], YMAX), np.minimum(hi[show], YMAX)
+            xo, yd = T * (p.y.to_numpy()[show] + (k - 1) * 0.025), T * p.x.to_numpy()[show]
+            lo, hi = np.minimum(lo[show], YMAX * T), np.minimum(hi[show], YMAX * T)
             st = p.status.to_numpy()[show]
             ax.vlines(xo, lo, hi, color=col, lw=0.6, zorder=3)
             ok = st == "ok"
             ax.scatter(xo[ok], yd[ok], s=9, color=col, zorder=4, lw=0)
-            ax.scatter(xo[~ok], np.minimum(yd[~ok], YMAX), s=9, facecolor="white", edgecolor=col, lw=0.7, zorder=4,
-                       clip_on=False)
-            top = hi >= YMAX
-            ax.scatter(xo[top], np.full(top.sum(), YMAX), marker="^", s=8, facecolor="white", edgecolor=col,
+            ax.scatter(xo[~ok], np.minimum(yd[~ok], YMAX * T), s=9, facecolor="white", edgecolor=col, lw=0.7,
+                       zorder=4, clip_on=False)
+            top = hi >= YMAX * T
+            ax.scatter(xo[top], np.full(top.sum(), YMAX * T), marker="^", s=8, facecolor="white", edgecolor=col,
                        lw=0.6, zorder=4, clip_on=False)
             out.append(dict(target=cs, window=w, eye_weight=r.a, m=r.m, m_lo=r.m_lo, m_hi=r.m_hi,
                             suppression=r.suppression, below_axis=int((st == "below_axis").sum()),
                             censored=int((st == "censored").sum()), ci_beyond_axis=int(top.sum())))
-        ax.set_xlim(0, XMAX + 0.05)
-        ax.set_ylim(0, YMAX)
-        ax.set_xticks([0, 0.5, 1.0, 1.5])
-        ax.set_yticks([0, 0.5, 1.0, 1.5])
+        ax.set_xlim(0, XMAX * T)
+        ax.set_ylim(0, YMAX * T)
+        ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+        ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
         ax.set_aspect("equal", adjustable="box")
-        ax.set_title(f"target: dominant eye at {fs.contrast_label(cs)}", fontsize=6.5)
-        ax.text(0.27, 0.46, "linear sum", rotation=-45, fontsize=5, color=fs.INK2, ha="center", va="center",
-                rotation_mode="anchor", in_layout=False)
-        ax.text(1.045, 0.45, "dominant eye alone", rotation=90, fontsize=5, color=fs.INK2, ha="left",
-                va="center", in_layout=False)
-    for ax in axs[1:]:
-        ax.tick_params(labelleft=False)
-    axs[0].set_ylabel("dominant-eye contrast\n(fraction of target)")
-    fs.line_key(axs[-1], [(lab, SHADE[w], "-", "o") for w, lab in WINDOWS.items()], x=0.55, y=0.95, dy=0.08,
-                length=0.1, fontsize=5)
+        ax.set_title(f"target: dominant eye alone at {fs.contrast_label(cs)}", fontsize=6.5)
+        ax.text(T * 0.36, T * 0.70, "linear sum", rotation=-45, rotation_mode="anchor", fontsize=5.5,
+                color=fs.INK2, ha="center", va="bottom")
+        ax.text(XMAX * T, T * 1.02, "dominant eye alone", fontsize=5.5, color=fs.INK2, ha="right", va="bottom")
+    axs[0].set_ylabel("dominant-eye contrast needed (%)")
+    fs.line_key(axs[0], [(lab, SHADE[w], "-", "o") for w, lab in WINDOWS.items()], x=0.66, y=0.52, dy=0.08,
+                length=0.1, fontsize=5.5)
     return pd.DataFrame(out)
 
 
@@ -110,7 +109,7 @@ def exponent_panel(ax, Pen):
     ax.set_yticks([0.5, 1, 2, 5, 10, 20], ["0.5", "1", "2", "5", "10", "20"])
     ax.minorticks_off()
     ax.set_xticks([g * gap + i for g in range(len(TARGETS)) for i in range(3)],
-                  ["0–20", "20–50", "50–200"] * len(TARGETS), fontsize=5.2)
+                  ["0–20", "20–50", "50–200"] * len(TARGETS), fontsize=5.5)
     ax.tick_params(axis="x", length=0)
     ax.set_xlim(-0.6, (len(TARGETS) - 1) * gap + 2.6)
     ax.set_ylabel("Minkowski exponent")
@@ -129,7 +128,7 @@ def main():
     top, bot = fig.subfigures(2, 1, height_ratios=[1.05, 1], hspace=0.04)
     axs = top.subplots(1, 3)
     A = contour_panels(axs, Pop, Boot)
-    top.supxlabel("other-eye contrast × eye weight (fraction of target)", fontsize=7)
+    top.supxlabel("other-eye contrast × eye weight (%)", fontsize=7)
     left, _ = bot.subfigures(1, 2, width_ratios=[1.6, 0.4])
     ax_b = left.subplots()
     B = exponent_panel(ax_b, Pen)

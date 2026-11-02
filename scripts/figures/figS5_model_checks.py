@@ -128,9 +128,9 @@ def dynamic_late(ax, L):
                             inside=(lo > -MARGIN) and (hi < MARGIN)))
     band_axes(ax, (-0.8, 0.8))
     ax.text(0, -0.55, "noise-\nlimited", ha="center", va="bottom", fontsize=5.5, color=fs.INK2, linespacing=1.0)
-    fs.line_key(ax, [(lab, col, "none", "o") for lab, col in DYNAMIC.values()], x=0.66, y=0.95, dy=0.075,
+    fs.line_key(ax, [(lab, col, "none", "o") for lab, col in DYNAMIC.values()], x=0.36, y=0.95, dy=0.075,
                 length=0.05)
-    ax.text(0.97, 0.06, "penetration-level fits", transform=ax.transAxes, ha="right", va="bottom", fontsize=5.5,
+    ax.text(0.62, 0.06, "penetration-level fits", transform=ax.transAxes, ha="center", va="bottom", fontsize=5.5,
             color=fs.INK2)
     return pd.DataFrame(out)
 
@@ -185,7 +185,7 @@ def separate_delays(ax, B3):
     held = B3[~B3.empty_half]
     r = np.log(held.cv_full / held.cv_sep)
     p_r = stats.wilcoxon(r, alternative="greater").pvalue
-    ax.text(0.04, 0.80, f"other-eye term slower by\n{dt.median():.1f} ms (median), {int((dt > 0).sum())}/{len(dt)}",
+    ax.text(0.04, 0.82, f"other-eye term slower by\n{dt.median():.1f} ms (median), {int((dt > 0).sum())}/{len(dt)}",
             transform=ax.transAxes, ha="left", va="top", fontsize=5.5, color=fs.INK, linespacing=1.0)
     ax.text(0.96, 0.04, f"held out, separate delays\nbetter in {int((r > 0).sum())}/{len(r)}, {fs.fmt_p(p_r)}",
             transform=ax.transAxes, ha="right", va="bottom", fontsize=5.5, color=fs.INK, linespacing=1.0)
@@ -210,17 +210,16 @@ def main():
     fig = fs.figure("double", 108)
     top, bot = fig.subfigures(2, 1, height_ratios=[1, 1.05], hspace=0.05)
     ax_a, ax_b, ax_c = top.subplots(1, 3, gridspec_kw=dict(width_ratios=[0.75, 1.2, 1.2]))
-    ax_d, ax_e, ax_x = bot.subplots(1, 3, gridspec_kw=dict(width_ratios=[1, 1, 0.9]))
-    ax_x.axis("off")
+    ax_d, ax_e = bot.subplots(1, 2, gridspec_kw=dict(width_ratios=[1.35, 1]))
     T = two_stage(ax_a, C, I)
     K = capture(ax_b, LI)
     D = dynamic_late(ax_c, LD)
     R = recovery(ax_d, B4, F)
     S = separate_delays(ax_e, B3)
-    for k, (mk, lab) in enumerate((("o", "monkey B"), ("s", "monkey J"))):
-        ax_x.scatter([0.05], [0.9 - k * 0.08], s=9, marker=mk, facecolor=fs.INK2, edgecolor=fs.INK, lw=0.4,
-                     transform=ax_x.transAxes)
-        ax_x.text(0.1, 0.9 - k * 0.08, lab, va="center", fontsize=5.5, color=fs.INK, transform=ax_x.transAxes)
+    for k, (mk, lab) in enumerate((("o", "monkey B"), ("s", "monkey J"))):     # marker key for a, d and e
+        ax_e.scatter([0.07], [0.95 - k * 0.07], s=9, marker=mk, facecolor=fs.INK2, edgecolor=fs.INK, lw=0.4,
+                     transform=ax_e.transAxes)
+        ax_e.text(0.12, 0.95 - k * 0.07, lab, va="center", fontsize=5.5, color=fs.INK, transform=ax_e.transAxes)
     for ax, letter in zip((ax_a, ax_b, ax_c, ax_d, ax_e), "abcde"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "figS5_model_checks"))

@@ -1069,7 +1069,7 @@ Rules for every figure:
 | Figure | Claim | Panels | Script |
 |---|---|---|---|
 | 1 | Design and an example | (a) 6 × 6 dichoptic contrast design and trial sequence; (b) example penetration, onset-aligned, in the Fig 2a format; (c) monocular contrast response, dominant vs other eye; (d) ocular dominance index, MUA and units | `fig1_setup.py` |
-| 2 | The eyes add, then normalize | (a) population responses at 45%, onset-aligned; (b) equivalent-contrast readout; (c) iso-response contours at 22.5% and 45%, early vs late (population, penetration-bootstrap CIs; per-penetration exponent in the note); (d) early vs late linearity index per penetration | `fig2_add_then_normalize.py` |
+| 2 | The eyes add, then normalize | (a) population responses at 45%, onset-aligned; (b) equivalent-contrast readout; (c) iso-response contour for the 45% target, early vs late, in percent contrast (population, penetration-bootstrap CIs; per-penetration exponent test in the note; 22.5% and the fitted contours in S3); (d) early vs late linearity index per penetration | `fig2_add_then_normalize.py` |
 | 3 | Contrast sets how far it collapses, at every depth and in the input current | (a) transition-window index per penetration vs contrast; (b) slope on log contrast per penetration and in the held-out stimulus-position runs; (c) early and late index by depth; (d) population CSD aligned to the earliest sink; (e) sink current at 45% in the Fig 2a format | `fig3_contrast_depth.py` |
 | 4 | Normalization is delayed, weights the other eye more, and acts like a conductance | (a) model schematic and colour key; (b) data vs conductance fit, Fig 2a format; (c) linearity index over time: data, static, delayed; (d) held-out interaction error, delayed vs static; (e) pool weight vs drive weight of the other eye; (f) held-out comparison of the three dynamic models | `fig4_model.py` |
 | S1 | Apparatus and laminar alignment | (a) stereoscope; (b) example flash CSD with alignment | `figS1_methods.py` |
@@ -1095,6 +1095,33 @@ changed in the claims:
   Stated in the text.
 * **Monkey split (Table S1):** monkey B shows no early-to-late decline at 11% (4/8) and its 45% test is p = .098
   (7/8); its iso-contour changes are underpowered. The conductance gain is essentially monkey J's.
+
+**Polished for readability 2026-11-02** (Blake: "Figure 2c reads as quite messy … not sure if this is the best way
+to represent the data"). Display only: every script's printed statistics are unchanged except counts of points
+drawn at an axis edge.
+* **Fig 2c redrawn.** One target (45%) instead of two; axes in percent contrast ("dominant-eye contrast needed (%)"
+  against "other-eye contrast × eye weight (%)"), not fractions of the target; "dominant eye alone" is a horizontal
+  line at the target, not an L-shaped rule; no fitted Minkowski contours (they fit the late points poorly, exponent
+  CI 0.96 to ≥ 20); points joined per window and labelled directly; the statistic is one note (19/25, p < 0.001).
+  The 22.5% target and the fitted contours stay in S3, now drawn in the same percent coordinates.
+* **Fig 2b:** each window on its own response axis, so the late readout is visible. **Fig 2d:** condition headers
+  above each pair, windows as tick labels ("0–20", "50–200"), off-axis counts moved to the legend (S2 b–d likewise).
+* **Fig 3:** (a) values beyond the axis drawn as open triangles (8), window in the title; (b) one tick label per
+  group; (c) key moved off the reference line; (d) CSD drawn as a bilinear image (the Gouraud mesh drew saw-tooth
+  seams between channel rows); (e) shorter note, lighter bands.
+* **Fig 4:** (a) one key describing every model the same way; (b) key reads "solid: data / dashed: conductance fit"
+  (the 90% trace stays, because the text's comparison with 90% cites this panel); (c) a key for data, static and
+  fixed-delay replaces model names stacked beside the reference labels.
+* **Fig 1c:** analysis window as the panel title, not in the axis label; (d) "fraction" (MUA and units).
+* **S5:** monkey key inside panel e, empty third slot removed, panel c key and note moved off the error bars.
+
+Carry into V4 (draft_v3.docx was open in Word, so the text was not touched):
+* Results, contour paragraph: "the contour is instead a vertical line at the dominant eye's contrast" → a
+  horizontal line at the target contrast (true of the V3 figure too); cite Fig 2c for 45% and Supplementary Fig S3
+  for 11 and 22.5%.
+* Legends: Fig 2 (b separate response axes; c rewritten for one target in percent contrast, no fitted curves; d
+  off-axis counts 2, 1, 3, 3 at 5.5–45%); Fig 3a (8 values drawn at the axis edge); Fig 4b (solid data, dashed fit);
+  S2 b–d (off-axis counts: b 5, 2, 4; c 0, 2, 7; d 46, 32); S3 (percent axes; horizontal "dominant eye alone").
 
 Model colours (no model uses orange, the other eye's colour): data ink, static dark grey dashed, fixed-delay aqua,
 conductance violet, recurrent magenta (aqua and magenta below 3:1 on white and close for deutans, so always

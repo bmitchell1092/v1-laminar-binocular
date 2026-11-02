@@ -3,7 +3,8 @@ input current (docs/09, figure set for V3; combines the former Fig 3b-c and Fig 
 
 Usage: .venv\\Scripts\\python scripts\\figures\\fig3_contrast_depth.py
 (a) linearity index in the transition window (sliding 15 ms windows starting 20-35 ms after each channel's onset,
-    i.e. covering 20-50 ms) per penetration (grey) and the median (normalization_timing.py);
+    i.e. covering 20-50 ms) per penetration (grey) and the median (normalization_timing.py); values beyond the axis
+    are drawn at its edge as open triangles;
 (b) slope of the transition linearity index on log contrast per recording: all penetrations by monkey, and the
     held-out runs of the dual-probe days, in which the grating sat on the other probe's receptive field (monkey J,
     recordings with >= 5 driven channels; one-sided sign tests);
@@ -13,7 +14,8 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig3_contrast_depth.py
     late (Wilcoxon over penetrations); late index and early-late drop on depth (mixed model, linear + quadratic,
     random intercept per penetration, as fig3_depth.py), overall and per monkey;
 (d) population CSD aligned to each penetration's earliest current sink (presentations with either eye >= 45%; each
-    penetration scaled by its sink's peak, then averaged; sink_data.py), with the median L4/5 boundary;
+    penetration scaled by its sink's peak, then averaged; sink_data.py), with the median L4/5 boundary; drawn as a
+    bilinearly interpolated image (Gouraud-shaded meshes leave saw-tooth seams between channel rows);
 (e) current at the earliest sink (-CSD over the sink channel and its two neighbours) at 45% in the format of Fig 2a,
     on the sink-onset clock: dominant eye at 90%, dominant eye at 45%, other eye at 45%, both eyes at 45%. Each
     penetration is scaled by its mean absolute monocular sink current over 0-150 ms after sink onset (dominant 90%,
@@ -52,7 +54,8 @@ EPOCHS = {"early": (0, 20), "late": (50, 200)}
 EPOCH_COLOR = {"early": fs.MUTED, "late": fs.INK}
 DEPTH_BINS = [(0, 4), (4, 8), (8, 12), (12, 16), (16, 20), (20, 24), (24, 32)]     # contacts below the top
 DEPTH_SETS = {"11 and 22.5%": [0.11, 0.225], "45%": [0.45]}
-SINK_WINDOWS = [(0, 20), (20, 50), (50, 200)]                                      # ms after sink onset (Fig 2)
+SINK_WINDOWS = [(0, 20), (20, 50), (50, 200)]
+TR_LIM = (-2.0, 3.0)                                                               # (a) axis limits                                      # ms after sink onset (Fig 2)
 
 
 # ------------------------------------------------------------------------------------------------ (a, b) contrast
@@ -73,8 +76,14 @@ def slopes(tr: pd.DataFrame) -> pd.Series:
 
 
 def transition_panel(ax, tr: pd.DataFrame):
-    for _, r in tr.dropna().iterrows():
-        ax.plot(DIOPTIC, r.values.clip(-2, 3), color=fs.RULE, lw=0.5, zorder=1)
+    lo, hi = TR_LIM
+    v = tr.dropna()
+    for _, r in v.iterrows():
+        ax.plot(DIOPTIC, r.values.clip(lo, hi), color=fs.RULE, lw=0.5, zorder=1)
+    for out, edge, mk in ((v.to_numpy() > hi, hi, "^"), (v.to_numpy() < lo, lo, "v")):
+        xs = np.array(DIOPTIC)[np.nonzero(out)[1]]
+        ax.scatter(xs, np.full(len(xs), edge), marker=mk, s=8, facecolor="white", edgecolor=fs.INK2, lw=0.5,
+                   zorder=2, clip_on=False)
     med = tr.median()
     ax.plot(DIOPTIC, med.values, color=fs.INK, lw=1.2, zorder=2)
     for c in DIOPTIC:
@@ -85,14 +94,17 @@ def transition_panel(ax, tr: pd.DataFrame):
     ax.set_xticklabels(["11", "22.5", "45"])
     ax.set_xlabel("contrast, both eyes (%)")
     ax.set_xlim(0.09, 0.55)
-    ax.set_ylim(-2.1, 3.1)
-    ax.set_ylabel("linearity index, 20–50 ms after onset")
-    ax.text(0.97, 0.97, f"{len(tr.dropna())} penetrations\ngrey: each; black: median", transform=ax.transAxes,
-            ha="right", va="top", fontsize=5.5, color=fs.INK, linespacing=1.0)
+    ax.set_ylim(TR_LIM[0] - 0.1, TR_LIM[1] + 0.1)
+    ax.set_ylabel("linearity index")
+    ax.set_title("20–50 ms after onset", fontsize=6.5)
+    ax.text(0.97, 0.97, f"{len(v)} penetrations\ngrey: each; black: median", transform=ax.transAxes,
+            ha="right", va="top", fontsize=5.5, color=fs.INK, linespacing=1.0, zorder=4,
+            bbox=dict(fc="white", ec="none", pad=0.4, alpha=0.85))
+    n_clip = int(((v < lo) | (v > hi)).to_numpy().sum())
     for y, lab in ((1.0, "linear sum"), (0.0, "dominant eye alone")):
-        ax.text(0.093, y + 0.04, lab, ha="left", va="bottom", fontsize=5.2, color=fs.INK2, zorder=4,
+        ax.text(0.093, y + 0.04, lab, ha="left", va="bottom", fontsize=5.5, color=fs.INK2, zorder=4,
                 bbox=dict(fc="white", ec="none", pad=0.4, alpha=0.85))
-    return med
+    return med, n_clip
 
 
 def slope_panel(ax, sl: pd.Series, sl_x: pd.Series):
@@ -114,14 +126,12 @@ def slope_panel(ax, sl: pd.Series, sl_x: pd.Series):
         out[(lab, x)] = (n_neg, len(v), p, v.median(), int(clipped.sum()))
     ax.axvline(1.68, color=fs.RULE, lw=0.6)
     fs.zero_line(ax, color=fs.INK2)
-    ax.set_xticks([0, 1.0, 2.35], ["B", "J", "J"], fontsize=6)
+    ax.set_xticks([0, 1.0, 2.35], ["monkey B", "monkey J", "monkey J,\nheld-out\nruns"], fontsize=6)
     ax.tick_params(axis="x", length=0)
     ax.set_xlim(-0.5, 2.85)
     ax.set_ylim(-6.3, 3.2)
     ax.set_ylabel("slope of linearity index\non log contrast")
-    for x, lab in ((0.5, "all\npenetrations"), (2.35, "held-out\nruns")):
-        ax.text(x, -7.7, lab, ha="center", va="top", fontsize=5.5, color=fs.INK2, linespacing=1.0)
-    ax.text(-0.42, -5.6, "slope < 0:\ncollapse deeper at\nhigher contrast", ha="left", va="bottom", fontsize=5.2,
+    ax.text(-0.42, -5.6, "below 0: deeper\ncollapse at higher\ncontrast", ha="left", va="bottom", fontsize=5.5,
             color=fs.INK2, linespacing=1.0)
     return out
 
@@ -188,7 +198,9 @@ def sink_csd(ax, cax, Z, S):
     M = np.nanmean(Z["maps"], axis=0)
     off, t = Z["offsets"] * 0.1, Z["t_map"]
     lim = np.nanpercentile(np.abs(M[:, (t > 20) & (t < 150)]), 99)
-    im = ax.pcolormesh(t, off, M, cmap=fs.CSD_CMAP, vmin=-lim, vmax=lim, shading="gouraud", rasterized=True)
+    dt, dz = t[1] - t[0], off[1] - off[0]
+    im = ax.imshow(M, cmap=fs.CSD_CMAP, vmin=-lim, vmax=lim, interpolation="bilinear", aspect="auto", origin="lower",
+                   extent=(t[0] - dt / 2, t[-1] + dt / 2, off[0] - dz / 2, off[-1] + dz / 2), rasterized=True)
     ax.set_ylim(off.max(), off.min())
     ax.set_xlim(-10, 150)
     l45 = np.nanmedian(S.sink_depth_l45) * 0.1                # L4/5 lies this far below the sink (median)
@@ -241,7 +253,7 @@ def sink_traces(ax, Y, rel, T):
              ("other eye, 45%", fs.COND["other"], "-", Y[:, 0, 4]),
              ("both eyes, 45% each", fs.COND["both"], "-", Y[:, 4, 4])]
     for lab, col, ls, A in items:
-        fs.ci_line(ax, rel[sel], A[:, sel], col, ls=ls, lw=1.2 if col == fs.INK else 1.0, alpha=0.12)
+        fs.ci_line(ax, rel[sel], A[:, sel], col, ls=ls, lw=1.2 if col == fs.INK else 1.0, alpha=0.09)
     fs.zero_line(ax)
     ax.axvspan(0, 20, color=fs.RULE, alpha=0.5, lw=0, zorder=0)
     ax.set_xlim(-10, 150)
@@ -251,12 +263,10 @@ def sink_traces(ax, Y, rel, T):
     fs.line_key(ax, [(lab, col, ls) for lab, col, ls, _ in items], x=0.45, y=0.95)
     ax.text(10, 1.47, "first\n20 ms", ha="center", va="top", fontsize=5.5, color=fs.INK2, linespacing=0.95)
     r = T[T.comparison == "both - dominant 45%"].set_index("window")
-    lines = [f"{w.replace('-', '–')}: {int(r.loc[w, 'n_pos'])}/{int(r.loc[w, 'n'])}, {fs.fmt_p(r.loc[w, 'p'])}"
-             for w in r.index[:2]]
-    txt = ("both eyes > dominant eye at 45%,\nper penetration:\n" + "\n".join(lines)
-           + "\nafter 50 ms, 45% and 90% no longer differ")
-    ax.text(0.45, 0.6, txt, transform=ax.transAxes, ha="left", va="top", fontsize=5.5, color=fs.INK,
-            linespacing=1.05)
+    lines = [f"{w.replace('-', '–')}: {int(r.loc[w, 'n_pos'])}/{int(r.loc[w, 'n'])} penetrations, "
+             f"{fs.fmt_p(r.loc[w, 'p'])}" for w in r.index[:2]]
+    ax.text(0.45, 0.62, "both eyes > dominant eye at 45%\n" + "\n".join(lines), transform=ax.transAxes, ha="left",
+            va="top", fontsize=5.5, color=fs.INK, linespacing=1.1)
 
 
 def main():
@@ -280,7 +290,7 @@ def main():
     fig = fs.figure("double", 118)
     top, bot = fig.subfigures(2, 1, height_ratios=[1.0, 0.95], hspace=0.04)
     ta = top.subplots(1, 4, gridspec_kw=dict(width_ratios=[1.0, 1.05, 0.78, 0.78]))
-    med = transition_panel(ta[0], tr)
+    med, n_clip_a = transition_panel(ta[0], tr)
     sres = slope_panel(ta[1], sl, sl_x)
     depth_rows, model_rows = [], []
     for k, (title, cs) in enumerate(DEPTH_SETS.items()):
@@ -290,8 +300,8 @@ def main():
     ta[3].sharey(ta[2])
     ta[3].tick_params(labelleft=False)
     ta[2].set_ylabel("depth below top of cortex (mm)")
-    fs.line_key(ta[3], [(f"{ep}, {EPOCHS[ep][0]}–{EPOCHS[ep][1]} ms", EPOCH_COLOR[ep], "-", "o") for ep in EPOCH_COLOR],
-                x=0.06, y=0.075, dy=0.055, length=0.12)
+    fs.line_key(ta[2], [(f"{EPOCHS[ep][0]}–{EPOCHS[ep][1]} ms", EPOCH_COLOR[ep], "-", "o") for ep in EPOCH_COLOR],
+                x=0.04, y=0.075, dy=0.055, length=0.12)
     ba = bot.subplots(1, 3, gridspec_kw=dict(width_ratios=[1.15, 0.045, 1.35]))
     l45 = sink_csd(ba[0], ba[1], Z, S)
     sink_traces(ba[2], Y, Z["rel"], T)
@@ -300,7 +310,7 @@ def main():
     print(fs.save(fig, "fig3_contrast_depth"))
 
     print("\n(a) transition-window index, median over penetrations:", med.round(2).to_dict(),
-          f"n = {len(tr.dropna())}")
+          f"n = {len(tr.dropna())}; values beyond the axis: {n_clip_a}")
     print("(b) slopes (negative = deeper collapse at higher contrast):")
     for (lab, x), (n_neg, n, p, m, nclip) in sres.items():
         grp = "held-out runs" if x > 2 else f"penetrations, monkey {lab}"
