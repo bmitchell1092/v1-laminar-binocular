@@ -959,6 +959,56 @@ Freeman 2003).
   +0.022); org vs full 9/24, p = .86; cond vs org 18/24, p = .0002; delayed vs static 23/24, p = 1.2 × 10⁻⁷.
   Conclusions unchanged; the paper reports held-out comparisons on 24 penetrations and says why.
 
+## V4 check: dip and partial recovery (registered internally 2026-11-02, before running)
+
+**Why.** The accessibility redesign of the figures (Blake, 2026-11-02: "very important that we make this paper
+accessible") shows the result as *the response the other eye adds* (both eyes − dominant eye alone) against what
+linear summation of contrast predicts (dominant eye at c(1 + a) − dominant eye at c). In that view the population
+means at 45% look like a dip and a partial recovery, not a step: the other eye adds about what summation predicts in
+the first 20 ms, nothing from ~30 to ~110 ms, and about two thirds of the prediction by 150–200 ms (the B1 undershoot
+logged above, in response units). **Not blind:** the windows below were chosen after seeing those population means
+in the mockups, so this check can confirm or reject the shape but is not an independent discovery. It also serves as
+the noise check the B1 undershoot was waiting for.
+
+**F. Measure.** Per penetration, onset-aligned channel-mean responses as `figure_data.py` (driven MUA channels,
+dominant eye, scaling, onset and eye weight a from all presentations), for all presentations and for odd and even
+presentations. In each window after response onset: added A = mean of R(c, c) − R(c, 0); predicted P = mean of
+R_D(c(1 + a)) − R(c, 0), with R_D interpolated in log contrast between the dominant eye's measured contrasts at each
+time point. Windows: early 0–20 ms, dip 30–100 ms, recovery 130–200 ms. Contrast 45% is primary; 11 and 22.5% are
+reported.
+
+**Tests (45%, Wilcoxon signed-rank over penetrations, one-sided in the stated direction):**
+* F1 dip: A − P < 0 in 30–100 ms.
+* F2 recovery: A(130–200) − A(30–100) > 0.
+* F3 partial: A − P < 0 in 130–200 ms.
+* F4 undershoot: A < 0 in 30–100 ms (the other eye's grating lowers the response).
+
+**Criteria.** A test holds if p < .05 on all presentations *and* the median difference has the same sign in the odd
+and in the even half. The paper may then say: F1, "adds nothing from ~30 to ~100 ms"; F2 + F3, "partly recovers but
+stays below summation"; F4, "the other eye briefly suppresses". If F2 fails, the text keeps one late window and says
+nothing about recovery; if F4 fails, "matched" stays (A2 note above). Script: `scripts/v4_dip_recovery.py`, output
+[qc/v4_F.csv](qc/v4_F.csv).
+
+**F results (2026-11-02; 26 penetrations; per-penetration window means in
+[qc/v4_F_windows.csv](qc/v4_F_windows.csv)). F1 and F2 hold; F3 and F4 fail.** Population means at 45% (added /
+predicted, dominant-eye peak = 1): early 0.199 / 0.164, dip −0.004 / 0.037, recovery 0.030 / 0.041.
+* **F1 holds:** at 45% the other eye adds less than summation predicts in 30–100 ms (23/26, p = 4 × 10⁻⁵; odd
+  p = .002, even p = .0001).
+* **F2 holds:** its contribution returns, 130–200 vs 30–100 ms (21/26, p = .0004; odd p = .002, even p = .002).
+* **F3 fails:** by 130–200 ms the contribution is not reliably below summation (16/26, median −0.011, p = .087; odd
+  p = .20, even p = .051). In response units, at 45%, normalization is clear only from ~30 to ~100 ms.
+* **F4 fails:** no undershoot (14/26 below zero, p = .24; halves disagree in sign). The other eye adds nothing in the
+  dip; it does not suppress. "Matched" stays.
+* **Reported, 11%:** the opposite pattern: below summation in the dip (18/26, p = .017; odd half p = .09) *and*
+  late (19/26, p = .001, both halves), with no recovery (13/26, p = .81); the other eye adds about 60% of the prediction from ~50 ms on.
+  **22.5%:** predictions are small after 30 ms (≤ 0.02) and nothing reaches p < .05.
+* **For the paper:** at 45% write "adds nothing from ~30 to ~100 ms, then partly returns"; do not write that the
+  binocular response stays at the dominant eye alone through 200 ms at 45%. The per-channel late index (Fig 2d,
+  50–200 ms) averages the dip and the return and weights them through the flat late contrast response, so it reads
+  lower than the response-unit view; the text should say both. Blake to decide how the abstract and title phrase
+  "normalize later" given that the sustained partial normalization is clearest at 11% and the strong one at 45% is
+  transient.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
@@ -1122,10 +1172,67 @@ Carry into V4 (draft_v3.docx was open in Word, so the text was not touched):
 * Legends: Fig 2 (b separate response axes; c rewritten for one target in percent contrast, no fitted curves; d
   off-axis counts 2, 1, 3, 3 at 5.5–45%); Fig 3a (8 values drawn at the axis edge); Fig 4b (solid data, dashed fit);
   S2 b–d (off-axis counts: b 5, 2, 4; c 0, 2, 7; d 46, 32); S3 (percent axes; horizontal "dominant eye alone").
+  *(Superseded in part by the rebuild below: Fig 2b and 2c left the main figure.)*
+
+### Figure set for V4: rebuilt for readers outside the field (2026-11-02)
+
+**Why.** Blake: "if you were someone who was not as familiar with the literature, would you be able to understand
+what each figure is showing? … I think it's very important that we make this paper accessible." A cold read found
+four barriers: no picture of the two predictions before the data (the summation prediction hid in a legend
+parenthesis, "dominant eye, 90% (≈ linear sum)"); "linear sum" reads as "the responses add"; the late effect sat in
+small gaps between overlapping traces; and measures were built on measures (equivalent contrast → linearity index →
+its slope on contrast; iso-response contours; ratios of held-out errors). Rules in docs/11 ("Written for readers
+outside the field").
+
+| Figure | Claim | Panels | Script |
+|---|---|---|---|
+| 1 | The experiment | (a) stereoscope with each eye's grating, laminar probe in V1, trial sequence (schematics); (b) 6 × 6 design with a grating swatch at each contrast; (c) example penetration: both eyes, each eye alone, "if the contrasts add" (its own eye weight); (d) monocular contrast responses; (e) ocular dominance | `fig1_setup.py` |
+| 2 | The eyes add, then normalize | (a) what to look for: sketches of "contrasts add" vs "the eyes normalize each other"; (b) population at 45%: both eyes, dominant eye alone, "if the contrasts add" (45% × (1 + a), each penetration's a); (c) what the other eye adds vs what summation predicts it adds; (d) early vs late linearity index per penetration (unchanged statistics) | `fig2_add_then_normalize.py` |
+| 3 | Contrast sets how far, at every depth; the input current adds at onset | (a) what the other eye adds at 11, 22.5, 45%; (b) transition-window index vs contrast per penetration, per-monkey slope counts in the note (8/8, 18/18); (c) depth profiles; (d) population CSD; (e) current added at the earliest sink vs summation (the current's own eye weight, median 0.48) | `fig3_contrast_depth.py` |
+| 4 | Normalization is delayed and weights the other eye more | (a) timing sketch: drive (both eyes add at once), pool (lagging, median fitted 30 ms), response; (b) data vs conductance fit, four conditions (keeps 90% for the text); (c) what the other eye adds at 11 and 45%: data vs no-delay (static) and delayed-pool (fixed-delay) fits; (d) held-out interaction error; (e) pool vs drive weight | `fig4_model.py` |
+| S1 | Reading the index; laminar alignment | (a) equivalent-contrast readout (former Fig 2b); (b) example flash CSD | `figS1_methods.py` |
+| S2 | The index is valid | (a) fixed-rule null; (b) slope on contrast by monkey and held-out runs (former Fig 3b); (c) cross-validated dominance; (d) ocular-dominance terciles; (e) units | `figS2_validity.py` |
+| S3 | Iso-response contours | as before (the former Fig 2c lives here) | `figS3_iso_contours.py` |
+| S5 | Model checks | (a)–(e) as before; (f) held-out comparison of the three dynamic models (former Fig 4f) | `figS5_model_checks.py` |
+
+S4, S6 and Table S1 are unchanged (Table S1's panel references updated). Shared code: `v1lb.binocular.response_at`
+and `other_eye_added`, `figstyle.added_panel`, `SUM`, `LINEARITY`, `smooth` (5 ms running mean, display only).
+
+**Statistics.** Every statistic carried over is unchanged (printouts diffed against the saved ones: Fig 2d, the
+slopes now in S2b, Fig 3c–e tests, Fig 4b/d/e, S5f, S1 readout and landmarks). New numbers, all descriptive except the
+registered check F above:
+* Fig 2c / 3a window means (added / predicted, dominant-eye peak = 1): 45% 0.199 / 0.164 (0–20 ms), −0.004 / 0.037
+  (30–100), 0.030 / 0.041 (130–200); 11% 0.119 / 0.115, 0.042 / 0.061, 0.030 / 0.051; 22.5% 0.167 / 0.136,
+  0.008 / 0.018, 0.015 / 0.014.
+* Fig 3e: the sink current's eye weight is lower than the MUA's (median 0.48, IQR 0.20–0.91, vs 0.70), so its
+  summation prediction is smaller than the old 90% stand-in; the measured added current exceeds it at onset.
+* Fig 4c (stimulus clock, added: data / static / fixed-delay): 45% 30–60 ms 0.179 / 0.031 / 0.156, 70–140 ms
+  0.007 / 0.029 / 0.009, 150–219 ms 0.022 / 0.029 / −0.002; 11% 0.088 / 0.056 / 0.097, 0.047 / 0.057 / 0.052,
+  0.028 / 0.057 / 0.036. The static model adds a small constant amount from the start and misses the onset burst
+  at every contrast; the delayed model gets the burst and the drop but not the late return at 45% (check F).
+
+Carry into V4 (on top of the list above):
+* **Figure references in the text:** Fig 2b → Supplementary Fig S1a; Fig 2c (contours) → Supplementary Fig S3; old
+  Fig 3a → Fig 3b; old Fig 3b → Fig 3b note and Supplementary Fig S2b; old Fig 3e → Fig 3e (now "added" format); old
+  Fig 4a model schematic → Fig 4a timing sketch and the Methods; old Fig 4c (index over time with models) → Fig 4c
+  ("added" format); old Fig 4f → Supplementary Fig S5f; S2 b–d → S2 c–e. Fig 1 letters: example c, CRF d, ODI e.
+* **Text from check F:** at 45% the other eye adds about what summation predicts in the first 20 ms, nothing from
+  ~30 to ~100 ms, and its contribution partly returns by 130–200 ms, where it no longer differs reliably from
+  summation (F3 failed); no undershoot (F4 failed). At 11% it stays below summation late (about 60%) without a
+  return. Remove "the 45% undershoot" from the model paragraph and the Fig 4 legend; say the delayed model misses the
+  late return at 45%.
+* **Legends:** rewrite all four main legends for the new panels (illustrations labelled; "if the contrasts add" =
+  45% × (1 + a) with each penetration's eye weight; "added" = both eyes − dominant eye alone; 5 ms running mean for
+  display); S1, S2, S5 legends for the moved panels.
+* **Words:** "linear sum" → "if the contrasts add" / "linear summation of contrast" on first use; define the
+  linearity index as the share of the other eye's contrast added.
+* **Blake to decide:** how the title, abstract and Fig 2 heading phrase "normalize later", given that the strong
+  normalization at 45% is transient in response units and the sustained partial normalization is clearest at 11%.
 
 Model colours (no model uses orange, the other eye's colour): data ink, static dark grey dashed, fixed-delay aqua,
 conductance violet, recurrent magenta (aqua and magenta below 3:1 on white and close for deutans, so always
-direct-labelled). Inside a Fig 2a-format panel a model is drawn as a dashed line in the condition's colour.
+direct-labelled). Inside a panel of condition time courses (Fig 4b) a model is drawn as a dashed line in the
+condition's colour.
 
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on

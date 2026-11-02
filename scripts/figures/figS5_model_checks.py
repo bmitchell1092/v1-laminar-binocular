@@ -15,10 +15,14 @@ Usage: .venv\\Scripts\\python scripts\\figures\\figS5_model_checks.py
     (fig5_cond.parquet, full fits); bars = medians;
 (e) separate pool delays for the two eyes' terms (model 'sep', P = c_D v(tau2) + w c_N v(tau2N); v3_interocular_delay.py):
     all-presentation fits per penetration; held-out comparison with the shared-delay model over 24 penetrations
-    (one-sided Wilcoxon on log error ratios; one penetration, 211008, has no usable even half).
+    (one-sided Wilcoxon on log error ratios; one penetration, 211008, has no usable even half);
+(f) % less held-out error per penetration for three pairings of the dynamic models (least-squares fits, odd/even
+    cross-validation; fig5_cond.parquet, fig5_org.parquet; 24 penetrations, 211008 left out for the same reason);
+    one-sided Wilcoxon on log error ratios; values beyond the axis are drawn at its edge (open triangles) (formerly
+    Fig 4f, moved here 2026-11-02).
 Inputs: <out_root>/binocular/fig5_channel_test.parquet, fig5_interaction_test.parquet,
-fig5_interaction_test_L.parquet, fig5_cond_L.parquet, fig5_org_L.parquet, fig5_cond.parquet, v3_B3.parquet,
-v3_B4_fits.parquet.
+fig5_interaction_test_L.parquet, fig5_cond_L.parquet, fig5_org_L.parquet, fig5_cond.parquet, fig5_org.parquet,
+v3_B3.parquet, v3_B4_fits.parquet.
 Writes <out_root>/figures/figS5_model_checks.pdf and .png; prints the statistics shown.
 """
 
@@ -44,6 +48,7 @@ VARIANTS = (("full", "single-stage (fixed-delay)", "o", fs.MODEL["fixed-delay"])
             ("ds", "Ding–Sperling", "^", "white"))
 DYNAMIC = {"full": ("fixed-delay", fs.MODEL["fixed-delay"]), "cond": ("conductance", fs.MODEL["conductance"]),
            "org": ("recurrent", fs.MODEL["recurrent"])}
+GAIN_LIM = (-15.0, 25.0)               # % axis limits in (f)
 
 
 def band_axes(ax, ylim):
@@ -195,6 +200,42 @@ def separate_delays(ax, B3):
                 held_median_pct=float(100 * (1 - np.exp(-r.median()))))
 
 
+def held_out(ax, F):
+    pairs = (("cond", "full"), ("cond", "org"), ("org", "full"))
+    rows = []
+    for x, (ch, ref) in enumerate(pairs):
+        r = np.log(F[f"cv_{ref}"] / F[f"cv_{ch}"])
+        pct = 100 * (1 - np.exp(-r))
+        rng = np.random.default_rng(x)
+        for mk, idx in F.groupby("monkey").groups.items():
+            v = pct[idx].to_numpy()
+            xs = x + rng.uniform(-0.15, 0.15, len(v))
+            inside = (v >= GAIN_LIM[0]) & (v <= GAIN_LIM[1])
+            ax.scatter(xs[inside], v[inside], s=8, marker=fs.MONKEY_MARKER[mk], facecolor=fs.INK2, edgecolor=fs.INK,
+                       lw=0.4, zorder=3)
+            for edge, mkr in ((GAIN_LIM[1], "^"), (GAIN_LIM[0], "v")):
+                out = (v > edge) if edge > 0 else (v < edge)
+                ax.scatter(xs[out], np.full(out.sum(), edge), s=10, marker=mkr, facecolor="white", edgecolor=fs.INK,
+                           lw=0.5, zorder=3, clip_on=False)
+        ax.plot([x - 0.25, x + 0.25], [pct.median()] * 2, color=DYNAMIC[ch][1], lw=1.6, zorder=4)
+        p = stats.wilcoxon(r, alternative="greater").pvalue
+        ax.text(x, GAIN_LIM[1] + 1.5, f"{int((r > 0).sum())}/{len(r)}\n{fs.fmt_p(p)}", ha="center", va="bottom",
+                fontsize=5.5, color=fs.INK, linespacing=1.0)
+        by = {mk: f"{int((r[F.monkey == mk] > 0).sum())}/{int((F.monkey == mk).sum())}, median "
+                  f"{100 * (1 - np.exp(-r[F.monkey == mk].median())):.1f}%" for mk in ("B", "J")}
+        rows.append(dict(pair=f"{DYNAMIC[ch][0]} vs {DYNAMIC[ref][0]}", n=len(r), better=int((r > 0).sum()),
+                         median_pct=pct.median(), median_log_ratio=r.median(), p=p, B=by["B"], J=by["J"],
+                         clipped=int(((pct < GAIN_LIM[0]) | (pct > GAIN_LIM[1])).sum())))
+    fs.zero_line(ax, color=fs.INK2)
+    ax.set_xticks(range(3), ["conductance\nvs\nfixed-delay", "conductance\nvs\nrecurrent", "recurrent\nvs\nfixed-delay"],
+                  fontsize=5.5)
+    ax.tick_params(axis="x", length=0)
+    ax.set_xlim(-0.5, 2.5)
+    ax.set_ylim(*GAIN_LIM)
+    ax.set_ylabel("% less held-out error\n(first model vs second)")
+    return pd.DataFrame(rows)
+
+
 def main():
     fs.apply()
     b = out_root() / "binocular"
@@ -204,23 +245,28 @@ def main():
     LD = pd.concat([pd.read_parquet(b / "fig5_cond_L.parquet"),
                     pd.read_parquet(b / "fig5_org_L.parquet").query("source == 'org'")])
     F = pd.read_parquet(b / "fig5_cond.parquet").set_index("penetration")
+    O = pd.read_parquet(b / "fig5_org.parquet").set_index("penetration")
+    Fo = F.join(O[[c for c in O.columns if c.startswith(("cv_org", "org_"))]])
     B3 = pd.read_parquet(b / "v3_B3.parquet")
+    empty = B3.set_index("penetration").empty_half if "penetration" in B3.columns else B3.empty_half
+    held = Fo.drop(index=empty[empty].index)
     B4 = pd.read_parquet(b / "v3_B4_fits.parquet")
 
     fig = fs.figure("double", 108)
     top, bot = fig.subfigures(2, 1, height_ratios=[1, 1.05], hspace=0.05)
     ax_a, ax_b, ax_c = top.subplots(1, 3, gridspec_kw=dict(width_ratios=[0.75, 1.2, 1.2]))
-    ax_d, ax_e = bot.subplots(1, 2, gridspec_kw=dict(width_ratios=[1.35, 1]))
+    ax_d, ax_e, ax_f = bot.subplots(1, 3, gridspec_kw=dict(width_ratios=[1.15, 1, 1]))
     T = two_stage(ax_a, C, I)
     K = capture(ax_b, LI)
     D = dynamic_late(ax_c, LD)
     R = recovery(ax_d, B4, F)
     S = separate_delays(ax_e, B3)
+    H = held_out(ax_f, held)
     for k, (mk, lab) in enumerate((("o", "monkey B"), ("s", "monkey J"))):     # marker key for a, d and e
         ax_e.scatter([0.07], [0.95 - k * 0.07], s=9, marker=mk, facecolor=fs.INK2, edgecolor=fs.INK, lw=0.4,
                      transform=ax_e.transAxes)
         ax_e.text(0.12, 0.95 - k * 0.07, lab, va="center", fontsize=5.5, color=fs.INK, transform=ax_e.transAxes)
-    for ax, letter in zip((ax_a, ax_b, ax_c, ax_d, ax_e), "abcde"):
+    for ax, letter in zip((ax_a, ax_b, ax_c, ax_d, ax_e, ax_f), "abcdef"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "figS5_model_checks"))
     print("(a) two-stage gain:")
@@ -231,6 +277,8 @@ def main():
     print(D.round(3).to_string(index=False))
     print(f"(d) parameter recovery: {R}")
     print(f"(e) separate delays: {S}")
+    print(f"(f) held-out comparisons (n = {len(held)}; excluded: {list(empty[empty].index)}):")
+    print(H.round(4).to_string(index=False))
 
 
 if __name__ == "__main__":

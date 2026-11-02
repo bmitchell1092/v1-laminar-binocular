@@ -1,10 +1,10 @@
 """Supplementary Figure S3: iso-response contours at every target contrast, early, during the transition and late
-(docs/09, V3 analysis C; the main-text version, 45% early and late without fitted contours, is Fig 2c).
+(docs/09, V3 analysis C; the main-text Fig 2c of V3 moved here on 2026-11-02).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\figS3_iso_contours.py
 Contours from v3_iso_contours.py: for a target equal to the dominant eye's response at 11, 22.5 or 45% in a window
 (0-20, 20-50 or 50-200 ms after each penetration's response onset), each other-eye contrast gives the dominant-eye
-contrast at which the binocular response reaches the target. Axes are in percent contrast, as in Fig 2c; the other
+contrast at which the binocular response reaches the target. Axes are in percent contrast; the other
 eye's contrast is multiplied by the eye weight fitted in the same window, so linear summation is the diagonal and
 "the dominant eye alone" the horizontal line at the target contrast.
 (a) population contours (population-average window responses), 95% penetration-bootstrap CIs of the dominant-eye
@@ -34,7 +34,7 @@ warnings.filterwarnings("ignore")
 TARGETS = (0.11, 0.225, 0.45)
 WINDOWS = {"early": "0–20 ms", "mid": "20–50 ms", "late": "50–200 ms"}
 SHADE = {"early": fs.MUTED, "mid": fs.INK2, "late": fs.INK}
-XMAX, YMAX = 1.55, 1.33                               # axis limits as multiples of the target contrast (Fig 2c)
+XMAX, YMAX = 1.55, 1.33                               # axis limits as multiples of the target contrast
 
 
 def minkowski(y, m):
@@ -77,7 +77,7 @@ def contour_panels(axs, Pop, Boot):
         ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
         ax.set_aspect("equal", adjustable="box")
         ax.set_title(f"target: dominant eye alone at {fs.contrast_label(cs)}", fontsize=6.5)
-        ax.text(T * 0.36, T * 0.70, "linear sum", rotation=-45, rotation_mode="anchor", fontsize=5.5,
+        ax.text(T * 0.36, T * 0.70, "contrasts add", rotation=-45, rotation_mode="anchor", fontsize=5.5,
                 color=fs.INK2, ha="center", va="bottom")
         ax.text(XMAX * T, T * 1.02, "dominant eye alone", fontsize=5.5, color=fs.INK2, ha="right", va="bottom")
     axs[0].set_ylabel("dominant-eye contrast needed (%)")
@@ -114,7 +114,7 @@ def exponent_panel(ax, Pen):
     ax.set_xlim(-0.6, (len(TARGETS) - 1) * gap + 2.6)
     ax.set_ylabel("Minkowski exponent")
     ax.set_xlabel("window after response onset (ms)", labelpad=12)
-    ax.text(ax.get_xlim()[1], 1, " linear sum", ha="left", va="center", fontsize=5.5, color=fs.INK2)
+    ax.text(ax.get_xlim()[1], 1, " contrasts add", ha="left", va="center", fontsize=5.5, color=fs.INK2)
     return pd.DataFrame(out)
 
 

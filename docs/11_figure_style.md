@@ -39,6 +39,35 @@ shared cache, and prints the statistics it displays so they can be checked again
   Check every label against every line, error bar and key in the rendered PNG: no text may cross a mark.
 * **Images:** colour maps (CSD) are drawn with `imshow(..., interpolation="bilinear")`. A Gouraud-shaded
   `pcolormesh` leaves saw-tooth seams between channel rows at 300 dpi.
+* **Layout in millimetres** for figures with in-panel keys (Figs 1–4): `fig.set_layout_engine("none")` and axes
+  placed with `axes_mm(fig, x, y, w, h)`. The constrained layout ignores text placed in axes fractions, so keys and
+  labels spilled into neighbouring panels.
+
+## Written for readers outside the field (Blake, 2026-11-02: "very important that we make this paper accessible")
+
+* **Show what to look for before the data.** Fig 2a sketches what each hypothesis predicts in the format of the data
+  panel next to it (labelled "illustration"); Fig 4a sketches the model's drive, pool and response in time instead
+  of an equation (the equation goes to the Methods).
+* **One shared reading: what the other eye adds.** Every result about combination is shown, where it can be, as the
+  response the other eye adds (both eyes − dominant eye alone, ink, 95% band) against what linear summation of
+  contrast predicts it adds (the dominant eye at c(1 + a) − at c, grey dashed): `fs.added_panel`,
+  `v1lb.binocular.other_eye_added`. Used in Fig 2c (45%), Fig 3a (11, 22.5, 45%), Fig 3e (current at the earliest
+  sink, with the current's own eye weight) and Fig 4c (data vs the static and delayed fits). No ratio, no inversion,
+  so no noise amplification where the late contrast response is flat.
+* **Summation prediction, not a stand-in.** "If the contrasts add" is the dominant eye's response at 45% × (1 + a),
+  interpolated in log contrast with each penetration's eye weight (`response_at`), not the dominant eye at 90%
+  (which assumes a = 1). Fig 4b keeps the 90% trace only because the text compares with it.
+* **Words, not jargon, on the panel.** "if the contrasts add" (never "linear sum", which reads as "the responses
+  add"); the index axis reads "linearity index (share of the other eye's contrast added)" with its anchors labelled
+  "1: contrasts add" and "0: dominant eye alone"; models are "no delay (static)" and "delayed pool (fixed delay)";
+  panel titles state the reading ("the other eye normalizes more than it drives").
+* **Show the stimulus.** Fig 1 draws the stereoscope with each eye's grating, the laminar probe in cortex, and a
+  grating swatch at every contrast of the 6 × 6 design.
+* **Derived measures go to the supplement** unless the main text cannot do without them: the equivalent-contrast
+  readout (S1a), the slope of the index on contrast (S2b), the iso-response contours (S3), the three-model
+  comparison (S5f).
+* **A clearer view can show new structure; test it before claiming it.** The response-unit view showed the 45% dip
+  and return (docs/09 F); it was registered and tested before the text may describe it.
 
 ## Colour (validated with the dataviz palette validator on a white surface)
 
@@ -47,7 +76,7 @@ shared cache, and prints the statistics it displays so they can be checked again
 | Contrast (ordinal) | one-hue blue ramp, light → dark | 5.5% `#86b6ef`, 11% `#3987e5`, 22.5% `#256abf`, 45% `#184f95`, 90% `#0d366b` |
 | Condition at one contrast | categorical | dominant eye blue `#2a78d6`, other eye orange `#eb6834`, both eyes ink `#0b0b0b` |
 | Linear-summation reference | muted grey, dashed | `#8a8985` |
-| Data vs models | categorical | data ink; static model dark grey `#52514e`, dashed; fixed-delay aqua `#1baf7a`; conductance violet `#6250d6`; recurrent magenta `#e87ba4`. No model uses orange, the other eye's colour (2026-11-01). Aqua and magenta are below 3:1 on white and 6.1 apart for deutans, so always direct-labelled. Inside a panel in the Fig 2a format, a model is a dashed line in the condition's colour; every data trace there is solid (the 90% one too) and the key reads "solid: data / dashed: fit" |
+| Data vs models | categorical | data ink; static model dark grey `#52514e`, dashed; fixed-delay aqua `#1baf7a`; conductance violet `#6250d6`; recurrent magenta `#e87ba4`. No model uses orange, the other eye's colour (2026-11-01). Aqua and magenta are below 3:1 on white and 6.1 apart for deutans, so always direct-labelled. Inside a panel of condition time courses (Fig 4b), a model is a dashed line in the condition's colour; every data trace there is solid (the 90% one too) and the key reads "solid: data / dashed: model fit" |
 | Model variants | marker shape and fill, same hue | single-stage filled circle, two-stage open square, Ding–Sperling open triangle |
 | Monkey | marker shape, never colour | B circle, J square |
 | Epoch (early vs late) | grey ramp | early `#8a8985`, late ink |
@@ -55,8 +84,9 @@ shared cache, and prints the statistics it displays so they can be checked again
 | Neutral | ink `#0b0b0b`, secondary `#52514e`, rules `#d9d8d3` | |
 
 Rules: contrast always uses the blue ramp and nothing else uses it; the dominant/other eye pair keeps its colours in
-every figure; a reference line for linear summation is always grey dashed at L = 1 (or k = 1 + a), and "binocular =
-dominant eye alone" is the solid light rule at L = 0 (k = 1).
+every figure; a reference line for linear summation is always grey dashed at L = 1 (or k = 1 + a), labelled "1:
+contrasts add", and "binocular = dominant eye alone" is the solid light rule at L = 0 (k = 1), labelled "0: dominant
+eye alone". In the "added" panels the zero line means "the other eye adds nothing".
 
 ## Conventions of content
 
@@ -64,15 +94,16 @@ dominant eye alone" is the solid light rule at L = 0 (k = 1).
   symbol may appear only in a formula in the Methods (Blake, 2026-10-30).
 * **Population readouts for noisy ratios.** Where a per-channel ratio is heavy-tailed (the linearity index), time
   courses are read out from population-average responses with penetration-bootstrap bands, and per-penetration
-  statistics are shown separately (Fig 4c vs Fig 2d).
+  statistics are shown separately (Figs 2c and 3a vs Fig 2d).
 * **CSD shown as population averages** aligned on a landmark (the earliest sink), not single noisy examples.
 
 * **Time axes** say their zero: "time from stimulus onset" (photodiode), "time from response onset" (each channel's
   half-max onset, dominant eye at 90%), "time from sink onset", "time from response offset".
 * **Contrast** is shown in percent: 5.5, 11, 22.5, 45, 90.
-* **Iso-response contours** are drawn in percent contrast with equal axes: "dominant-eye contrast needed (%)"
-  against "other-eye contrast × eye weight (%)". Linear summation is the grey dashed diagonal; "dominant eye alone"
-  is the light horizontal rule at the target contrast (no L-shaped rule).
+* **Iso-response contours** (Supplementary Fig S3 only, since 2026-11-02) are drawn in percent contrast with equal
+  axes: "dominant-eye contrast needed (%)" against "other-eye contrast × eye weight (%)". Linear summation is the
+  grey dashed diagonal ("contrasts add"); "dominant eye alone" is the light horizontal rule at the target contrast
+  (no L-shaped rule).
 * **Early vs late per penetration** (paired panels): tick labels give the windows ("0–20", "50–200") over "window
   after onset (ms)"; the condition ("both eyes 45%") and its test head each pair.
 * **Responses** are MUA scaled per channel to the dominant-eye peak at 90% (40–250 ms) unless the axis says

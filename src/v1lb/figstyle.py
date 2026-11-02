@@ -35,6 +35,34 @@ MODEL = {"data": INK, "static": INK2, "fixed-delay": AQUA, "conductance": VIOLET
 MONKEY_MARKER = {"B": "o", "J": "s"}
 CSD_CMAP = LinearSegmentedColormap.from_list("csd", ["#0d366b", "#3987e5", "#f0efec", "#e34948", "#8f1f1e"])
 
+# the figures' shared reading (docs/11, 2026-11-02): the response the other eye adds vs what summation predicts
+SUM_LS = (0, (3, 1.5))                                   # linear-summation prediction / reference: grey dashed
+SUM = "if the contrasts add"
+ALONE = "dominant eye alone"
+LINEARITY = "linearity index\n(share of the other eye's contrast added)"
+
+
+def smooth(Y: np.ndarray, ms: int = 5) -> np.ndarray:
+    """Running mean along the last axis (1 ms samples) for display of difference traces."""
+    k = np.ones(ms) / ms
+    return np.apply_along_axis(lambda v: np.convolve(v, k, mode="same"), -1, np.asarray(Y, float))
+
+
+def added_panel(ax, x, added, predicted, label_added="measured: both eyes − dominant eye alone", key=True,
+                key_xy=(0.36, 0.95), zero_label=True, alpha=0.18):
+    """The response the other eye adds (ink, 95% penetration-bootstrap band) against what summation predicts (grey
+    dashed); added, predicted [penetration, x]. Returns the two means."""
+    mp = ci_line(ax, x, predicted, COND["linear"], ls=SUM_LS, lw=1.0, alpha=alpha)
+    ma = ci_line(ax, x, added, COND["both"], lw=1.2, alpha=alpha)
+    zero_line(ax)
+    if key:
+        line_key(ax, [(label_added, COND["both"], "-"), (SUM, COND["linear"], SUM_LS)], x=key_xy[0], y=key_xy[1],
+                 dy=0.085)
+    if zero_label:
+        ax.text(0.98, 0.02, "0: the other eye\nadds nothing", transform=ax.transAxes, ha="right", va="bottom",
+                fontsize=5.5, color=INK2, linespacing=0.95)
+    return ma, mp
+
 
 def apply():
     mpl.rcParams.update({

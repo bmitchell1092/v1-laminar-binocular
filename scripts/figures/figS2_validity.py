@@ -7,15 +7,19 @@ Usage: .venv\\Scripts\\python scripts\\figures\\figS2_validity.py
     response at (1 + a)c at every moment, with realistic transient shapes; read out noise-free and with the data's
     noise sample, (odd - even) / 2, added and subtracted; the data in the same channel-average readout. Linearity
     index in onset-aligned windows (window centres), median over penetrations; 95% bootstrap CI of the data median;
-(b) cross-validated dominance (v3_dominance_cv.py): dominant eye, eye weight and onset chosen on one half of the
+(b) slope of the transition-window linearity index (20-50 ms, Fig 3b) on log contrast per recording: all
+    penetrations by monkey, and the held-out runs of the dual-probe days, in which the grating sat on the other
+    probe's receptive field (monkey J, recordings with >= 5 driven channels); one-sided sign tests (formerly Fig 3b,
+    moved here 2026-11-02);
+(c) cross-validated dominance (v3_dominance_cv.py): dominant eye, eye weight and onset chosen on one half of the
     presentations, the index read from the other half (both directions averaged); per penetration, early (0-20 ms
     after onset) vs late (50-200 ms), per-channel readout of Fig 2d;
-(c) ocular-dominance terciles at 45% (|ODI| from the selection half; index from the other half);
-(d) isolated single units (lenient set; v3_units_index.py), per unit, same readout as Fig 2d.
-(b-d): lines = penetrations (units in d), coloured line = median; Wilcoxon signed-rank tests, early vs late; values
+(d) ocular-dominance terciles at 45% (|ODI| from the selection half; index from the other half);
+(e) isolated single units (lenient set; v3_units_index.py), per unit, same readout as Fig 2d.
+(c-e): lines = penetrations (units in e), coloured line = median; Wilcoxon signed-rank tests, early vs late; values
 beyond the axis are drawn at its edge as open triangles (counted in the printout, for the legend).
 Inputs: <out_root>/binocular/v3_A1_L.parquet, v3_A2_penetrations.parquet, v3_A3_penetrations.parquet,
-v3_A4_units.parquet; docs/qc/v3_A2.csv, v3_A3.csv.
+v3_A4_units.parquet, normalization_timing.parquet, normalization_timing_cross.parquet; docs/qc/v3_A2.csv, v3_A3.csv.
 Writes <out_root>/figures/figS2_validity.pdf and .png; prints the statistics shown.
 """
 
@@ -29,11 +33,14 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from scipy import stats  # noqa: E402
 
+from fig3_contrast_depth import per_recording, slopes, transition  # noqa: E402
+
 from v1lb import figstyle as fs  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
+MIN_CROSS_CHANNELS = 5                       # held-out runs need at least this many driven channels (docs/10)
 DIOPTIC = (0.11, 0.225, 0.45)
 WIN = {0: 10, 10: 20, 20: 35, 35: 50, 50: 75, 75: 100, 100: 150}       # channel-average readout windows (start: end)
 EARLY_W, LATE_W = (0, 10), (50, 75, 100)                              # A1 early / late window starts
@@ -69,7 +76,7 @@ def null_panel(axs, L):
     axs[0].set_ylabel("linearity index")
     fs.line_key(axs[0], [("data (median, 95% CI)", fs.INK, "-", "o"), ("fixed rule, noise-free", NULL_COL, (0, (3, 1.5))),
                          ("fixed rule + the data's noise (±)", fs.MUTED, "-", "o")], x=0.08, y=0.2, dy=0.09)
-    axs[-1].text(132, 1, "linear\nsum", ha="left", va="center", fontsize=5.5, color=fs.INK2, linespacing=0.95)
+    axs[-1].text(132, 1, "contrasts\nadd", ha="left", va="center", fontsize=5.5, color=fs.INK2, linespacing=0.95)
     axs[-1].text(132, 0, "dominant\neye alone", ha="left", va="center", fontsize=5.5, color=fs.INK2,
                  linespacing=0.95)
     return pd.DataFrame(out)
@@ -131,9 +138,44 @@ def unit_early_late(U):
     return el.groupby(["penetration", "cluster_id", "c"]).mean()
 
 
+def slope_panel(ax, sl: pd.Series, sl_x: pd.Series):
+    rng = np.random.default_rng(1)
+    groups = [("B", sl[sl.index.str[7] == "B"], 0, "o", fs.INK2), ("J", sl[sl.index.str[7] == "J"], 1.0, "s", fs.INK2),
+              ("J", sl_x, 2.35, "s", "white")]
+    out = {}
+    for lab, v, x, mk, fc in groups:
+        xs = x + rng.uniform(-0.16, 0.16, len(v))
+        clipped = v < -6
+        ax.scatter(xs[~clipped], v[~clipped], s=7, marker=mk, facecolor=fc, edgecolor=fs.INK, lw=0.5, zorder=3)
+        ax.scatter(xs[clipped], np.full(clipped.sum(), -6.1), s=9, marker="v", facecolor="white", edgecolor=fs.INK,
+                   lw=0.5, zorder=3, clip_on=False)
+        ax.plot([x - 0.26, x + 0.26], [v.median()] * 2, color=fs.INK, lw=1.4, zorder=4)
+        n_neg = int((v < 0).sum())
+        p = stats.binomtest(n_neg, len(v), 0.5, alternative="greater").pvalue
+        ax.text(x, 3.3, f"{n_neg}/{len(v)}\n{fs.fmt_p(p)}", ha="center", va="bottom", fontsize=5.5, color=fs.INK,
+                linespacing=1.0)
+        out[(lab, x)] = (n_neg, len(v), p, v.median(), int(clipped.sum()))
+    ax.axvline(1.68, color=fs.RULE, lw=0.6)
+    fs.zero_line(ax, color=fs.INK2)
+    ax.set_xticks([0, 1.0, 2.35], ["monkey\nB", "monkey\nJ", "monkey J,\nheld-out\nruns"], fontsize=6)
+    ax.tick_params(axis="x", length=0)
+    ax.set_xlim(-0.5, 2.85)
+    ax.set_ylim(-6.3, 3.2)
+    ax.set_ylabel("slope of linearity index\non log contrast (20–50 ms)")
+    ax.text(-0.42, -5.6, "below 0: lower\nindex at higher\ncontrast", ha="left", va="bottom", fontsize=5.5,
+            color=fs.INK2, linespacing=1.0)
+    return out
+
+
 def main():
     fs.apply()
     b = out_root() / "binocular"
+    R = pd.read_parquet(b / "normalization_timing.parquet")
+    Xr = pd.read_parquet(b / "normalization_timing_cross.parquet")
+    per_x = per_recording(Xr)
+    nch = Xr[Xr.split == "all"].groupby("name").channel.nunique()
+    per_x = per_x[per_x.index.get_level_values("name").isin(nch.index[nch >= MIN_CROSS_CHANNELS])]
+    sl, sl_x = slopes(transition(per_recording(R))), slopes(transition(per_x))
     L = pd.read_parquet(b / "v3_A1_L.parquet")
     P2 = pd.read_parquet(b / "v3_A2_penetrations.parquet")
     P3 = pd.read_parquet(b / "v3_A3_penetrations.parquet")
@@ -143,10 +185,13 @@ def main():
 
     fig = fs.figure("double", 112)
     top, bot = fig.subfigures(2, 1, height_ratios=[0.9, 1], hspace=0.05)
-    axs_a = top.subplots(1, 3, sharey=True)
+    ta, tb = top.subfigures(1, 2, width_ratios=[2.5, 1.25], wspace=0.02)
+    axs_a = ta.subplots(1, 3, sharey=True)
     Sa = null_panel(axs_a, L)
-    top.supxlabel("time from response onset (ms, window centre)", fontsize=7)
+    ta.supxlabel("time from response onset (ms, window centre)", fontsize=7)
     drops = null_drop(L)
+    ax_s = tb.subplots()
+    Ss = slope_panel(ax_s, sl, sl_x)
     ax_b, ax_c, ax_d = bot.subplots(1, 3, gridspec_kw=dict(width_ratios=[3, 3, 2.1]))
 
     cv = P2.xs("cv", level="variant")
@@ -162,7 +207,7 @@ def main():
     names = {0: "most\nbinocular", 1: "middle", 2: "most\nmonocular"}
     rng_lab = A3[A3.c == 0.45].set_index("tercile").abs_odi_range
     Sc = paired(ax_c, [(names[t], fs.CONTRAST[0.45], t45.xs(t, level="tercile")) for t in (0, 1, 2)])
-    print("(c) |ODI| ranges of the terciles:", rng_lab.to_dict())
+    print("(d) |ODI| ranges of the terciles:", rng_lab.to_dict())
     ax_c.set_title("ocular-dominance terciles, both eyes 45%", fontsize=6.5)
     ax_c.tick_params(labelleft=False)
 
@@ -172,11 +217,11 @@ def main():
     n_pen = shown.index.get_level_values("penetration").nunique()
     n_units = shown.reset_index()[["penetration", "cluster_id"]].drop_duplicates().shape[0]
     ax_d.set_title(f"{n_units} isolated units, {n_pen} penetrations", fontsize=6.5)
-    print(f"(d) units shown: {n_units} units in {n_pen} penetrations")
+    print(f"(e) units shown: {n_units} units in {n_pen} penetrations")
     ax_d.tick_params(labelleft=False)
 
     bot.supxlabel("window after onset (ms)", fontsize=7)
-    for ax, letter in zip((axs_a[0], ax_b, ax_c, ax_d), "abcd"):
+    for ax, letter in zip((axs_a[0], ax_s, ax_b, ax_c, ax_d), "abcde"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "figS2_validity"))
     pd.set_option("display.width", 220)
@@ -184,10 +229,16 @@ def main():
     print(Sa.to_string(index=False))
     print("(a) early-minus-late drop at 45% (data vs null; paired one-sided Wilcoxon):")
     print(drops.round(4).to_string(index=False))
-    for lab, S in (("(b) cross-validated", Sb), ("(c) OD terciles at 45%", Sc), ("(d) lenient units", Sd)):
+    print("(b) slopes (negative = lower index at higher contrast):")
+    for (lab, x), (n_neg, n, p, m, nclip) in Ss.items():
+        grp = "held-out runs" if x > 2 else f"penetrations, monkey {lab}"
+        print(f"   {grp}: negative in {n_neg}/{n}, one-sided sign test p = {p:.4f}, median {m:+.2f}, "
+              f"drawn at the axis edge {nclip}")
+    print(f"   held-out runs: {len(sl_x)} with >= {MIN_CROSS_CHANNELS} driven channels: {sorted(sl_x.index)}")
+    for lab, S in (("(c) cross-validated", Sb), ("(d) OD terciles at 45%", Sc), ("(e) lenient units", Sd)):
         print(lab)
         print(S.round(4).to_string(index=False))
-    print(f"(b) selection-bias shift of the late index at 45% (cv - same): {sh.shift_late:+.3f} [{sh.lo:.3f}, "
+    print(f"(c) selection-bias shift of the late index at 45% (cv - same): {sh.shift_late:+.3f} [{sh.lo:.3f}, "
           f"{sh.hi:.3f}]")
 
 

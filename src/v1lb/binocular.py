@@ -82,6 +82,34 @@ def eye_weight(r_dom: np.ndarray, r_non: np.ndarray, contrasts: np.ndarray = CON
     return float(grid[int(np.argmin(sse))])
 
 
+def response_at(r_dom: np.ndarray, c: float, contrasts: np.ndarray = CONTRASTS) -> np.ndarray:
+    """R_D(c): the dominant eye's response at contrast c, along axis 0 of r_dom [contrast, ...] (blank first).
+
+    Interpolated in log contrast between the measured contrasts (linearly from the blank below the lowest; held at
+    the top contrast above it), without the running maximum, so time courses keep their shape. Under linear
+    summation of eye-weighted contrasts, the binocular response to (c, c) is response_at(r_dom, (1 + a) c)."""
+    r = np.asarray(r_dom, float)
+    if c <= contrasts[1]:
+        return r[1] * c / contrasts[1]
+    if c >= contrasts[-1]:
+        return r[-1]
+    lc = np.log(contrasts[1:])
+    j = int(np.clip(np.searchsorted(lc, np.log(c)), 1, len(lc) - 1))
+    f = (np.log(c) - lc[j - 1]) / (lc[j] - lc[j - 1])
+    return r[j] * (1 - f) + r[j + 1] * f
+
+
+def other_eye_added(Y: np.ndarray, a: np.ndarray, c: float, contrasts: np.ndarray = CONTRASTS):
+    """What the other eye adds to the response at (c, c), and what linear summation of contrast predicts it adds.
+
+    Y [unit, dominant contrast, other contrast, ...] (dominant eye on axis 1, blank first), a [unit] eye weights.
+    Returns (added, predicted) [unit, ...]: added = Y(c, c) - Y(c, 0); predicted = R_D((1 + a) c) - Y(c, 0)."""
+    i = int(np.flatnonzero(np.isclose(contrasts, c))[0])
+    dom = Y[:, i, 0]
+    pred = np.stack([response_at(Y[k, :, 0], c * (1 + a[k]), contrasts) for k in range(len(Y))])
+    return Y[:, i, i] - dom, pred - dom
+
+
 def equivalent_contrast(r_dom_t: np.ndarray, r_bin_t: np.ndarray, c: float,
                         contrasts: np.ndarray = CONTRASTS) -> tuple[np.ndarray, np.ndarray]:
     """k(t) = (contrast at which R_D(., t) equals R_bin(c, c, t)) / c, per time point.

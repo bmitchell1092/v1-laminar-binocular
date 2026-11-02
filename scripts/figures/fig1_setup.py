@@ -1,17 +1,22 @@
-"""Figure 1: design and an example (docs/09, figure set for V3).
+"""Figure 1: the experiment and an example (docs/09, figure set for V3; rebuilt 2026-11-02 for readers outside the
+field, docs/11).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetration, default 221212_J_eA]
-(a) the 6 x 6 dichoptic contrast design (each eye 0, 5.5, 11, 22.5, 45 or 90%) and the trial sequence (three
-    conditions per trial, ~317 ms on and ~317 ms off); each channel's axes are later reoriented to its dominant
-    and other eye;
-(b) example penetration in the Fig 2a format, channel mean with each channel aligned to its own response onset
-    (half-max, dominant eye at 90%), oriented to its dominant eye and divided by its dominant-eye peak at 90%: each
-    eye alone at 45%, both eyes at 45%, and the dominant eye at 90%, about what linear summation of contrast
-    predicts ((1 + a) c with eye weight a ~ 0.6-0.9); the figure names the monkey, not the session;
-(c) monocular contrast response per eye, mean MUA 40-250 ms after stimulus onset in units of each channel's
+(a) the setup (schematics): a mirror stereoscope (top view; two mirrors per eye shift each eye's line of sight onto
+    its own half of one monitor, divided by a black septum), so each eye sees its own grating at its own contrast; a
+    32-contact laminar probe (0.1 mm spacing) spans the depth of V1; each trial is fixation and three conditions in
+    random order (~317 ms on, ~317 ms off);
+(b) the 6 x 6 dichoptic contrast design (each eye 0, 5.5, 11, 22.5, 45 or 90%), with a grating drawn at each
+    contrast (Michelson contrast on mid grey) so the contrasts can be seen; each channel's axes are later reoriented
+    to its dominant and other eye;
+(c) example penetration, channel mean with each channel aligned to its own response onset (half-max, dominant eye at
+    90%), oriented to its dominant eye and divided by its dominant-eye peak at 90%: both eyes at 45% each, each eye
+    alone at 45%, and what linear summation of contrast predicts, the dominant eye's response at 45% x (1 + a) with
+    the penetration's median eye weight a (v1lb.binocular.response_at); the figure names the monkey, not the session;
+(d) monocular contrast response per eye, mean MUA 40-250 ms after stimulus onset in units of each channel's
     dominant-eye peak, penetration means (95% bootstrap CI over penetrations);
-(d) ocular dominance index at 90% for driven MUA channels and isolated single units.
-The stereoscope schematic and the example flash CSD moved to Supplementary Fig S1 (figS1_methods.py).
+(e) ocular dominance index at 90% for driven MUA channels and isolated single units.
+The example flash CSD with the laminar alignment is in Supplementary Fig S1 (figS1_methods.py).
 Inputs: figure_data.py (population.npz, population_meta.parquet), run_crf.py, run_dichoptic.py.
 Writes <out_root>/figures/fig1_setup.pdf and .png; prints the statistics shown.
 """
@@ -28,13 +33,15 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
-from v1lb.binocular import CONTRASTS  # noqa: E402
+from v1lb.binocular import CONTRASTS, response_at  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
-H_MM = 76
-POS = {"matrix": (11, 37, 31, 31), "key": (44, 37, 21, 31), "trial": (2, 12, 62, 14),    # (x, y, w, h) in mm
-       "example": (78, 12, 44, 58), "crf": (137, 49, 25, 22), "odi": (137, 11, 33, 22)}
+H_MM = 104
+POS = {"stereo": (2, 60, 40, 38), "probe": (44, 60, 22, 38), "trial": (2, 45, 64, 10),       # (x, y, w, h) in mm
+       "matrix": (97, 57, 35, 35), "key": (137, 57, 37, 35),
+       "example": (14, 9, 58, 28), "crf": (95, 9, 30, 28), "odi": (140, 9, 32, 28)}
+SWATCH_CMAP = "gray"
 
 
 def axes_mm(fig, x, y, w, h):
@@ -42,7 +49,77 @@ def axes_mm(fig, x, y, w, h):
     return fig.add_axes((x / W, y / H, w / W, h / H))
 
 
-def design(ax, kax, tax):
+def grating(c: float, n: int = 64, cycles: float = 2.5) -> np.ndarray:
+    """Vertical sinusoidal grating of Michelson contrast c on mid grey (values 0-1)."""
+    x = np.linspace(0, 2 * np.pi * cycles, n)
+    return np.tile(0.5 + 0.5 * c * np.sin(x), (n, 1))
+
+
+def swatch(ax, c, x0, x1, y0, y1):
+    ax.imshow(grating(c), cmap=SWATCH_CMAP, vmin=0, vmax=1, extent=(x0, x1, y0, y1), interpolation="bilinear",
+              clip_on=False, zorder=3)
+    ax.add_patch(mpatches.Rectangle((x0, y0), x1 - x0, y1 - y0, fc="none", ec=fs.RULE, lw=0.4, clip_on=False,
+                                    zorder=4))
+
+
+def stereoscope(ax):
+    """Top view: two mirrors per eye shift each line of sight onto its own half of one monitor; each half shows
+    that eye's grating."""
+    ax.set_xlim(-1.05, 1.05)
+    ax.set_ylim(-0.25, 2.1)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.add_patch(mpatches.Rectangle((-0.95, 1.2), 1.9, 0.07, color=fs.INK2, lw=0))
+    ax.text(0, 1.31, "monitor", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
+    ax.plot([0, 0], [1.2, 0.5], color=fs.INK, lw=2.2, solid_capstyle="butt")                 # septum
+    for s, c, lab in ((-1, 0.45, "left eye: 45%"), (1, 0.11, "right eye: 11%")):
+        ex, mx = s * 0.17, s * 0.6
+        sight = dict(color=fs.MUTED, lw=0.6, ls=(0, (2, 1.5)))
+        ax.plot([ex, ex], [0.1, 0.35], **sight)
+        ax.plot([ex, mx], [0.35, 0.35], **sight)
+        ax.plot([mx, mx], [0.35, 1.2], **sight)
+        for x in (ex, mx):                                                                     # 45-degree mirrors
+            ax.plot([x - s * 0.09, x + s * 0.09], [0.26, 0.44], color=fs.INK, lw=1.6, solid_capstyle="butt")
+        ax.add_patch(mpatches.Circle((ex, 0.02), 0.08, fc="white", ec=fs.INK, lw=0.8))
+        swatch(ax, c, mx - 0.24, mx + 0.24, 1.42, 1.9)
+        ax.text(mx, 1.94, lab, ha="center", va="bottom", fontsize=5.2, color=fs.INK)
+    ax.text(0, -0.1, "eyes", ha="center", va="top", fontsize=5.5, color=fs.INK2)
+    ax.text(0.62, 0.2, "mirrors", ha="center", va="top", fontsize=5.5, color=fs.INK2)
+
+
+def probe(ax):
+    """Side view of V1 with the laminar probe: 32 contacts, 0.1 mm apart, spanning the cortical depth."""
+    ax.set_xlim(0, 1)
+    ax.set_ylim(3.6, -0.75)
+    ax.axis("off")
+    ax.add_patch(mpatches.Rectangle((0.05, 0), 0.9, 2.4, fc="#f0efec", ec="none"))           # grey matter
+    ax.plot([0.05, 0.95], [0, 0], color=fs.INK2, lw=0.6)
+    ax.text(0.95, -0.05, "top of cortex", ha="right", va="bottom", fontsize=5.2, color=fs.INK2)
+    ax.text(0.95, 2.47, "white matter", ha="right", va="top", fontsize=5.2, color=fs.INK2)
+    ax.text(0.92, 1.2, "V1", ha="right", va="center", fontsize=6.5, color=fs.INK)
+    x0 = 0.32
+    ax.add_patch(mpatches.Rectangle((x0 - 0.035, -0.6), 0.07, 0.6 + 3.25, fc=fs.INK2, ec="none"))
+    z = -0.2 + 0.1 * np.arange(32)
+    ax.scatter(np.full(32, x0), z, s=1.2, color="white", zorder=3, lw=0)
+    ax.annotate("32 contacts,\n0.1 mm apart", xy=(x0 + 0.04, 1.6), xytext=(0.42, 1.95), fontsize=5.2, color=fs.INK,
+                va="top", linespacing=1.0, arrowprops=dict(arrowstyle="-", lw=0.4, color=fs.INK2))
+
+
+def trial(ax):
+    ax.set_xlim(-450, 1950)
+    ax.set_ylim(-0.6, 1.25)
+    ax.axis("off")
+    ax.plot([-400, 1900], [0.3, 0.3], color=fs.MUTED, lw=0.6)
+    ax.text(-400, 0.45, "fixate", fontsize=5.5, color=fs.INK2, va="bottom")
+    for k in range(3):
+        x0 = k * 634
+        ax.add_patch(mpatches.Rectangle((x0, 0.3), 317, 0.42, fc=fs.INK, ec="none"))
+        ax.text(x0 + 158, 0.8, f"condition {k + 1}", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
+    ax.plot([1583, 1900], [0.05, 0.05], color=fs.INK, lw=0.8)
+    ax.text(1741, -0.08, "317 ms", ha="center", va="top", fontsize=5.5, color=fs.INK2)
+
+
+def design(ax, kax):
     cls = np.zeros((6, 6), int)
     for i in range(6):
         for j in range(6):
@@ -55,70 +132,57 @@ def design(ax, kax, tax):
     ax.set_xlim(0, 6)
     ax.set_ylim(0, 6)
     ax.set_aspect("equal")
-    ticks = np.arange(6) + 0.5
-    labs = ["0"] + [f"{100 * c:g}" for c in CONTRASTS[1:]]
-    ax.set_xticks(ticks, labs)
-    ax.set_yticks(ticks, labs)
-    ax.tick_params(length=0, pad=1.5, labelsize=5.5)
+    for k, c in enumerate(CONTRASTS):                    # each contrast as it looked
+        swatch(ax, c, k + 0.14, k + 0.86, -0.92, -0.2)
+        swatch(ax, c, -0.92, -0.2, k + 0.14, k + 0.86)
+    for k, c in enumerate(CONTRASTS):                    # numbers beyond the swatches
+        lab = "0" if c == 0 else f"{100 * c:g}"
+        ax.text(k + 0.5, -1.02, lab, ha="center", va="top", fontsize=5.5, color=fs.INK, clip_on=False)
+        ax.text(-1.02, k + 0.5, lab, ha="right", va="center", fontsize=5.5, color=fs.INK, clip_on=False)
+    ax.set_xticks([])
+    ax.set_yticks([])
     for s in ax.spines.values():
         s.set_visible(False)
-    ax.set_xlabel("contralateral eye contrast (%)", labelpad=1.5)
-    ax.set_ylabel("ipsilateral eye contrast (%)", labelpad=1.5)
+    ax.set_xlabel("contralateral eye contrast (%)", labelpad=25)
+    ax.set_ylabel("ipsilateral eye contrast (%)", labelpad=31)
 
-    # key and notes beside the matrix
     kax.set_xlim(0, 1)
     kax.set_ylim(0, 1)
     kax.axis("off")
-    for k, (lab, y) in enumerate((("one eye", 0.95), ("both eyes,\nequal", 0.82), ("both eyes,\nunequal", 0.66))):
-        kax.add_patch(mpatches.Rectangle((0.0, y - 0.035), 0.14, 0.07, fc=cols[k + 1], ec="none"))
-        kax.text(0.2, y, lab, va="center", fontsize=5.5, color=fs.INK, linespacing=0.95)
-    kax.text(0.0, 0.53, "~30 presentations\nper condition,\nrandom order", va="top", fontsize=5.5,
-             color=fs.INK2, linespacing=1.0)
-    kax.text(0.0, 0.25, "analysed per\nchannel as\ndominant eye ×\nother eye", va="top", fontsize=5.5,
-             color=fs.INK2, linespacing=1.0)
-
-    # trial: fixation, then three conditions in random order (~317 ms on, ~317 ms off)
-    tax.set_xlim(-450, 1950)
-    tax.set_ylim(-0.6, 1.25)
-    tax.axis("off")
-    tax.plot([-400, 1900], [0.3, 0.3], color=fs.MUTED, lw=0.6)
-    tax.text(-400, 0.45, "fixate", fontsize=5.5, color=fs.INK2, va="bottom")
-    for k in range(3):
-        x0 = k * 634
-        tax.add_patch(mpatches.Rectangle((x0, 0.3), 317, 0.42, fc=fs.INK, ec="none"))
-        tax.text(x0 + 158, 0.8, f"condition {k + 1}", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
-    tax.plot([1583, 1900], [0.05, 0.05], color=fs.INK, lw=0.8)
-    tax.text(1741, -0.08, "317 ms", ha="center", va="top", fontsize=5.5, color=fs.INK2)
+    for k, (lab, y) in enumerate((("one eye", 0.95), ("both eyes, equal", 0.85), ("both eyes, unequal", 0.75))):
+        kax.add_patch(mpatches.Rectangle((0.0, y - 0.035), 0.1, 0.07, fc=cols[k + 1], ec="none"))
+        kax.text(0.14, y, lab, va="center", fontsize=5.5, color=fs.INK)
+    kax.text(0.0, 0.62, "~30 presentations per\ncondition, random order", va="top", fontsize=5.5, color=fs.INK2,
+             linespacing=1.0)
+    kax.text(0.0, 0.38, "analysed per channel as\ndominant eye (the eye that\ndrives it more) × other eye",
+             va="top", fontsize=5.5, color=fs.INK2, linespacing=1.0)
 
 
-def example(ax, pop, k, monkey):
+def example(ax, pop, k, monkey, a):
     rel = pop["rel"]
     Y = pop["onset"][k]
     i45 = list(CONTRASTS).index(0.45)
     sel = (rel >= -20) & (rel <= 200)
-    items = [("dominant eye, 90%\n(≈ linear sum)", fs.COND["linear"], (0, (3, 1.5)), Y[5, 0]),
-             ("dominant eye, 45%", fs.COND["dominant"], "-", Y[i45, 0]),
-             ("other eye, 45%", fs.COND["other"], "-", Y[0, i45]),
-             ("both eyes, 45% each", fs.COND["both"], "-", Y[i45, i45])]
-    for lab, col, ls, y in items:
+    items = [("both eyes, 45% each", fs.COND["both"], "-", Y[i45, i45]),
+             ("dominant eye alone, 45%", fs.COND["dominant"], "-", Y[i45, 0]),
+             ("other eye alone, 45%", fs.COND["other"], "-", Y[0, i45]),
+             (f"{fs.SUM}\n(45% + weight × 45%)", fs.COND["linear"], fs.SUM_LS, response_at(Y[:, 0], 0.45 * (1 + a)))]
+    for lab, col, ls, y in items[::-1]:
         ax.plot(rel[sel], y[sel], color=col, ls=ls, lw=1.2 if col == fs.INK else 1.0)
     fs.zero_line(ax)
     ax.axvspan(0, 20, color=fs.RULE, alpha=0.5, lw=0, zorder=0)
     ax.set_xlim(-20, 200)
     ax.set_xticks([0, 50, 100, 150, 200])
     ax.set_xlabel("time from response onset (ms)")
-    ax.set_ylabel("MUA (dominant-eye peak = 1)")
+    ax.set_ylabel("MUA (dominant-eye\npeak = 1)")
     top = 1.08 * np.nanmax(Y[5, 0][sel])
     ax.set_ylim(-0.1, top)
-    for (lab, col, ls, _), yy in zip(items, (0.92, 0.83, 0.765, 0.70)):
-        ax.plot([0.40, 0.48], [yy, yy], color=col, ls=ls, lw=1.0, transform=ax.transAxes)
-        ax.text(0.51, yy, lab, transform=ax.transAxes, va="center", fontsize=5.5, color=fs.INK, linespacing=0.95)
-    ax.text(0.40, 0.62, f"example penetration,\nmonkey {monkey}", transform=ax.transAxes, ha="left", va="top",
-            fontsize=5.5, color=fs.INK2, linespacing=1.0)
-    ax.text(23, top, "first 20 ms", ha="left", va="top", fontsize=5.5, color=fs.INK2)
+    fs.line_key(ax, [(lab, col, ls) for lab, col, ls, _ in items], x=0.42, y=0.95, dy=0.125, length=0.07)
+    ax.set_title(f"example penetration, monkey {monkey}", fontsize=6.5)
+    ax.text(23, top * 0.97, "first 20 ms", ha="left", va="top", fontsize=5.5, color=fs.INK2)
     e = (rel >= 0) & (rel < 20)
     late = (rel >= 50) & (rel < 200)
-    return {w: {lab.split("\n")[0]: float(y[m].mean()) for lab, _, _, y in items}
+    return {w: {lab.split(" (")[0]: float(y[m].mean()) for lab, _, _, y in items}
             for w, m in (("0-20 ms", e), ("50-200 ms", late))}
 
 
@@ -137,10 +201,10 @@ def crfs(ax, pop):
     fs.log_contrast_axis(ax, c)
     ax.set_xticklabels(["5.5", "11", "22.5", "45", "90"])
     ax.set_xlabel("contrast, one eye (%)")
-    ax.set_ylabel("MUA (dominant-eye peak = 1)")
+    ax.set_ylabel("MUA (dominant-eye\npeak = 1)")
     ax.set_ylim(0, None)
     ax.set_xlim(0.045, 1.0)
-    ax.set_title("40–250 ms after stimulus onset", fontsize=6, color=fs.INK)
+    ax.set_title("each eye alone, 40–250 ms", fontsize=6.5)
     ax.text(0.05, 0.98 * ax.get_ylim()[1], f"mean, 95% CI,\n{F.shape[0]} penetrations", fontsize=5.5,
             color=fs.INK2, va="top", linespacing=1.0)
     ratio = F[:, 0, 5] / F[:, 5, 0]
@@ -174,6 +238,7 @@ def ocular_dominance(ax):
     ax.set_xticks([-1, 0, 1], ["−1", "0", "1"])
     ax.set_xlabel("ocular dominance index", labelpad=1)
     ax.set_ylabel("fraction")
+    ax.set_title("most sites respond to both eyes", fontsize=6.5)
     top = max(hm.max(), hu.max()) * 1.3
     ax.set_ylim(0, top)
     ax.text(-0.97, top * 0.62, "ipsilateral\neye only", fontsize=5.5, color=fs.INK2, ha="left", va="top",
@@ -196,22 +261,26 @@ def main():
 
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")                     # axes placed in mm: the in-panel keys stay inside their panels
-    dax, kax, tax = (axes_mm(fig, *POS[n]) for n in ("matrix", "key", "trial"))
-    design(dax, kax, tax)
+    sax, pax, tax, dax, kax = (axes_mm(fig, *POS[n]) for n in ("stereo", "probe", "trial", "matrix", "key"))
+    stereoscope(sax)
+    probe(pax)
+    trial(tax)
+    design(dax, kax)
     bax, cax, oax = (axes_mm(fig, *POS[n]) for n in ("example", "crf", "odi"))
-    ex = example(bax, pop, k, meta.loc[pen, "monkey"])
+    ex = example(bax, pop, k, meta.loc[pen, "monkey"], float(meta.loc[pen, "a"]))
     crf, ratio = crfs(cax, pop)
     odi = ocular_dominance(oax)
-    for ax, letter in zip((dax, bax, cax, oax), "abcd"):
-        fs.panel_label(ax, letter)
+    fs.panel_label(sax, "a", x=0.04)
+    for ax, letter in zip((dax, bax, cax, oax), "bcde"):
+        fs.panel_label(ax, letter, x=-0.18 if ax is dax else -0.02)
     print(fs.save(fig, "fig1_setup"))
 
-    print(f"(b) example: monkey {meta.loc[pen, 'monkey']}, {int(meta.loc[pen, 'n_channels'])} channels, "
+    print(f"(c) example: monkey {meta.loc[pen, 'monkey']}, {int(meta.loc[pen, 'n_channels'])} channels, "
           f"median eye weight {meta.loc[pen, 'a']:.2f}, onset {meta.loc[pen, 'onset']:.1f} ms after stimulus onset")
     for w, d in ex.items():
         print(f"    mean {w} after onset: " + "; ".join(f"{lab} {v:.2f}" for lab, v in d.items()))
     for lab, (m, lo, hi) in crf.items():
-        print(f"(c) {lab}: " + "; ".join(f"{100 * c:g}% {mm:.3f} [{l_:.3f}, {h:.3f}]"
+        print(f"(d) {lab}: " + "; ".join(f"{100 * c:g}% {mm:.3f} [{l_:.3f}, {h:.3f}]"
                                          for c, mm, l_, h in zip(CONTRASTS[1:], m, lo, hi)))
     print(f"    other / dominant eye at 90% per penetration: median {np.median(ratio):.2f} "
           f"(IQR {np.percentile(ratio, 25):.2f}-{np.percentile(ratio, 75):.2f}); median eye weight a over "
@@ -219,7 +288,7 @@ def main():
           f"{len(meta)} penetrations, {int(meta.n_channels.sum())} channels (B {int((meta.monkey == 'B').sum())}, "
           f"J {int((meta.monkey == 'J').sum())})")
     for s, v in odi.items():
-        print(f"(d) {s}: n {len(v)}, median ODI {np.median(v):+.2f}, median |ODI| {np.median(np.abs(v)):.2f}, "
+        print(f"(e) {s}: n {len(v)}, median ODI {np.median(v):+.2f}, median |ODI| {np.median(np.abs(v)):.2f}, "
               f"|ODI| < 0.5 {np.mean(np.abs(v) < 0.5):.0%}, contralateral-dominant {np.mean(v > 0):.0%}, "
               f"|ODI| > 0.9 {np.mean(np.abs(v) > 0.9):.0%}")
 

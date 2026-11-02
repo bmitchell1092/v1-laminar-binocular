@@ -1,13 +1,18 @@
-"""Supplementary Figure S1: apparatus and laminar alignment (docs/09, figure set for V3; formerly Fig 1a and 1c).
+"""Supplementary Figure S1: how the linearity index is read, and the laminar alignment (docs/09, figure set for V3;
+the stereoscope schematic moved to Fig 1a and the equivalent-contrast readout came here from Fig 2b on 2026-11-02).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\figS1_methods.py [example penetration, default 221212_J_eA]
-(a) mirror stereoscope (schematic, top view): two mirrors per eye shift each eye's line of sight onto its own half of
-    one monitor, divided by a black septum;
-(b) example penetration (the one in Fig 1b): flash-evoked CSD (bad contacts interpolated, Hamming-smoothed),
+(a) how the equivalent contrast is read (population means, illustration), each window on its own response axis: the
+    binocular response at 45% is placed on the dominant eye's contrast response measured in the same window and read
+    off as the dominant-eye contrast that gives the same response; the triangle marks what linear summation of
+    contrast predicts, 45% x (1 + median eye weight). The linearity index is (equivalent contrast / 45% - 1) / eye
+    weight: 1 when the contrasts add, 0 for the dominant eye alone;
+(b) example penetration (the one in Fig 1c): flash-evoked CSD (bad contacts interpolated, Hamming-smoothed),
     registered to the grating recording by the alignment's depth shift, with the top of cortex and the L4/5
     boundary below the flash sink (laminar alignment v2). The figure names the monkey, not the session.
-Inputs: <out_root>/flash_csd/*.npz, docs/qc/flash_landmarks_v2.csv, metadata/laminar_alignment_v2.csv.
-Writes <out_root>/figures/figS1_methods.pdf and .png; prints the landmarks shown.
+Inputs: figure_data.py (population.npz, population_meta.parquet); <out_root>/flash_csd/*.npz,
+docs/qc/flash_landmarks_v2.csv, metadata/laminar_alignment_v2.csv.
+Writes <out_root>/figures/figS1_methods.pdf and .png; prints the readout and the landmarks shown.
 """
 
 import sys
@@ -15,44 +20,46 @@ import warnings
 from pathlib import Path
 
 import matplotlib
+import matplotlib.ticker
 
 matplotlib.use("Agg")
-import matplotlib.patches as mpatches  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
 from v1lb import laminar as lam  # noqa: E402
+from v1lb.binocular import CONTRASTS, invert_crf  # noqa: E402
 from v1lb.config import metadata_dir, out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
 
 
-def stereoscope(ax):
-    """Top-down schematic: two mirrors per eye shift each line of sight outward onto its own half of one monitor,
-    and a black septum divides the monitor between the eyes."""
-    ax.set_xlim(-1.05, 1.05)
-    ax.set_ylim(-0.25, 1.5)
-    ax.set_aspect("equal")
-    ax.axis("off")
-    ax.add_patch(mpatches.Rectangle((-0.95, 1.2), 1.9, 0.07, color=fs.INK2, lw=0))
-    ax.text(0, 1.31, "monitor", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
-    ax.plot([0, 0], [1.2, 0.5], color=fs.INK, lw=2.2, solid_capstyle="butt")                 # septum
-    ax.text(0.04, 0.82, "septum", ha="left", va="center", fontsize=5.5, color=fs.INK2, rotation=90)
-    for s in (-1, 1):
-        ex, mx = s * 0.17, s * 0.6
-        sight = dict(color=fs.MUTED, lw=0.6, ls=(0, (2, 1.5)))
-        ax.plot([ex, ex], [0.1, 0.35], **sight)
-        ax.plot([ex, mx], [0.35, 0.35], **sight)
-        ax.plot([mx, mx], [0.35, 1.2], **sight)
-        for x in (ex, mx):                                                                     # 45-degree mirrors
-            ax.plot([x - s * 0.09, x + s * 0.09], [0.26, 0.44], color=fs.INK, lw=1.6, solid_capstyle="butt")
-        ax.add_patch(mpatches.Circle((ex, 0.02), 0.08, fc="white", ec=fs.INK, lw=0.8))
-        ax.text(mx, 1.1, "left half" if s < 0 else "right half", ha="center", va="top", fontsize=5,
-                color=fs.INK2)
-    ax.text(0, -0.1, "eyes", ha="center", va="top", fontsize=5.5, color=fs.INK2)
-    ax.text(0.6, 0.18, "mirrors", ha="center", va="top", fontsize=5.5, color=fs.INK2)
+def equivalent_contrast_sketch(ax, pop, w, title, a_med):
+    rel, O = pop["rel"], pop["onset"]
+    sel = (rel >= w[0]) & (rel < w[1])
+    crf = O[:, :, 0, :][:, :, sel].mean(axis=2).mean(axis=0)              # dominant eye, population mean
+    i = list(CONTRASTS).index(0.45)
+    rb = O[:, i, i, :][:, sel].mean(axis=1).mean()
+    kc, cens = invert_crf(crf, np.array([rb]))
+    kc = float(kc[0]) if cens[0] == 0 else CONTRASTS[-1]
+    c = CONTRASTS[1:]
+    ymax = 1.12 * max(crf.max(), rb)
+    ax.plot(c, crf[1:], color=fs.COND["dominant"], marker="o", ms=2.6, lw=1.0)
+    ax.plot([0.45], [rb], color=fs.INK, marker="D", ms=3.4, zorder=5)
+    ax.plot([0.45, kc], [rb, rb], color=fs.INK, lw=0.6, ls=(0, (2, 1.5)))
+    ax.plot([kc, kc], [0, rb], color=fs.INK, lw=0.6, ls=(0, (2, 1.5)))
+    ax.plot([(1 + a_med) * 0.45], [0], marker="^", ms=3.8, color=fs.MUTED, clip_on=False, zorder=6)
+    fs.log_contrast_axis(ax, (0.055, 0.11, 0.225, 0.45, 0.9))
+    ax.set_xticklabels(["5.5", "11", "22.5", "45", "90"], fontsize=5.5)
+    ax.set_xlim(0.045, 1.05)
+    ax.set_ylim(0, ymax)
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xlabel("dominant-eye contrast (%)")
+    ax.set_title(title, fontsize=6.5, color=fs.INK)
+    ax.text(0.05, 0.97, f"both eyes at 45%\n= dominant eye at {100 * kc:.0f}%", transform=ax.transAxes,
+            ha="left", va="top", fontsize=6, color=fs.INK, linespacing=1.0)
+    return kc / 0.45
 
 
 def flash_csd(ax, cax, pen, al):
@@ -92,18 +99,29 @@ def flash_csd(ax, cax, pen, al):
 def main():
     pen = sys.argv[1] if len(sys.argv) > 1 else "221212_J_eA"
     fs.apply()
+    pop = dict(np.load(out_root() / "figures" / "data" / "population.npz"))
+    meta = pd.read_parquet(out_root() / "figures" / "data" / "population_meta.parquet")
+    a_med = float(meta.a.median())
     al = pd.read_csv(metadata_dir() / "laminar_alignment_v2.csv").set_index("penetration").loc[pen]
-    fig = fs.figure("onehalf", 62)
-    sa, sb = fig.subfigures(1, 2, width_ratios=[0.8, 1.2], wspace=0.03)
-    sax = sa.subplots()
-    stereoscope(sax)
-    sax.set_anchor("N")
+    fig = fs.figure("double", 64)
+    sa, sb = fig.subfigures(1, 2, width_ratios=[1.25, 1], wspace=0.03)
+    ax_a1, ax_a2 = sa.subplots(1, 2)
+    k_early = equivalent_contrast_sketch(ax_a1, pop, (0, 20), "first 20 ms after onset", a_med)
+    k_late = equivalent_contrast_sketch(ax_a2, pop, (50, 200), "50–200 ms after onset", a_med)
+    ax_a1.set_ylabel("MUA (dominant-eye peak = 1)")
+    for k, (mk, col, lab) in enumerate((("D", fs.INK, "both eyes, 45% each"), ("o", fs.COND["dominant"], "dominant eye alone"),
+                                        ("^", fs.MUTED, fs.SUM))):
+        y = 0.75 - k * 0.075
+        ax_a1.plot([0.07], [y], marker=mk, color=col, ms=2.8, transform=ax_a1.transAxes, clip_on=False)
+        ax_a1.text(0.12, y, lab, transform=ax_a1.transAxes, va="center", fontsize=5.5, color=fs.INK)
     cax_ = sb.subplots(1, 2, gridspec_kw=dict(width_ratios=[1, 0.06]))
     info = flash_csd(cax_[0], cax_[1], pen, al)
     cax_[0].set_title(f"example penetration, monkey {pen.split('_')[1]}", loc="right", fontsize=6, color=fs.INK2)
-    for ax, letter in zip((sax, cax_[0]), "ab"):
+    for ax, letter in zip((ax_a1, cax_[0]), "ab"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "figS1_methods"))
+    print(f"(a) illustration: equivalent contrast / 45%: early {k_early:.2f}, late {k_late:.2f}; median eye weight "
+          f"{a_med:.2f}; {len(meta)} penetrations")
     print(f"(b) L4/5 boundary {info['l45_mm']:.2f} mm below the top of cortex; flash recording shifted by "
           f"{info['shift_contacts']:+.0f} contacts; {info['bad_contacts']} bad contacts interpolated; depths "
           f"{info['depth_range'][0]:.2f} to {info['depth_range'][1]:.2f} mm")

@@ -4,16 +4,16 @@ Usage: .venv\\Scripts\\python scripts\\figures\\tableS1_monkeys.py
 Every row is recomputed from saved outputs with the statistic of its figure, separately for monkey B, monkey J and
 both. Value = median over penetrations; sign = penetrations in the direction of the paper's claim / penetrations;
 p = Wilcoxon signed-rank test over penetrations (one-sided in the claimed direction; two-sided for the plain early
-and late values, which carry no test), or a one-sided sign test for the slopes, as in Fig 3.
+and late values, which carry no test), or a one-sided sign test for the slopes, as in Fig 3b and Supplementary Fig S2b.
 * linearity index early (0-20 ms after onset), late (50-200 ms) and early - late, both eyes at 11, 22.5 and 45%
   (Fig 2d: per penetration, mean of the windows' channel medians; k_windows.parquet);
-* slope of the transition-window linearity index (window starts 20-35 ms) on log contrast (Fig 3b;
+* slope of the transition-window linearity index (window starts 20-35 ms) on log contrast (Fig 3b, S2b;
   normalization_timing.parquet, all presentations);
-* iso-response contour exponent, late - early, at 11, 22.5 and 45% (Fig 2c, Fig S3; v3_C_penetration.parquet);
+* iso-response contour exponent, late - early, at 11, 22.5 and 45% (Fig S3; v3_C_penetration.parquet);
 * delayed vs static normalization held out on the interaction loss, % less error (Fig 4d; v3_B2.parquet);
 * pool weight - drive weight of the other eye, conductance and fixed-delay fits (Fig 4e; fig5_cond.parquet,
   fig5_model.parquet);
-* conductance vs fixed-delay held out, % less error (Fig 4f; fig5_cond.parquet). Held-out comparisons leave out
+* conductance vs fixed-delay held out, % less error (Fig S5f; fig5_cond.parquet). Held-out comparisons leave out
   211008, whose even half has no usable condition (docs/09).
 Writes docs/qc/tableS1_monkeys.csv; prints the table.
 """
