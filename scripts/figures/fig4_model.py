@@ -68,17 +68,20 @@ def axes_mm(fig, x, y, w, h):
     return fig.add_axes((x / W, y / H, w / W, h / H))
 
 
-def timing_sketch(axs, a, w, tau2):
-    """Drive, pool and response of delayed normalization for both eyes at 45% and the dominant eye alone."""
+def timing_sketch(axs, a, w, tau2, n=2.0, sig=0.25):
+    """Drive, pool and response of delayed normalization for both eyes at 45% and the dominant eye alone (exponent n
+    and semi-saturation sig: the V4 figure used 2 and 0.25; the space-time Fig 4 passes the median fitted values)."""
     t = np.arange(-20, 201, 1.0)
     u, v = dynorm.step_responses(t, 0.0, 5.0, tau2)
-    c, n, sig = 0.45, 2.0, 0.25
+    c = 0.45
     drive = {"both": (c + a * c) * u, "dom": c * u}
     pool = {"both": (c + w * c) * v, "dom": c * v}
     resp = {k: drive[k] ** n / (sig ** n + pool[k] ** n) for k in drive}
+    eq = ("response = drive² / (σ² + pool²)" if n == 2.0 else
+          f"response = drive$^n$ / (σ$^n$ + pool$^n$), fitted n = {n:.1f}")
     rows = (("drive: both eyes add, at once", drive),
             (f"pool: both eyes, lagging (time constant {tau2:.0f} ms)", pool),
-            ("response = drive² / (σ² + pool²)", resp))
+            (eq, resp))
     for ax, (title, d) in zip(axs, rows):
         ax.plot(t, d["dom"], color=fs.COND["dominant"], lw=1.0)
         ax.plot(t, d["both"], color=fs.COND["both"], lw=1.2)

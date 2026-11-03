@@ -20,7 +20,7 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetrati
     half-max onset of each condition's own peak and that peak, per channel; medians over channels per penetration,
     then over penetrations; onsets relative to each channel's dominant eye at 90% plus that onset's population median;
     open diamonds, the sum of the two measured monocular responses (dotted lines join the equal-contrast cells);
-    grey band, the least-squares line of onset on log peak through the monocular conditions.
+    grey band, the least-squares line of onset on log peak through the monocular conditions, over their range.
 The example flash CSD with the laminar alignment is in Supplementary Fig S1 (figS1_methods.py).
 Inputs: figure_data.py (population.npz, population_meta.parquet), run_crf.py, run_dichoptic.py.
 Writes <out_root>/figures/fig1_setup.pdf and .png; prints the statistics shown.
@@ -274,12 +274,12 @@ def drive_latency(ax):
     dio = both[np.isclose(both.c_dom, both.c_oth)]
     mono = pd.concat([dom, oth])
     slope, icpt = np.polyfit(np.log(mono.peak_median), mono.y, 1)
-    xs = np.linspace(0.27, 1.25, 50)
+    xs = np.linspace(mono.peak_median.min(), mono.peak_median.max(), 50)     # only over the monocular range
     ax.plot(xs, icpt + slope * np.log(xs), color=fs.RULE, lw=2.4, zorder=1, solid_capstyle="round")
     for _, r in dio.iterrows():
-        ax.plot([r.peak_median, r.peak_added_median], [r.y, r.y_add], color=fs.MUTED, lw=0.5, ls=(0, (1.5, 1.5)),
+        ax.plot([r.peak_median, r.peak_added_median], [r.y, r.y_add], color=fs.RULE, lw=0.5, ls=(0, (1.5, 1.5)),
                 zorder=2)
-    ax.scatter(both.peak_added_median, both.y_add, s=9, marker="D", facecolor="white", edgecolor=fs.MUTED, lw=0.6,
+    ax.scatter(both.peak_added_median, both.y_add, s=6, marker="D", facecolor="white", edgecolor="#b5b4af", lw=0.5,
                zorder=3)
     ax.scatter(both.peak_median, both.y, s=9, marker="D", color=fs.INK, lw=0, zorder=4)
     ax.scatter(dio.peak_median, dio.y, s=22, marker="D", color=fs.INK, lw=0, zorder=5)
@@ -298,7 +298,7 @@ def drive_latency(ax):
     keys = [("o", fs.COND["dominant"], fs.COND["dominant"], "dominant eye alone (contrast, %)"),
             ("o", fs.COND["other"], fs.COND["other"], "other eye alone"),
             ("D", fs.INK, fs.INK, "both eyes (large: the same contrast in each)"),
-            ("D", "white", fs.MUTED, "if the two eyes' responses simply added")]
+            ("D", "white", "#b5b4af", "if the two eyes' responses simply added")]
     for k, (mk, fc, ec, lab) in enumerate(keys):
         y = 0.95 - k * 0.12
         ax.plot([1.05], [y], marker=mk, ms=3.0, mfc=fc, mec=ec, mew=0.6, transform=ax.transAxes, clip_on=False)

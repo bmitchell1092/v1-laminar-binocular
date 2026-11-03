@@ -2,15 +2,16 @@
 
 Usage: .venv\\Scripts\\python scripts\\figures\\fig4_model_spacetime.py
 (a) what the model does (illustration, as the former Fig 4a): drive, pool and response for both eyes at 45% and the
-    dominant eye alone, with the median fitted weights and pool delay (conductance fits per depth group);
+    dominant eye alone, with the median fitted weights, pool delay, exponent and semi-saturation (conductance fits
+    per depth group);
 (b) what the other eye adds at 45%, depth x time on the response clock: data, no-delay fits and conductance fits of
     each channel (v4_model_depth.py; all presentations); population per 0.2 mm depth bin (>= 10 penetrations);
 (c) data minus each model;
-(d) held-out error, % less than without a delay, per penetration and depth group (above / at, within 0.2 mm / below
-    the earliest sink; group fits, v4_model_groups.py, both cross-validation directions summed); medians and
-    interquartile ranges; one-sided Wilcoxon (check N1);
-(e) held-out error relative to the fixed-delay pool: weighting the other eye separately (fixed delay vs w = a, N2), the
-    conductance form (N3), recurrent normalization (ORGaNICs) and the two-stage model (check P);
+(d) held-out error relative to the fixed-delay pool, per penetration and depth group (above / at, within 0.2 mm / below
+    the earliest sink; group fits, v4_model_groups.py, both cross-validation directions summed): weighting the other
+    eye separately (fixed delay vs w = a, N2), the conductance form (N3), recurrent normalization (ORGaNICs) and the
+    two-stage model (check P); medians and interquartile ranges;
+(e) for comparison, held-out error % less than without a delay (N1; the no-delay model has no transient at all);
 (f) the other eye's extra weight in the pool (pool weight - drive weight, conductance fits, K2/N4);
 (g) the pool delay (conductance fits);
 (h) both eyes - "if the contrasts add" at 45%, 30-100 ms after the group's onset, in the data and in the conductance
@@ -48,7 +49,7 @@ RES_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list("residual", [fs.I
 POS = {"a1": (12, 141, 46, 9), "a2": (12, 126, 46, 9), "a3": (12, 106, 46, 15),
        "b1": (84, 106, 24, 40), "b2": (111, 106, 24, 40), "b3": (138, 106, 24, 40), "bcb": (165, 106, 2, 40),
        "c1": (16, 58, 26, 30), "c2": (45, 58, 26, 30), "ccb": (74, 58, 2, 30),
-       "d": (104, 60, 26, 28), "e": (144, 60, 26, 26),
+       "d": (104, 55, 26, 26), "e": (144, 55, 26, 26),
        "f": (22, 12, 30, 27), "g": (76, 12, 30, 27), "h": (132, 12, 36, 27)}
 
 
@@ -167,7 +168,8 @@ def main():
     fig.set_layout_engine("none")
     ax = {k: axes_mm(fig, *v) for k, v in POS.items()}
     sk = timing_sketch([ax["a1"], ax["a2"], ax["a3"]], float(N.cond_p_a.median()), float(N.cond_p_w.median()),
-                       float(N.cond_p_tau2.median()))
+                       float(N.cond_p_tau2.median()), n=float(N.cond_p_n.median()),
+                       sig=float(N.cond_p_sigma.median()))
     titles = {"data": "data", "static": "no delay (static)", "cond": "delayed pool (conductance)"}
     for k, name in zip(("b1", "b2", "b3"), ("data", "static", "cond")):
         im = show_map(ax[k], M[name], z, fs.ADDED_CMAP, 0.25, titles[name])
@@ -186,8 +188,11 @@ def main():
     pct = lambda worse, better: 100 * (1 - N[f"cv_{better}"] / N[f"cv_{worse}"])   # noqa: E731
     N = N.assign(pct_delay=pct("static", "full"), pct_weight=pct("w=a", "full"), pct_cond=pct("full", "cond"),
                  w_minus_a=N.cond_p_w - N.cond_p_a)
-    Rd = group_dots(ax["d"], {"delay": (long(N, "pct_delay"), fs.INK, 0.0)},
+    Rd = group_dots(ax["e"], {"delay": (long(N, "pct_delay"), fs.INK, 0.0)},
                     "held-out error, % less\nwith a delayed pool", xlim=(-10, 100))
+    ax["e"].tick_params(labelleft=False)
+    ax["e"].text(0.0, 1.03, "for comparison: the delay itself", transform=ax["e"].transAxes, ha="left",
+                 va="bottom", fontsize=5.5, color=fs.INK2)
     Pg = pd.read_parquet(b / "v4_P_groups.parquet")
     N = N.merge(Pg[["penetration", "grp", "cv_org", "cv_2stage"]], on=["penetration", "grp"], how="left")
     N = N.assign(pct_org=pct("full", "org"), pct_2stage=pct("full", "2stage"))
@@ -195,11 +200,10 @@ def main():
                 ("conductance", "pct_cond", fs.MODEL["conductance"], -0.09),
                 ("recurrent (ORGaNICs)", "pct_org", fs.MODEL["recurrent"], 0.09),
                 ("two-stage", "pct_2stage", fs.INK2, 0.27))
-    Re = group_dots(ax["e"], {lab: (long(N, col), colr, dy) for lab, col, colr, dy in E_SERIES},
+    Re = group_dots(ax["d"], {lab: (long(N, col), colr, dy) for lab, col, colr, dy in E_SERIES},
                     "held-out error, % less\nthan the fixed-delay pool", xlim=(-10, 12), clip=(-10, 12))
-    ax["e"].tick_params(labelleft=False)
     for k, (lab, _, colr, _) in enumerate(E_SERIES):
-        ax["e"].text(1.0, 1.33 - 0.1 * k, lab + (" (vs w = a)" if k == 0 else ""), transform=ax["e"].transAxes,
+        ax["d"].text(1.0, 1.33 - 0.1 * k, lab + (" (vs w = a)" if k == 0 else ""), transform=ax["d"].transAxes,
                      ha="right", va="bottom", fontsize=5.5, color=colr)
     best = N[[f"cv_{m}" for m in ("static", "full", "w=a", "cond", "org", "2stage")]].idxmin(axis=1).str[3:]
     best_counts = pd.crosstab(N.grp, best)
@@ -224,13 +228,13 @@ def main():
     ax["h"].tick_params(axis="y", length=0)
     ax["h"].set_ylim(2.6, -0.6)
     ax["h"].set_xlabel("both eyes − if the contrasts add,\n45%, 30–100 ms after onset")
-    ax["h"].text(1.0, 1.13, "data", transform=ax["h"].transAxes, fontsize=5.5, color=fs.INK, ha="right",
+    ax["h"].text(0.03, 0.12, "data", transform=ax["h"].transAxes, fontsize=5.5, color=fs.INK, ha="left",
                  va="bottom")
-    ax["h"].text(1.0, 1.03, "conductance fits", transform=ax["h"].transAxes, fontsize=5.5,
-                 color=fs.MODEL["conductance"], ha="right", va="bottom")
+    ax["h"].text(0.03, 0.03, "conductance fits", transform=ax["h"].transAxes, fontsize=5.5,
+                 color=fs.MODEL["conductance"], ha="left", va="bottom")
     for k, letter in (("a1", "a"), ("b1", "b"), ("c1", "c"), ("d", "d"), ("e", "e"), ("f", "f"), ("g", "g"),
                       ("h", "h")):
-        fs.panel_label(ax[k], letter, x={"d": -0.18, "f": -0.18, "h": -0.18, "e": -0.3}.get(k, -0.02))
+        fs.panel_label(ax[k], letter, x={"d": -0.18, "f": -0.18, "h": -0.18, "e": -0.12}.get(k, -0.02))
     print(fs.save(fig, "fig4_model_spacetime"))
     print(f"(b, c) {K.penetration.nunique()} penetrations, {len(K)} channels; depth bins {np.round(z, 1).tolist()}")
     for name in ("static", "cond"):
@@ -239,7 +243,7 @@ def main():
             print(f"   data - {name}, {w0}-{w1} ms: mean over depth {np.nanmean((M['data'] - M[name])[:, sel]):+.3f}")
     print(f"(a) sketch with a {N.cond_p_a.median():.2f}, w {N.cond_p_w.median():.2f}, tau2 {N.cond_p_tau2.median():.0f} ms;"
           f" {sk if sk is not None else ''}")
-    for lab, R in (("(d) % less error with a delay", Rd), ("(e) pool weighting / conductance", Re),
+    for lab, R in (("(e) % less error with a delay", Rd), ("(d) each model vs the fixed-delay pool", Re),
                    ("(f) w - a", Rf), ("(g) pool delay", Rg)):
         print(lab)
         print(R.round(4).to_string(index=False))

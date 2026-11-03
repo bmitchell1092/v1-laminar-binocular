@@ -68,6 +68,15 @@ shared cache, and prints the statistics it displays so they can be checked again
   comparison (S5f).
 * **A clearer view can show new structure; test it before claiming it.** The response-unit view showed the 45% dip
   and return (docs/09 F); it was registered and tested before the text may describe it.
+* **Space-time maps (2026-11-03).** Depth × time maps are drawn with depth relative to the earliest sink and time on
+  each site's own response clock (the stimulus clock only to show why). What the other eye adds uses
+  `fs.ADDED_SOFT` (orange = adds; the negative side faint, because a response below the dominant eye alone was not
+  found); the shortfall from summation uses `fs.ADDED_CMAP` (grey = short of summation). A ridgeline (one trace per
+  depth with its own summation prediction) is the readable alternative to a heat map; 3D surfaces only as overviews.
+* **No untested panel in a main figure** (2026-11-03, after the strength review): descriptive panels without a test
+  behind them (e.g. normalization time by depth) go to the supplement and say "descriptive".
+* **Statistics on the main panels come from the hierarchical models** (docs/09 U, Q): penetrations nested in
+  sessions, monkey as a fixed effect; per-penetration counts stay in the legends.
 
 ## Colour (validated with the dataviz palette validator on a white surface)
 

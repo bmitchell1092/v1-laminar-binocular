@@ -1684,6 +1684,68 @@ Scripts: `scripts/v4_full_design.py` (Q, R), `scripts/v4_depth_robust.py` (S), `
   * Report the hierarchical estimates with monkey effects in the main text and the per-penetration counts in the
     legends.
 
+## Novelty statement (draft for the Introduction and Discussion, 2026-11-03; Blake to check)
+
+**Prior work, and what each showed.**
+* **Cox et al. 2019** (J Vis): transient binocular enhancement, absent in the sustained response; one contrast pair.
+* **Dougherty et al. 2019:** facilitation at onset, then suppression ~12 ms later, in monocular L4 units.
+* **Mitchell et al. 2022** (iScience; a separate dataset): sublinear summation at 50–100 ms, then contrast-dependent
+  suppression by 150–250 ms; equal contrasts, 100 ms windows.
+* **Mitchell et al. 2023** (Curr Biol; **these recordings**, B + J, 25 penetrations): ocular dominance shapes how the
+  non-dominant eye's contrast is combined; time-averaged responses; models weighted by ocular dominance.
+* **The 2024 dissertation** (public; "Neuronal Basis of V1 Binocular Normalization"):
+  * "a single, dynamical process of divisive normalization operating both within and between the eyes";
+  * this process "was weakest in the geniculate input layers and intensified as signals propagated through the
+    microcircuit".
+* **SfN 2023:** "normalization across condition/depth/time" (docs/03 item 7; content to be supplied by Blake).
+
+**What this paper adds** (each with its check):
+1. **The full dichoptic design resolved in time, on each site's own response clock (Q, R; Fig 2).** In the first
+   ~20 ms the eyes' contrasts add in every condition. Afterwards the binocular response falls short of summation in
+   proportion to the other eye's contrast, and the shortfall is sustained when the other eye is the stronger one.
+   The sustained part replicates in held-out recordings. Earlier work had equal contrasts or time-averaged
+   responses.
+2. **Onset latency follows drive across all 35 conditions, and the second eye counts as drive (G, H; Fig 1f).** It
+   shortens the onset by 1.5–1.9 ms at every contrast and depth. This is the first laminar measurement in macaque;
+   the human VEP shows ~3 ms, and a macaque single-unit study found no significant advance.
+3. **The laminar profile of the shortfall (L, S; Fig 3).** It is weaker below the earliest sink than at and above
+   it, for every depth reference tested.
+   * **To reconcile with the dissertation:** it reports normalization weakest in the input layers. Here normalization
+     is as strong at the earliest sink as above it, and weakest below. The difference may lie in the depth reference
+     (the sink versus the L4/5 landmark) or in the measure (an index versus the response-unit shortfall). Blake to
+     say which measure and alignment the dissertation used.
+4. **The dynamics of the pool weighting (K, N, P; Fig 4).**
+   * A delayed pool that weights the other eye more than the drive does, at every depth. This is the dynamic version
+     of the 2023 ocular-dominance-weighted result.
+   * The extra weight is smallest below the sink.
+   * The pool delay does not vary with depth.
+   * The model fits neither the laminar difference nor the late return.
+5. **In supplement:**
+   * single neurons normalize (T2);
+   * the input current combines the eyes' contrasts, not their currents (O);
+   * analog MUA leads isolated neurons by ~4 ms at every depth (M).
+
+**What it does not claim:**
+* onset summation within single neurons (T1 and T3 failed);
+* a ±1 ms equivalence between the binocular advance and contrast summation (G2 failed);
+* interocular suppression by a non-driving eye (I failed);
+* a current-before-spikes order at the sink (J failed).
+
+### Revised figure set after the strength review (2026-11-03)
+
+| Figure | Claim | Script |
+|---|---|---|
+| 1 | The experiment; onset follows drive across all 35 conditions (1f: trend band only over the monocular range) | `fig1_setup.py` |
+| 2 | **The full 6 × 6 design over time**: matched vs unequal contrasts; the shortfall against the other eye's contrast in three windows; the sustained shortfall per monkey and in the held-out recordings | `fig2_full_design.py` |
+| 3 | Space and time: what the other eye adds on the stimulus and response clocks (negative side faint, `figstyle.ADDED_SOFT`); ridgeline at 45%; strength by depth group with the four depth-reference variants | `fig3_laminar_normalization.py` |
+| 4 | The model across depth: sketch with the fitted exponent (n ≈ 1.1); data / no delay / conductance maps; residuals; **d**, each model vs the fixed-delay pool (leads); **e**, the delay itself for comparison; weights, delay and data vs model by depth | `fig4_model_spacetime.py` |
+| S7 | The synaptic current at the input (J, M, O) | `figS7_input_current.py` |
+| S8 | The CSD depth landmark with the MUA onset by depth; shortfall maps at three contrasts; descriptive normalization time | `figS8_spacetime_maps.py` |
+
+The linearity index over time (formerly Fig 2a) stays in S2a. `fig2_spacetime.py` is retired: its maps moved to
+Fig 3, its CSD landmark to S8. The V4-era `fig2_add_then_normalize.py`, `fig3_contrast_depth.py` and `fig4_model.py`
+stay for the imports and until the set is approved.
+
 ### Space-time figure set: status (2026-11-03)
 
 **Decided (Blake, 2026-11-03):** the CSD analyses go to the supplement (Supplementary Fig S7: current additivity,

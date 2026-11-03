@@ -37,6 +37,9 @@ CSD_CMAP = LinearSegmentedColormap.from_list("csd", ["#0d366b", "#3987e5", "#f0e
 # depth x time maps of what the other eye adds, or of both eyes minus the summation prediction (docs/11): white = 0,
 # orange (the other eye's colour) = it adds / more than summation, grey = less (normalized)
 ADDED_CMAP = LinearSegmentedColormap.from_list("added", ["#2b2a28", "#8a8985", "#ffffff", ORANGE, "#8a3210"])
+# what the other eye adds (both eyes - dominant eye alone): its negative side is kept faint, because a response below
+# the dominant eye alone was not found (check F4) and should not read as suppression
+ADDED_SOFT = LinearSegmentedColormap.from_list("added_soft", ["#dcdbd6", "#efeeea", "#ffffff", ORANGE, "#8a3210"])
 
 # the figures' shared reading (docs/11, 2026-11-02): the response the other eye adds vs what summation predicts
 SUM_LS = (0, (3, 1.5))                                   # linear-summation prediction / reference: grey dashed
