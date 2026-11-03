@@ -9,8 +9,8 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig4_model_spacetime.py
 (d) held-out error, % less than without a delay, per penetration and depth group (above / at, within 0.2 mm / below
     the earliest sink; group fits, v4_model_groups.py, both cross-validation directions summed); medians and
     interquartile ranges; one-sided Wilcoxon (check N1);
-(e) the same for weighting the other eye in the pool separately from the drive (fixed delay vs w = a, N2) and for
-    the conductance form (conductance vs fixed delay, N3);
+(e) held-out error relative to the fixed-delay pool: weighting the other eye separately (fixed delay vs w = a, N2), the
+    conductance form (N3), recurrent normalization (ORGaNICs) and the two-stage model (check P);
 (f) the other eye's extra weight in the pool (pool weight - drive weight, conductance fits, K2/N4);
 (g) the pool delay (conductance fits);
 (h) both eyes - "if the contrasts add" at 45%, 30-100 ms after the group's onset, in the data and in the conductance
@@ -48,7 +48,7 @@ RES_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list("residual", [fs.I
 POS = {"a1": (12, 141, 46, 9), "a2": (12, 126, 46, 9), "a3": (12, 106, 46, 15),
        "b1": (84, 106, 24, 40), "b2": (111, 106, 24, 40), "b3": (138, 106, 24, 40), "bcb": (165, 106, 2, 40),
        "c1": (16, 58, 26, 30), "c2": (45, 58, 26, 30), "ccb": (74, 58, 2, 30),
-       "d": (104, 60, 26, 28), "e": (144, 60, 26, 28),
+       "d": (104, 60, 26, 28), "e": (144, 60, 26, 26),
        "f": (22, 12, 30, 27), "g": (76, 12, 30, 27), "h": (132, 12, 36, 27)}
 
 
@@ -188,14 +188,21 @@ def main():
                  w_minus_a=N.cond_p_w - N.cond_p_a)
     Rd = group_dots(ax["d"], {"delay": (long(N, "pct_delay"), fs.INK, 0.0)},
                     "held-out error, % less\nwith a delayed pool", xlim=(-10, 100))
-    Re = group_dots(ax["e"], {"pool weighting": (long(N, "pct_weight"), fs.MODEL["fixed-delay"], -0.15),
-                              "conductance": (long(N, "pct_cond"), fs.MODEL["conductance"], 0.15)},
-                    "held-out error, % less", xlim=(-2, 12), clip=(-2, 12))
+    Pg = pd.read_parquet(b / "v4_P_groups.parquet")
+    N = N.merge(Pg[["penetration", "grp", "cv_org", "cv_2stage"]], on=["penetration", "grp"], how="left")
+    N = N.assign(pct_org=pct("full", "org"), pct_2stage=pct("full", "2stage"))
+    E_SERIES = (("separate pool weight", "pct_weight", fs.MODEL["fixed-delay"], -0.27),
+                ("conductance", "pct_cond", fs.MODEL["conductance"], -0.09),
+                ("recurrent (ORGaNICs)", "pct_org", fs.MODEL["recurrent"], 0.09),
+                ("two-stage", "pct_2stage", fs.INK2, 0.27))
+    Re = group_dots(ax["e"], {lab: (long(N, col), colr, dy) for lab, col, colr, dy in E_SERIES},
+                    "held-out error, % less\nthan the fixed-delay pool", xlim=(-10, 12), clip=(-10, 12))
     ax["e"].tick_params(labelleft=False)
-    ax["e"].text(1.0, 1.13, "separate pool weight (vs w = a)", transform=ax["e"].transAxes,
-                 ha="right", va="bottom", fontsize=5.5, color=fs.MODEL["fixed-delay"])
-    ax["e"].text(1.0, 1.03, "conductance (vs fixed delay)", transform=ax["e"].transAxes, ha="right",
-                 va="bottom", fontsize=5.5, color=fs.MODEL["conductance"])
+    for k, (lab, _, colr, _) in enumerate(E_SERIES):
+        ax["e"].text(1.0, 1.33 - 0.1 * k, lab + (" (vs w = a)" if k == 0 else ""), transform=ax["e"].transAxes,
+                     ha="right", va="bottom", fontsize=5.5, color=colr)
+    best = N[[f"cv_{m}" for m in ("static", "full", "w=a", "cond", "org", "2stage")]].idxmin(axis=1).str[3:]
+    best_counts = pd.crosstab(N.grp, best)
     Rf = group_dots(ax["f"], {"w - a": (long(N, "w_minus_a"), fs.INK, 0.0)},
                     "other eye: pool weight −\ndrive weight", xlim=(-0.4, 1.0), clip=(-0.4, 1.0))
     Rg = group_dots(ax["g"], {"tau2": (long(N, "cond_p_tau2"), fs.INK, 0.0)}, "pool delay (ms)", ref=None,
@@ -236,6 +243,8 @@ def main():
                    ("(f) w - a", Rf), ("(g) pool delay", Rg)):
         print(lab)
         print(R.round(4).to_string(index=False))
+    print("(e, legend) best model (lowest held-out error) per depth group:")
+    print(best_counts.to_string())
     print("(h) both eyes - if the contrasts add, 45%, 30-100 ms, medians over groups:")
     print(pd.DataFrame(rows).round(4).to_string(index=False))
 

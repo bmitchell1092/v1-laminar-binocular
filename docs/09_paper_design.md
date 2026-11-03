@@ -1446,6 +1446,94 @@ group; K1′ holds.**
   although their extra pool weight is smaller below. For the paper: a limit of a single-stage delayed pool fitted
   per depth; candidate next model (needs its own registration): a stronger or faster pool at and above the input.
 
+## V4 checks O and P: summation and normalization in the synaptic current; which depth behaves like which model (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): "can we ask our questions of additivity and normalization at sub-spiking-threshold
+CSD? Does it hold?"; and on the model, no laminar model: "report the effects we see across layers and which layer
+behaves like which model". **Nulls for a current.** Spiking has a threshold and saturates, so the spiking null is
+summation of the eyes' *contrasts*. Synaptic current is closer to linear, and at the input the two eyes arrive on
+separate afferents, so the natural null for the current is that the *currents* add: both eyes = dominant eye alone +
+other eye alone (the additivity index, Blake's legacy measure). **Not blind** to the earlier sink results (the sink
+current adds at onset, Fig 3e of V4, 22/26; its late contrast response is flat between 45 and 90%; MUA on the sink
+channels leads it), or to N (gains by depth).
+
+**O. Measure.** Per penetration with a usable earliest sink: the sink current (−CSD, dataset CSD, over the sink
+channel and its two neighbours, as `sink_data.py`) and MUA on the same channels; condition means over clean
+presentations, blank subtracted, σ = 2 ms, on the sink-onset clock (`dichoptic_csd_sinks.csv`); the dominant eye =
+larger current at 90% in 0–50 ms; all / odd / even presentations (dominance and scale from all). Windows after sink
+onset: early 0–20, dip 30–100, late 130–200 ms. Per window, the additivity index of window means,
+B / (D + O) (1 = the currents add; < 1 = less than the sum); and both eyes − "if the contrasts add" (the current's own
+eye weight over 0–50 ms, reported). 45% primary; 22.5 and 11% reported.
+* **O1, the input currents add at onset:** current additivity index in 0–20 ms; holds if the 95% bootstrap CI of the
+  median lies within 0.8–1.2 and both halves' medians do.
+* **O2, the currents normalize later:** additivity index 30–100 ms < 0–20 ms (paired, one-sided Wilcoxon) and
+  30–100 ms < 1 (one-sided).
+* **O3, spiking is less additive than the current feeding it:** MUA additivity index < current additivity index in
+  0–20 ms (paired, one-sided); 30–100 ms reported.
+* **Reported (display):** depth × time maps of the current's additivity (both eyes − (dominant + other), signed so
+  that negative = less current than the sum) across all channels, depth relative to the sink.
+* **Criteria:** O2 and O3 hold if p < .05 and both halves agree in sign. Script `scripts/v4_csd_additivity.py`,
+  output [qc/v4_O.csv](qc/v4_O.csv).
+
+**O results (2026-11-03; 26 penetrations; per penetration in [qc/v4_O_penetrations.csv](qc/v4_O_penetrations.csv);
+n is lower where the monocular currents in a window sum to ≤ 0). O1 and O3 fail; O2 holds against 1 but not
+against onset.**
+* **O1 fails:** the currents do not add at onset. At 45%, in the first 20 ms after sink onset, the binocular current
+  is 0.65 of the sum of the two monocular currents (95% CI 0.56–0.76; n = 23); 0.66 at 11% and 0.72 at 22.5%.
+* **In contrast units the current follows the spiking rule at onset:** both eyes − "if the contrasts add" (the
+  current's own contrast response and eye weight) is +0.02 at 45% (n.s.), +0.001 at 22.5%, −0.016 at 11%: the
+  binocular current is what the dominant eye's current would be at the summed contrast.
+* **O2:** later the current is further below the sum (30–100 ms: 0.49, 16/18 below 1, p < 10⁻⁴; 130–200 ms 0.43), but
+  the drop from onset is not significant at 45% (−0.08, 11/17, p = .10) or 22.5% (p = .13); at 11% it is (−0.13,
+  13/18, p = .007, both halves). In contrast units the late current is 0.03 below summation at 45% (16/26,
+  p = .046), small because the current's late contrast response is flat between 45 and 90%.
+* **O3 fails:** MUA on the same channels is not less additive than the current (0–20 ms: 0.72 vs 0.65; MUA − current
+  +0.10, 6/23 below zero).
+* **Maps (descriptive; [csd_additivity.npz] in the figure data, mock `figpolish/v5/csd_add_mock.py`):** at every
+  depth, sinks and sources alike, the binocular current is well below the sum of the monocular currents from the
+  first milliseconds after sink onset.
+* **Reading.** The compression that makes "contrasts add" the right null is already in the current at the input,
+  not added by the spike threshold: the eyes' currents combine like contrasts, not like independent inputs. Likely
+  reasons (not tested): the sink current is mostly intracortical even in its first 20 ms (Happel et al. 2010: ~88%
+  of the granular sink), and summed conductances do not add linearly. The time-dependent normalization (the
+  onset-to-dip drop) is clear in spiking and weak in the current, except at 11%.
+* **For the paper:** "Below the spiking threshold the rule was the same: the current at the earliest sink combined
+  the eyes' contrasts, not their currents (the binocular current was 65% of the sum of the monocular currents in the
+  first 20 ms, and matched the dominant eye's current at the summed contrast). Its later fall below summation was
+  small and significant only at 11%, so the normalization dynamics are clearest in spiking."
+
+**P. Measure.** N's depth groups, data and cross-validation, adding the two remaining models of the paper:
+recurrent normalization ('org', ORGaNICs) and the two-stage model ('2stage'). For each group and penetration, the
+held-out error of the six models (static, full, w=a, cond, org, 2stage).
+* **P1, reported per group:** which model has the lowest held-out error (counts of penetrations), and each model's
+  % less error than 'full'.
+* **P2:** org vs cond, log(CV cond / CV org) by group (one-sided > 0 per group, Wilcoxon): does recurrent
+  normalization describe any depth better than the conductance form? And below − at (two-sided): does the better
+  model change with depth?
+* **P3:** 2stage vs full, log(CV full / CV 2stage) by group (one-sided > 0).
+* **Criteria:** as N (p < .05 on the summed held-out error, both directions in the predicted sign). The paper may
+  say "depth X behaved like model Y" only for a held test. Script: `scripts/v4_model_groups.py` with the two models
+  added (output [qc/v4_P.csv](qc/v4_P.csv)).
+
+**P results (2026-11-03; 24 penetrations, 60 groups). P3 holds at and below the sink; P2 fails everywhere.**
+* **P1, best model per group (lowest held-out error, counts):** above (14): two-stage 6, conductance 5, static,
+  fixed delay and recurrent 1 each; at the sink (23): two-stage 15, recurrent 5, conductance 3; below (23): two-stage
+  9, conductance 7, recurrent 4, static 2, fixed delay 1. % less error than the fixed delay (medians): two-stage
+  +1.8 / +2.6 / +1.4, conductance +0.4 / +0.8 / +2.4, recurrent +1.1 / −5.1 / −0.8 (above / at / below).
+* **P2 fails:** recurrent normalization does not beat the conductance form at any depth (log ratio −0.008, −0.082,
+  −0.027; 5–6 penetrations in its favour). It is relatively less bad below than at the sink (p = .04) but never
+  better.
+* **P3:** the two-stage model beats the fixed delay at the sink (+0.026, 19/23, p = .0001, both directions) and below
+  it (+0.014, 18/23, p = .0007, both directions); above, not reliably (+0.019, 9/14, p = .059).
+* **Not tested:** two-stage vs conductance directly (P1 counts only).
+* **For the paper ("which depth behaves like which model"):** at and below the earliest sink, the combination is
+  best described by a two-stage model, in which each eye's signal is first gain-controlled by the other eye before
+  the eyes combine and a delayed binocular pool normalizes; below the sink the conductance form helps as much. Above
+  the sink no form beats the fixed-delay pool reliably, and what matters most there is the pool weighting the other
+  eye separately from the drive (N2, 5.3%). Recurrent normalization is not the best description at any depth. All
+  these gains (1–3%) are small beside the delay itself (60–71%).
+* **Figure:** Fig 4e now shows all four comparisons by depth; best-model counts in the legend.
+
 ### Space-time figure set: status (2026-11-03)
 
 | Figure | Claim | Status | Script |

@@ -1,7 +1,10 @@
 """V4 check N: the four normalization models by depth group, both cross-validation directions (docs/09, registered
 2026-11-03).
 
-Usage: .venv\\Scripts\\python scripts\\v4_model_groups.py [n_workers]
+Usage: .venv\\Scripts\\python scripts\\v4_model_groups.py [n_workers] [extra]
+With "extra" (check P, registered 2026-11-03): the recurrent ('org') and two-stage ('2stage') models on the same
+groups; with N's results, the best model per group and the org-vs-cond and 2stage-vs-full comparisons by depth
+(docs/qc/v4_P.csv).
 Per penetration and depth group (above / at, within 2 contacts / below the earliest sink; >= 3 driven channels): the
 fig5_model.py population restricted to the group's channels (channel mean, 0-219 ms after the flash, Gaussian sigma
 2 ms, each channel oriented to its dominant eye and scaled by its dominant-eye peak at 90%), all / odd / even
@@ -37,6 +40,8 @@ T = np.arange(0, 220)
 CD, CN = np.meshgrid(CONTRASTS, CONTRASTS, indexing="ij")
 NONBLANK = (CD + CN) > 0
 MODELS = ("static", "full", "w=a", "cond")
+EXTRA = ("org", "2stage")                     # check P: recurrent (ORGaNICs) and two-stage
+ALL_MODELS = MODELS + EXTRA
 GROUPS = ("above", "at", "below")
 TAU_M_MIN = dynorm.BOUNDS["tau_m"][0]
 GAINS = {"N1 delay": ("static", "full"), "N2 pool weighting": ("w=a", "full"), "N3 conductance": ("full", "cond")}
@@ -83,12 +88,13 @@ def populations(pen, driven, sink):
 
 
 def work(task):
-    pen, driven, sink = task
+    pen, driven, sink, extra = task
     t0 = time.time()
     if not np.isfinite(sink):
         return []
     pops, n = populations(pen, driven, sink)
     cd, cn = CD[NONBLANK], CN[NONBLANK]
+    models = EXTRA if extra else MODELS
     rows = []
     for g, Y in pops.items():
         if not all(s in Y for s in ("all", "odd", "even")):
@@ -99,9 +105,12 @@ def work(task):
         r = dict(penetration=pen, monkey=pen[7], grp=g, n_channels=n[g])
         preds = {}
         for split in ("odd", "even", "all"):
-            fits = {m: dynorm.fit(T, cd, cn, ys[split], m, starts=4) for m in ("static", "full", "w=a")}
-            fits["cond"] = dynorm.fit(T, cd, cn, ys[split], "cond", starts=4,
-                                      init=fits["full"].params | {"tau_m": TAU_M_MIN})
+            if extra:                                              # check P: the two remaining models of the paper
+                fits = {m: dynorm.fit(T, cd, cn, ys[split], m, starts=4) for m in EXTRA}
+            else:
+                fits = {m: dynorm.fit(T, cd, cn, ys[split], m, starts=4) for m in ("static", "full", "w=a")}
+                fits["cond"] = dynorm.fit(T, cd, cn, ys[split], "cond", starts=4,
+                                          init=fits["full"].params | {"tau_m": TAU_M_MIN})
             if split == "all":
                 for m, f in fits.items():
                     r |= {f"{m}_p_{k}": v for k, v in f.params.items()}
@@ -110,7 +119,7 @@ def work(task):
                 other = "even" if split == "odd" else "odd"
                 for m, f in fits.items():
                     r[f"cv_{m}_{split[0]}>{other[0]}"] = dynorm.sse(f.params, T, cd, cn, ys[other], m)
-        for m in MODELS:
+        for m in models:
             r[f"cv_{m}"] = r[f"cv_{m}_o>e"] + r[f"cv_{m}_e>o"]
         rows.append((r, ys["all"].astype(np.float32), preds))
     print(f"{pen}: {[x[0]['grp'] for x in rows]} ({time.time() - t0:.0f}s)", flush=True)
@@ -146,6 +155,38 @@ def tests(N: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def tests_p(A: pd.DataFrame) -> pd.DataFrame:
+    """Check P: the best model per group, each model against 'full', org vs cond and 2stage vs full by depth."""
+    rows = []
+    for g in GROUPS:
+        G = A[A.grp == g]
+        best = G[[f"cv_{m}" for m in ALL_MODELS]].idxmin(axis=1).str[3:]
+        rows.append(dict(test=f"P1 best model (lowest held-out error), {g} sink", n=len(G),
+                         **{f"best_{m}": int((best == m).sum()) for m in ALL_MODELS}))
+        for m in ALL_MODELS:
+            if m != "full":
+                v = 100 * (1 - G[f"cv_{m}"] / G.cv_full)
+                rows.append(dict(test=f"(reported) % less error than full, {m}, {g} sink", n=len(v),
+                                 median=float(v.median()), n_in_direction=int((v > 0).sum())))
+    for name, (worse, better) in {"P2 org vs cond": ("cond", "org"), "P3 2stage vs full": ("full", "2stage")}.items():
+        for g in GROUPS:
+            G = A[A.grp == g]
+            v = np.log(G[f"cv_{worse}"] / G[f"cv_{better}"]).dropna()
+            dirs = {d: np.log(G[f"cv_{worse}_{d}"] / G[f"cv_{better}_{d}"]).dropna() for d in ("o>e", "e>o")}
+            p = stats.wilcoxon(v, alternative="greater").pvalue
+            rows.append(dict(test=f"{name}: log(CV {worse} / CV {better}) > 0, {g} sink", n=len(v),
+                             median=float(v.median()), n_in_direction=int((v > 0).sum()), p=p,
+                             median_o_to_e=float(dirs["o>e"].median()), median_e_to_o=float(dirs["e>o"].median()),
+                             holds=bool(p < .05 and all(x.median() > 0 for x in dirs.values()))))
+        piv = A.assign(v=np.log(A[f"cv_{worse}"] / A[f"cv_{better}"])).pivot(index="penetration", columns="grp",
+                                                                            values="v")
+        for g in ("above", "below"):
+            d = (piv[g] - piv["at"]).dropna()
+            rows.append(dict(test=f"{name}, {g} - at sink (two-sided)", n=len(d), median=float(d.median()),
+                             n_in_direction=int((d > 0).sum()), p=stats.wilcoxon(d).pvalue if len(d) > 5 else np.nan))
+    return pd.DataFrame(rows)
+
+
 def main():
     n_workers = int(sys.argv[1]) if len(sys.argv) > 1 else 6
     R = pd.concat([pd.read_parquet(f) for f in glob.glob(str(out_root() / "crf" / "*_crf.parquet"))], ignore_index=True)
@@ -154,8 +195,26 @@ def main():
     S = pd.read_csv(REPO / "docs" / "qc" / "dichoptic_csd_sinks.csv").set_index("penetration")
     sink = {p: (float(S.sink_depth_below_toc[p]) if p in S.index and S.usable[p] else np.nan) for p, _ in driven}
     pens = sorted({p for p, _ in driven})
+    extra = len(sys.argv) > 2 and sys.argv[2] == "extra"
     with ProcessPoolExecutor(n_workers) as ex:
-        done = [r for res in ex.map(work, [(p, driven, sink[p]) for p in pens]) for r in res]
+        done = [r for res in ex.map(work, [(p, driven, sink[p], extra) for p in pens]) for r in res]
+    if extra:
+        P = pd.DataFrame([d[0] for d in done])
+        P.to_parquet(out_root() / "binocular" / "v4_P_groups.parquet")
+        np.savez_compressed(out_root() / "binocular" / "v4_P_pred.npz", data=np.stack([d[1] for d in done]),
+                            **{m: np.stack([d[2][m] for d in done]) for m in EXTRA},
+                            penetration=P.penetration.to_numpy(), grp=P.grp.to_numpy(), cd=CD[NONBLANK],
+                            cn=CN[NONBLANK], t=T)
+        N = pd.read_parquet(out_root() / "binocular" / "v4_N_groups.parquet")
+        A = N.merge(P[["penetration", "grp"] + [c for c in P.columns if c.startswith(("cv_", "org_", "2stage_"))]],
+                    on=["penetration", "grp"])
+        Tp = tests_p(A)
+        Tp.to_csv(REPO / "docs" / "qc" / "v4_P.csv", index=False)
+        pd.set_option("display.width", 250)
+        pd.set_option("display.max_columns", 20)
+        print(f"{A.penetration.nunique()} penetrations, {len(A)} groups")
+        print(Tp.round(4).to_string(index=False))
+        return
     N = pd.DataFrame([d[0] for d in done])
     N.to_parquet(out_root() / "binocular" / "v4_N_groups.parquet")
     np.savez_compressed(out_root() / "binocular" / "v4_N_pred.npz", data=np.stack([d[1] for d in done]),
