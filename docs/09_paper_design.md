@@ -1591,6 +1591,99 @@ conclusions) and our own read agree on most points.
   prediction 1 ms earlier halves the early surplus (+0.031 → +0.017) and leaves the 30–100 ms shortfall (−0.037,
   23/26).
 
+## V4 checks Q–U: the action list (registered internally 2026-11-03, before running; Blake: "Please proceed")
+
+**Q. The full 6 × 6 design over time.** *Not blind:* the reviewer's descriptive cell medians (scratchpad
+`offdiag.py`, above). Per penetration, onset-aligned channel means as check F (`v4_dip_recovery.penetration`; all /
+odd / even presentations; dominance, scale, onset and the median eye weight a from all). For every binocular cell
+with both contrasts ≥ 11% and c_D + a·c_O ≤ 90%: shortfall S = window mean of R(c_D, c_O) − R_D(c_D + a·c_O)
+(`response_at`; dominant-eye peak = 1) in 0–20, 30–100 and 130–200 ms after onset. Linear mixed model (statsmodels,
+REML): S ~ window × (x_O + x_D) + monkey, x = log2(c / 22.5%), random intercept per session with a penetration
+variance component.
+* **Q1, graded with the other eye's contrast after onset:** the x_O slope < 0 in 30–100 ms and in 130–200 ms.
+* **Q2, develops after onset:** the x_O slope more negative in 30–100 and in 130–200 ms than in 0–20 ms
+  (window × x_O < 0).
+* **Q3, sustained when the other eye is stronger:** in 130–200 ms, S < 0 over the cells with c_O > c_D (the same
+  model's random structure, intercept only).
+* **Criteria:** one-sided p < .05, and the same sign refitted on odd and on even presentations and in each monkey
+  alone.
+
+**R. Held-out confirmation on the dual-probe cross-recordings** (`output/datasets_cross`: nine monkey J runs in which
+the grating sat on the other probe's receptive field; used before only for the candidate-1 statistic, docs/10).
+Driven channels by that test's rule (one-way ANOVA across the dominant eye's monocular contrasts, 40–250 ms,
+p < .01); recordings with ≥ 5 driven channels. Same S and model, with a recording random intercept. **R1:** Q1 in
+130–200 ms (x_O slope < 0); **R2:** Q3. A test holds if one-sided p < .05; with fewer than 5 recordings, inconclusive.
+
+**S. Depth robustness of L2** (below − at the sink, 45%, 30–100 ms; per channel, `v4_L_channels.parquet`).
+* **S1:** continuous depth relative to the sink: per-channel shortfall ~ depth, penetration random intercept;
+  slope > 0.
+* **S2:** the same with depth relative to the L4/5 landmark (laminar alignment v2).
+* **S3:** L2 excluding penetrations whose earliest sink lies > 0.5 mm below L4/5 or > 1.5 mm below the top of cortex
+  (deep sinks).
+* **S4:** L2 with the sink chosen on one half of the presentations and the shortfall measured on the other (both
+  directions averaged).
+* **Criteria:** each variant holds if one-sided p < .05; "robust to the depth reference" only if all four hold.
+
+**T. Single units by ocular dominance, hierarchically.** Lenient driven units (as `v3_units_index.py`): rates,
+condition means (≥ 3), blank subtracted, σ = 3 ms, the unit's dominant eye, scaled by its dominant-eye peak at 90%,
+half-max onset, eye weight a; at 45% in each eye: added A and predicted P in 0–20, 30–100 ms after the unit's onset;
+|ODI| (90%, 40–250 ms). Mixed model with unit and penetration nested in session, monkey fixed.
+* **T1:** the other eye adds at onset, A(0–20) > 0.
+* **T2:** normalization in single neurons, A − P (30–100 ms) < 0.
+* **T3:** T1 in the more monocular half of units (|ODI| above the median): summation within neurons, not only across
+  them.
+* **Criteria:** one-sided p < .05, same sign in both halves of the presentations.
+
+**U. The main claims in one hierarchical model** (penetration as the observation, random intercept per session,
+monkey as a fixed, sum-coded effect): U1 the 45% shortfall in 30–100 ms < 0 (F); U2 the slope of the transition
+index on log contrast < 0 (per penetration and contrast, penetration nested in session); U3 the binocular onset
+advance at 45% < 0 (G1); U4 the per-penetration rank correlation of onset and peak < 0 (H3); U5 below − at > 0
+(L2); U6 the excess pool weight w − a > 0 at each depth (N, conductance fits). Each holds if the intercept is
+significant one-sided at p < .05; the monkey effect is reported two-sided (does B differ from J?).
+
+Scripts: `scripts/v4_full_design.py` (Q, R), `scripts/v4_depth_robust.py` (S), `scripts/v4_units_od.py` (T),
+`scripts/v4_hierarchical.py` (U); outputs `docs/qc/v4_Q.csv` … `v4_U.csv`.
+
+**Q–U results (2026-11-03).**
+* **Q holds in full** (26 penetrations, 22 sessions, 843 cell × window observations).
+  * The shortfall from summation grows with the other eye's contrast in 30–100 ms (slope −0.013 per doubling,
+    p = .0002) and in 130–200 ms (−0.011, p = .0009).
+  * Both slopes are more negative than at onset (−0.024 and −0.022, p < 10⁻⁴). At onset the slope is positive
+    (+0.011): a stronger other eye adds slightly *more* than summation.
+  * In 130–200 ms, with the other eye stronger than the dominant eye, both eyes fall 0.026 below summation
+    (p < 10⁻⁵); on the matched diagonal, −0.010.
+  * Every estimate has the same sign in the odd and even refits and in each monkey alone (late, other eye stronger:
+    B −0.016, J −0.036).
+* **R, held out (8 cross-recordings with ≥ 5 driven channels; 221209_J_eA had 3):**
+  * **R2 holds:** with the other eye stronger, 130–200 ms, −0.024 (p = .032; halves −0.011, −0.037).
+  * **R1 fails:** the late slope on the other eye's contrast is −0.006 (p = .20); the 30–100 ms slope is −0.011
+    (p = .054).
+  * These recordings had the grating on the other probe's receptive field, so their responses are weaker. The
+    sustained shortfall replicates; its grading does not reach significance.
+* **S holds in all four variants:** shortfall ~ depth below the sink +0.025 per mm (p < 10⁻⁴); relative to L4/5
+  +0.025 per mm (p < 10⁻⁴, 22 penetrations); without the deep-sink penetrations (211027_B, 211208_B, 221206_J_eB)
+  +0.053 (16/22, p = .0007); with a cross-validated sink +0.048 (17/24, p = .001). The laminar difference does not
+  depend on the depth reference.
+* **T (65 lenient units, 20 penetrations; B 30, J 35):**
+  * **T2 holds:** single neurons fall short of summation in 30–100 ms (−0.076, p < 10⁻⁴, both halves), also in the
+    more monocular half (−0.077, p = .003).
+  * **T1 fails:** the other eye's addition at onset is +0.072 but not reliable (p = .20).
+  * **T3 fails:** −0.007 in the more monocular half.
+  * Early A − P −0.083 (n.s.).
+  * Normalization is present within neurons; onset summation is shown in MUA but not resolved in single units.
+* **U holds for every claim** (penetrations as observations, 22 sessions): U1 −0.041 (p = .0004); U2 slope −0.89
+  per doubling (p < 10⁻⁵); U3 −1.55 ms (p = .013); U4 ρ −0.48 (p < 10⁻⁵); U5 +0.051 (p = .0006); U6 w − a 0.29,
+  0.21, 0.11 above / at / below (p ≤ .034). Monkey B differs in U2 (shallower contrast slope, +0.79, p = .0001) and
+  U4 (weaker rank correlation, +0.19, p = .0005), not in U1, U3, U5 or U6.
+* **For the paper:**
+  * The unequal-contrast time course is the strongest new result: suppression graded with the other eye's
+    contrast, absent at onset, sustained when the other eye is stronger. It is confirmed in held-out recordings for
+    the sustained part only.
+  * The laminar difference is robust to the depth reference.
+  * Single neurons normalize; onset summation within neurons remains unshown.
+  * Report the hierarchical estimates with monkey effects in the main text and the per-penetration counts in the
+    legends.
+
 ### Space-time figure set: status (2026-11-03)
 
 **Decided (Blake, 2026-11-03):** the CSD analyses go to the supplement (Supplementary Fig S7: current additivity,

@@ -1,0 +1,6 @@
+test,n_channels,n_penetrations,estimate,p_one_sided,n_in_direction,holds
+"S1 shortfall ~ depth relative to the sink (mm), slope > 0",570.0,26,0.025231858528762936,1.5937436521433222e-09,,True
+"S2 shortfall ~ depth relative to L4/5 (mm), slope > 0",498.0,22,0.02491075006505431,1.9172296463386155e-08,,True
+"S3 L2 without deep-sink penetrations (211027_B_eA, 211208_B_eA, 221206_J_eB)",,22,0.052473802936567976,0.0007274150848388672,16.0,True
+S4 L2 with a cross-validated sink,,24,0.04747369242289347,0.001122891902923584,17.0,True
+(reference) L2 as registered,,25,0.04941834452154083,0.00031566619873046875,18.0,True
