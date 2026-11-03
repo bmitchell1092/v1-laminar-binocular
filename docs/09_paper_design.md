@@ -1009,6 +1009,97 @@ predicted, dominant-eye peak = 1): early 0.199 / 0.164, dip −0.004 / 0.037, re
   "normalize later" given that the sustained partial normalization is clearest at 11% and the strong one at 45% is
   transient.
 
+## V4 check G: onset latency by eye, contrast and depth (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): Fig 1 should make the point about monocular vs binocular latencies, and show MUA and
+CSD latency as a function of depth, binocular vs monocular, "to highlight the importance of accounting for latency.
+That's what this paper adds: 1 ms resolution of binocular summation in V1 and laminar organization of
+normalization." Known so far, at integer-ms resolution only: binocular − dominant-eye half-max onset −1 to −2 ms at
+11–45% (earlier in 69–81% of penetrations; fifth model test), dominant-eye onset 11% − 90% = 5 ms, and onsets 4 ms
+(above) and 2 ms (below) later than at the earliest sink (S4c, p = .02, .012). The new question is whether the
+binocular onset advance is the size that summing the two eyes' contrasts predicts, at every depth. **Not blind** to
+those integer-ms numbers; the summation comparison (G2), the depth split of the advance (G3) and the other eye's
+extra delay (G5) have not been computed.
+
+**G. Measure.** Per driven in-cortex MUA channel (the `figure_data.py` rule), condition means over clean
+presentations, blank subtracted, Gaussian σ = 2 ms; dominant eye as in `figure_data.py`; eye weight a per channel
+(40–250 ms). For all presentations and for odd and even presentations (dominance, a and inclusion from all).
+* **Onset latency** of a condition: the first time in 10–250 ms at which the response reaches half its own peak
+  (10–250 ms), linearly interpolated between the samples on either side of the crossing (sub-millisecond). Undefined
+  if that peak is below 0.2 × the dominant eye's peak at 90%.
+* **Conditions:** dominant eye alone and other eye alone at 11, 22.5, 45, 90%; both eyes at 11, 22.5, 45%.
+* **Summation prediction for the binocular onset:** the dominant eye's onset at contrast c(1 + a), interpolated
+  linearly in log contrast between its onsets at the measured contrasts (11–90%).
+* **Depth groups** relative to the earliest sink, as in S4c: above (> 2 contacts above), at (within 2), below
+  (> 2 below).
+* Per channel, then the median over channels per penetration (per penetration and group for depth), then over
+  penetrations; 95% CIs by bootstrap over penetrations (10,000 resamples).
+
+**Tests.**
+* **G1, both eyes start earlier:** Δ = onset(both eyes, c) − onset(dominant eye, c) < 0, one-sided Wilcoxon over
+  penetrations, at 11, 22.5 and 45%.
+* **G2, as early as summation predicts:** r = onset(both eyes, c) − onset(dominant eye, c(1 + a)). Holds at a
+  contrast if the 95% CI of the median r lies within ±1 ms (the resolution the paper claims) and both halves'
+  medians lie within ±1 ms. A two-sided Wilcoxon of r against 0 is reported with it.
+* **G3, at every depth:** at 45%, G1 and G2 within each depth group. A difference between groups (above − at,
+  below − at, two-sided Wilcoxon) may be described only if p < .05 and both halves agree in sign.
+* **G4, the laminar onset sequence (re-measured with this estimator; consistency with S4c, not new):** onset of the
+  dominant eye at 90% later above and below than at the sink, one-sided Wilcoxon.
+* **G5, exploratory (reported, no claim without its own confirmation):** the other eye's extra delay,
+  onset(other eye, c) − onset(dominant eye, a·c) at 45 and 90% where a·c ≥ 11%; 0 means the other eye's signal is a
+  weaker copy of the dominant eye's with the same timing; > 0 means it arrives later than its strength explains.
+  Two-sided Wilcoxon, overall and by depth group; logged in docs/10 if it meets the bar there.
+* **Reported:** onset vs contrast for each eye; the binocular advance at 90% (no prediction: c(1 + a) > 90%); the
+  same advance in the sink current (`sink.npz`, sink-onset clock).
+
+**Criteria.** G1, G3 (within a group) and G4 hold if p < .05 on all presentations and both halves' medians have the
+predicted sign. The paper may then say: G1 + G2 at a contrast, "both eyes started X ms earlier than the dominant eye
+alone, as early as summing the two eyes' contrasts predicts (within 1 ms)"; G1 without G2, "earlier, but by
+less/more than summation predicts" (direction from the median r); G3, "at every depth" only if it holds in all three
+groups. Script: `scripts/v4_latency.py`, output [qc/v4_G.csv](qc/v4_G.csv).
+
+**G results (2026-11-03; 26 penetrations, 570 channels; per-penetration medians in
+[qc/v4_G_penetrations.csv](qc/v4_G_penetrations.csv)). G1, G3 (the advance, in every group) and G4 hold; G2 fails
+at every contrast; G5 finds no extra delay.**
+* **Onsets** relative to the dominant eye at 90% (median of penetration medians; absolute 32.8 ms):
+
+  | | 11% | 22.5% | 45% | 90% |
+  |---|---|---|---|---|
+  | dominant eye alone | +6.8 | +3.7 | +1.3 | 0 |
+  | other eye alone | +7.9 | +4.0 | +1.9 | +0.7 |
+  | both eyes | +4.5 | +1.1 | −0.7 | −1.8 |
+  | if the contrasts add (dominant eye at c(1 + a)) | +4.9 | +2.1 | +0.1 | — |
+
+* **G1 holds at every contrast:** both eyes start earlier than the dominant eye alone by 1.9 ms at 11% (23/26),
+  1.6 at 22.5% (25/26) and 1.5 at 45% (23/26); all p < 10⁻⁴, both halves. Reported, 90%: 1.8 ms (25/26).
+* **G2 fails at every contrast as registered** (95% CI of the median not within ±1 ms):
+  * 11%: both eyes − summation prediction +0.13 ms (CI −1.10 to +0.86; 13/26 below zero; p = .67);
+  * 22.5%: −0.54 ms (CI −1.15 to +0.12; 16/26; p = .14);
+  * 45%: −0.79 ms (CI −1.59 to −0.31; 20/26; p = .001; odd half −1.01): both eyes start *earlier* than summation
+    predicts (advance 1.5 ms vs predicted 0.8 ms). Both eyes at 45% start before the dominant eye alone at 90% in
+    17/26 penetrations.
+  * At 11 and 22.5% the advance is close to the prediction and not different from it, but the data do not resolve
+    it to within 1 ms. The paper may not say "within 1 ms".
+* **G3:** at 45% the advance holds in every depth group (above −2.0 ms, 21/23; at the sink −1.4, 24/25; below
+  −1.9, 21/25; p ≤ .002, both halves), so "at every depth" is allowed for the advance. Equivalence fails in every
+  group (both eyes − prediction −1.2, −1.0, −0.8 ms). No laminar difference (advance above − at −0.5 ms, p = .29;
+  below − at −0.3 ms, p = .29).
+* **G4 holds:** the dominant eye's onset at 90% is 4.0 ms later above the sink (16/22, p = .0095) and 1.4 ms later
+  below (18/25, p = .015), both halves (S4c: 4 and 2 ms).
+* **G5, exploratory:** no extra delay of the other eye: 45% −0.5 ms (p = .008, slightly *earlier* than its strength
+  predicts; 8/25 above zero), 90% −0.1 ms (p = .45). The other eye's signal behaves as a weaker copy of the
+  dominant eye's. Nothing to log in docs/10.
+* **Reported, sink:** the current at the earliest sink also starts earlier with both eyes (−2.3, −1.8, −1.0 ms at
+  11, 22.5, 45%; 16/22, 19/25, 16/25; p = .03, .045, .007), as does MUA on the sink channels (−2.2, −1.5, −1.2 ms;
+  p ≤ .002).
+* **For the paper:** "Raising the contrast in one eye from 11 to 90% shortened the onset by ~7 ms. Adding the other
+  eye shortened it by a further 1.5–1.9 ms at every contrast and every depth, and in the current at the earliest
+  sink. At 11 and 22.5% the advance was close to what summing the two eyes' contrasts predicts (differences 0.1 and
+  0.5 ms, not significant); at 45% it exceeded the prediction by 0.8 ms: two eyes at 45% started sooner than one eye
+  at 90%." Descriptive reading (not tested): within one eye the onset gains little above 45% (1.3 ms to 90%), but a
+  second eye still gains 1.5–1.8 ms, as if the single-eye limit lay before the cortex and the second eye added drive
+  the first could not.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
@@ -1233,6 +1324,43 @@ Model colours (no model uses orange, the other eye's colour): data ink, static d
 conductance violet, recurrent magenta (aqua and magenta below 3:1 on white and close for deutans, so always
 direct-labelled). Inside a panel of condition time courses (Fig 4b) a model is drawn as a dashed line in the
 condition's colour.
+
+### Proposed figure set: latency as the thread, space-time maps (2026-11-03; awaiting Blake)
+
+**Why.** Blake, reading the paper (2026-11-03): Fig 1 should make the monocular vs binocular latency point and
+show MUA and CSD latency by depth, to set this paper apart from Mitchell et al. 2022 and later work. "That's what
+this paper adds: 1 ms resolution of binocular summation in V1 and laminar organization of normalization." Fig 2
+should make the temporal point a spatiotemporal one: additivity maps of depth × time aligned to the response onset,
+beside the same maps aligned to the stimulus onset; its first panel should show that latency shortens with contrast
+and with adding the other eye's input ("drive also reduces response latency"). Data for the latency panels: check G
+above. Maps mocked in the scratchpad (`figpolish/v5/fig2_mock.py`, `st_mock.py`); descriptive, no new test.
+
+| Figure | Claim | Panels |
+|---|---|---|
+| 1 | The experiment; we can tell when each depth starts | (a)–(e) as now; (f) population CSD aligned on the earliest sink (moved from Fig 3d) with the MUA onset at each depth overlaid: the current arrives first at the sink, spiking starts there, 4 ms later above and 1.4 ms later below (G4) |
+| 2 | Drive shortens latency, and the second eye is drive; the eyes add at every depth on each site's own clock | (a) onset vs contrast: each eye alone, both eyes, "if the contrasts add" (G1, G2); (b) the same at 45% by depth group (G3); (c, d) what the other eye adds, depth × time at 45%, on the stimulus clock (with each depth's onset drawn) and on each site's response clock |
+| 3 | The eyes add first, then normalize | the current Fig 2: what to look for; population at 45%; added vs the summation prediction (the depth average of 2d, with its prediction); early vs late per penetration |
+| 4 | Contrast sets how far; laminar organization | maps (response clock) at 11 and 22.5%, or the current line panels; transition index vs contrast; depth profiles; current added at the earliest sink |
+| 5 | Delayed normalization | the current Fig 4 |
+| S | Additivity index maps | both eyes / (dominant + other), both clocks, 11–45% (the legacy measure, for comparison with Mitchell et al. 2022) |
+
+**Map index (recommendation: "added by the other eye", the additivity index in the supplement).**
+* **The additivity index has no fixed summation reference.** With saturating responses, contrasts that add exactly
+  still give both / (dominant + other) well below 1 (late, ~0.55–0.65 everywhere in the mock), so a reader takes
+  "0.6" as sublinear when it can be what summation predicts.
+* **Its early peak is mostly latency.** The index is near 1 only in the first ~5 ms, on the rising edge, where a
+  1.5 ms binocular lead inflates the ratio: the confound the paper removes.
+* **The added map shows the result directly** (orange = what the other eye adds, white = nothing), in the same
+  terms as Figs 3–5: a burst for the first ~25 ms at every depth, then nothing in 30–100 ms, then a weak return. On
+  the stimulus clock the burst is smeared and tilted (superficial bins peak at ~55 ms, against ~35–45 ms at and below
+  the sink).
+* **Stated with the existing S4c tests, not new ones:** normalization is reached 6–7 ms later above and below the
+  sink on the stimulus clock (p = .016, .003), and at the same time after each group's own onset above (median
+  difference 0 ms, p = .50); below, the median difference is also 0 ms, but p = .045.
+
+**Blake to decide:** the map index; five main figures or Fig 3 folded into Fig 2; moving the CSD map into Fig 1;
+which "Mitchell et al. 2024" is meant (the text cites Mitchell et al. 2022, iScience, and 2023, Curr Biol; docs/10
+also lists the 2024 dissertation); and, still open, how to phrase "normalize later".
 
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on
