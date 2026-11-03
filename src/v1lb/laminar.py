@@ -228,13 +228,15 @@ class TemplateFit:
 
 def fit_template(profile: np.ndarray, template: np.ndarray, kind: str = "phase",
                  weight: np.ndarray | None = None, boundary_index: float = _TEMPLATE_BOUNDARY,
-                 min_overlap: int = 12, edge_weight: float = 0.5) -> TemplateFit:
+                 min_overlap: int = 12, edge_weight: float = 0.5,
+                 orientations: tuple[str, ...] = ("ascending", "descending")) -> TemplateFit:
     """Slide a depth template along a probe profile in both orientations.
 
     kind='phase': score = weighted mean cos(profile - template) (absolute phase convention,
     validated against Davis et al. 2023). kind='linear': Pearson r (e.g. gamma - alpha power).
     Every finite profile channel must land on the template; the template's end plateaus are
     extended (weight x `edge_weight`) so the boundary may fall anywhere along the probe.
+    `orientations=("ascending",)` (or descending) fixes the orientation; score_other is then NaN.
     """
     profile = np.asarray(profile, float)
     n = profile.size
@@ -253,7 +255,7 @@ def fit_template(profile: np.ndarray, template: np.ndarray, kind: str = "phase",
     if c.size < min_overlap:
         raise ValueError("profile has too few finite channels for template fitting")
     best = {}
-    for orient in ("ascending", "descending"):
+    for orient in orientations:
         for s in range(-n, m + n):
             k = s + c if orient == "ascending" else s - c
             if k.min() < 0 or k.max() >= m or not usable[k].all():

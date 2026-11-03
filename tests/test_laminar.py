@@ -67,6 +67,9 @@ def test_template_fit_recovers_orientation_and_boundary():
     # the same probe wired the other way round
     fit = fit_template(prof[::-1], tmpl, "phase", w)
     assert fit.orientation == "descending" and fit.boundary == pytest.approx(32 - 15.5 + 1)
+    # orientation fixed by the caller (laminar audit): the descending fit still finds the boundary
+    fixed = fit_template(prof[::-1], tmpl, "phase", w, orientations=("descending",))
+    assert fixed.boundary == pytest.approx(fit.boundary) and np.isnan(fixed.score_other)
     # boundary near the deep end of the probe (contact 27.5): needs the extended plateau
     padded = np.r_[np.full(20, tmpl[14]), tmpl[14:52]]   # template index i -> padded index i + 6
     prof = padded[12:44]                                  # boundary (padded 38.5) at contact 27.5

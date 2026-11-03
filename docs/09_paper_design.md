@@ -1807,6 +1807,134 @@ abstract (gains 1–3%, best-model counts descriptive, no direct test against co
 The V4-era `fig2_add_then_normalize.py`, `fig3_contrast_depth.py` and `fig4_model.py` stay until the set is
 approved (S2 imports from `fig3_contrast_depth.py`; the new Fig 4 imports the sketch from `fig4_model.py`).
 
+## Laminar audit W (registered internally 2026-11-03, before running; Blake: "Yes … align every session based on where the PPC flips")
+
+**Why.** The depth results are not clean, and the input markers disagree.
+* **The earliest MUA onset and the earliest sink agree in few penetrations.** Their depths are within ±2 contacts in
+  6/26 penetrations; the median offset is +4 contacts, with the MUA deeper.
+* **The sink and the L4/5 call agree in 6/22.**
+* **The earliest-MUA depth is unreliable.** It is reproducible within 2 contacts across split halves in 14/24
+  penetrations at 90%, and in 9/24 at 45%.
+* **The in-cortex spans are too long for one sheet.** They run 20–32 contacts (2.0–3.2 mm), longer than V1 (~1.8 mm).
+* **Blake:** a deep probe crossing a second fold of cortex "would explain why our deep layers appear to have
+  response latencies as fast as the input layer above it."
+* **Blake asked for three things:**
+  * bring back the spectrolaminar motif and the SPI;
+  * align every session on the preferred-phase ("PPC") flip as a programmatic depth;
+  * check that the SPI descends with depth, and that alpha/beta power is higher in the deeper layers.
+
+**Blind.** Every call uses laminar markers or monocular responses only, never a binocular response or a
+combination measure:
+* from `output/laminar/{pen}_laminar.npz` (30 min of the recording): preferred phase, SPI and PPC, spontaneous
+  threshold-crossing rate and relative power;
+* clean monocular presentations, one eye at 45 or 90% and the other eye at 0%, for the grating CSD and MUA.
+
+The cards may be inspected and the rules revised before Blake reviews them. Nothing binocular is computed on the new
+alignment until Blake has made the calls and the rerun is registered (step 3 below).
+
+**W. Draft rules** (`scripts/laminar_audit.py`; one card per penetration; table [qc/laminar_audit.csv](qc/laminar_audit.csv)):
+1. **Orientation.** Majority of three votes: the Davis et al. 2023 preferred-phase template fit; the
+   spectrolaminar peak order (gamma above alpha/beta); and the SPI falling with contact order. The SPI here is each
+   spike channel's mean over LFP contacts, using channels with ≥ 500 spikes and above the rate floor. The vote
+   count is reported, together with the legacy call.
+2. **Top of cortex.** The existing rule: the first of 3 consecutive contacts from the superficial end with a
+   spontaneous rate above 2.5 Hz (evoked MUA as the fallback).
+3. **Phase reversal: the primary depth reference.** The Davis template is slid along the preferred-phase profile
+   with the orientation fixed, and the reversal is the template boundary (the input/deep flip). Local phase steps
+   are shown on the card as a cross-check.
+4. **Bottom of the first sheet.** Below the reversal, the first run of ≥ 2 contacts at or below the rate floor
+   (white matter); the first sheet ends at the contact above it. A **second sheet** is ≥ 3 consecutive active
+   contacts below that gap, or a reversed phase step (|step| ≥ 0.8 rad) below the reversal.
+5. **Input layer, within the first sheet.**
+   * The earliest monocular sink: the earliest sink reaching 25% of its own peak, among sinks ≥ 40% of the
+     strongest (the dichoptic-CSD rule).
+   * The earliest MUA onset: the half-max onset of each contact's monocular MUA (both eyes pooled), where the
+     evoked t > 6, taking the minimum of a 3-contact running median.
+6. **The checks Blake asked for, within the first sheet:**
+   * the SPI falls with depth below the top of cortex (Spearman ρ < 0; PPC reported);
+   * alpha/beta minus gamma relative power rises with depth (ρ > 0);
+   * the depth of the spectrolaminar crossing relative to the reversal is reported.
+
+**Expected if the rules work.**
+* Top of cortex to the reversal ~1.0–1.3 mm (L1 to the bottom of L4C).
+* The reversal to the bottom of the sheet ~0.5–0.8 mm.
+* The first sheet ≤ ~2.0 mm.
+* The earliest sink and the earliest MUA 0–0.5 mm above the reversal (L4C), and within 0.2 mm of each other.
+* The SPI and alpha/beta checks in the expected direction in most penetrations.
+
+Each is counted, not tested; the audit is descriptive.
+
+**Then (registered when Blake has made the calls, before running).** Once Blake has reviewed the cards and fixed
+the calls (`metadata/laminar_alignment_v3.csv`), the following are rerun once on that alignment, restricted to the
+first sheet:
+* the laminar onset order (G4);
+* the depth tests (V2 and L2 with the depth groups, S);
+* the ridgeline.
+
+Depth is measured from the phase reversal and, as a sensitivity check, from the audited earliest sink. The new
+groups and predictions are registered before any of them is computed.
+
+**Implementation notes, made before Blake's review and still blind to binocular outcomes.**
+* The datasets store contacts from superficial to deep in the v2 orientation, so they are re-indexed to raw contact
+  order before the audit orientation is applied.
+* The sink onset is found walking back from each sink's peak. The first-crossing version locked onto noise at the
+  20 ms window edge where the CSD was weak.
+* Two rules use the monocular MUA amplitude (3-contact median; 1 = the probe's 90th percentile), because the
+  spontaneous rate is too low and patchy on several probes for a 2.5 Hz floor:
+  * the top of cortex is also called from the evoked MUA (≥ 0.2 of that amplitude and t ≥ 6 on 3 contacts), and
+    both tops are shown;
+  * the white-matter dip is < 0.35 of that amplitude on 2 contacts.
+* A second early MUA zone must lie > 0.2 mm below the first sheet, start within 3 ms of the earliest onset, and be
+  separated from it by contacts ≥ 5 ms later.
+
+**W results (2026-11-03; descriptive; cards in `<out_root>/laminar_audit/`, summary `laminar_audit_summary.png`).**
+* **Blake's checks.**
+  * Alpha/beta − gamma power rises with depth in the first sheet in 24/26 penetrations (13/14 with a clear
+    reversal). The exceptions are 221128_J_eA and 221214_J_eA.
+  * The SPI falls with depth in 18/26 (10/14). It does not fall in 211012_B_eA, 211217_B_eA, 221202_J_eA, 221202_J_eB,
+    221206_J_eA, 221214_J_eA, 221214_J_eB or 221215_J_eA.
+* **Orientation.** The three votes agree in 16/26 penetrations; 10 go 2-of-3. The call differs from v2 in 2
+  (221204_J_eB, 221215_J_eA; both already 2-of-3 in v2).
+* **Phase reversal.**
+  * Clear (≥ 1 rad, on the probe) in 14/26.
+  * Small (0.5–0.8 rad) in 6: 221212_J_eA, 211008_B_eA, 221202_J_eB, 221206_J_eA, 221209_J_eB, 221214_J_eB.
+  * Off the probe (no flip) in 6: 211210_B_eA, 221123_J_eA, 221204_J_eB, 221209_J_eA, 221214_J_eA, 221206_J_eB.
+* **With a clear reversal** (14 penetrations; medians, IQR):
+  * top of cortex 1.25 mm above the reversal (0.8–1.45), as expected;
+  * earliest monocular sink 0.30 mm above (0.25–0.55); between 0.05 and 0.95 mm above in 11/14, so L4C sits above the
+    input/deep flip;
+  * earliest MUA at the reversal (+0.05 mm; −0.32 to +0.22), deeper than the sink by a median 0.15 mm; within
+    0.2 mm of the sink in 8/14;
+  * spectrolaminar crossing 0.11 mm above (0.74 above to 0.11 below).
+  * The three exceptions: 211025_B_eA and 221215_J_eA, with the sink 0.65–0.75 mm below the reversal; and
+    221109_J_eA, with the reversal at contact 2.5, near the deep end, and the sink 2.45 mm above it, so its flip
+    is probably not L4/5.
+* **Bottom of the first sheet: the rule does not work.** The dip lies a median 0.30 mm below the reversal
+  (0.12–0.68), shallower than V1's deep layers (expected 0.5–0.8 mm). In 221130_J_eA the dip sits right under the
+  reversal and strong MUA returns below it, more like layer 5 than white matter. The MUA-amplitude dip is not a
+  white-matter marker on its own; the bottom needs Blake's eye on the cards.
+* **Second sheet: little evidence.**
+  * A separate early MUA zone appears in 2 penetrations.
+    * 211217_B_eA: 1.75 mm below the reversal, at 33.9 ms, against 53.7 ms in the upper sheet. This is a candidate
+      second fold.
+    * 221130_J_eA: 0.35 mm below, at 30.0 vs 29.4 ms. More likely its own deep layers.
+  * Activity returns after a dip in 6 (221212_J_eA, 211103_B_eA, 211208_B_eA, 221118_J_eA, 221119_J_eA,
+    221130_J_eA).
+  * A reversed phase step below the reversal appears in 1 (221215_J_eA).
+  * So a second fold does not generally explain the fast deep onsets. Where the reversal is clear, the earliest
+    spiking sits at the input/deep flip itself, 0.15 mm below the earliest sink.
+* **The two tops disagree by > 0.3 mm in 11/26;** the spontaneous-rate top is the deeper one in all 11.
+
+**For Blake to decide (cards and summary):**
+* whether the phase reversal is the depth reference for the 14 clear penetrations;
+* what to do with the 12 without a clear flip:
+  * the earliest sink plus 0.3 mm,
+  * hand calls,
+  * or leaving them out of the depth tests;
+* which top-of-cortex rule to use;
+* the bottom of V1 and any second sheet, by eye (candidate: 211217_B_eA);
+* 221109_J_eA's reversal.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
