@@ -73,6 +73,11 @@ shared cache, and prints the statistics it displays so they can be checked again
   `fs.ADDED_SOFT` (orange = adds; the negative side faint, because a response below the dominant eye alone was not
   found); the shortfall from summation uses `fs.ADDED_CMAP` (grey = short of summation). A ridgeline (one trace per
   depth with its own summation prediction) is the readable alternative to a heat map; 3D surfaces only as overviews.
+* **The additivity index is the displayed measure** (Blake, 2026-11-03: the "what the other eye adds" framing needs
+  a transformation and long labels). Plot AI = both eyes / (dominant + other) as measured, with a dashed reference
+  for what summation of contrasts predicts in the same units; never plot the difference of the two. Labels stay
+  short: "additivity index", "measured", "if the contrasts add". One point per figure; single-point panels are
+  fine (J Neurosci).
 * **No untested panel in a main figure** (2026-11-03, after the strength review): descriptive panels without a test
   behind them (e.g. normalization time by depth) go to the supplement and say "descriptive".
 * **Statistics on the main panels come from the hierarchical models** (docs/09 U, Q): penetrations nested in

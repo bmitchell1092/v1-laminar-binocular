@@ -45,11 +45,11 @@ from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
-H_MM = 152
-POS = {"stereo": (2, 108, 40, 38), "probe": (44, 108, 22, 38), "trial": (2, 93, 64, 10),     # (x, y, w, h) in mm
-       "matrix": (97, 105, 35, 35), "key": (137, 105, 37, 35),
-       "example": (14, 57, 58, 28), "crf": (95, 57, 30, 28), "odi": (140, 57, 32, 28),
-       "drive": (16, 10, 84, 34)}
+H_MM = 104
+POS = {"stereo": (2, 60, 40, 38), "probe": (44, 60, 22, 38), "trial": (2, 45, 64, 10),       # (x, y, w, h) in mm
+       "matrix": (97, 57, 35, 35), "key": (137, 57, 37, 35),
+       "example": (14, 9, 92, 28), "crf": (134, 9, 32, 28),
+       "odi": (140, 9, 32, 28), "drive": (16, 10, 84, 34)}          # odi, drive: used by other figures' layouts
 SWATCH_CMAP = "gray"
 
 
@@ -167,6 +167,31 @@ def design(ax, kax):
              va="top", fontsize=5.5, color=fs.INK2, linespacing=1.0)
 
 
+def example_raw(ax, pop, k, monkey):
+    """Example penetration on the stimulus clock: both eyes and each eye alone at 45% (simplified set)."""
+    t = pop["t"]
+    Y = pop["flash"][k]
+    i45 = list(CONTRASTS).index(0.45)
+    sel = (t >= -20) & (t <= 340)
+    items = [("both eyes, 45% each", fs.COND["both"], Y[i45, i45]),
+             ("dominant eye alone, 45%", fs.COND["dominant"], Y[i45, 0]),
+             ("other eye alone, 45%", fs.COND["other"], Y[0, i45])]
+    for lab, col, y in items[::-1]:
+        ax.plot(t[sel], y[sel], color=col, lw=1.2 if col == fs.INK else 1.0)
+    fs.zero_line(ax)
+    top = 1.1 * np.nanmax(Y[i45, i45][sel])
+    ax.plot([0, 317], [top * 0.97] * 2, color=fs.INK, lw=1.5, solid_capstyle="butt")
+    ax.text(320, top * 0.97, "grating on", fontsize=5.5, va="center", color=fs.INK2)
+    ax.set_xlim(-20, 400)
+    ax.set_xticks([0, 100, 200, 300])
+    ax.set_ylim(-0.1, top * 1.02)
+    ax.set_xlabel("time from stimulus onset (ms)")
+    ax.set_ylabel("MUA (dominant-eye\npeak = 1)")
+    fs.line_key(ax, [(lab, col, "-") for lab, col, _ in items], x=0.5, y=0.8, dy=0.12, length=0.07)
+    ax.set_title(f"example penetration, monkey {monkey}", fontsize=6.5)
+    return {lab: float(np.nanmax(y[sel])) for lab, _, y in items}
+
+
 def example(ax, pop, k, monkey, a):
     rel = pop["rel"]
     Y = pop["onset"][k]
@@ -261,7 +286,7 @@ def ocular_dominance(ax):
     return {k: np.asarray(v) for k, v in odi.items()}
 
 
-def drive_latency(ax):
+def drive_latency(ax, show_added=True, notes=True):
     """Response onset against response strength (peak) for all 35 conditions (check H, v4_drive_latency.py)."""
     X = pd.read_csv(REPO / "docs" / "qc" / "v4_H_cells.csv")
     C = pd.read_parquet(out_root() / "binocular" / "v4_H_cells.parquet")
@@ -276,11 +301,12 @@ def drive_latency(ax):
     slope, icpt = np.polyfit(np.log(mono.peak_median), mono.y, 1)
     xs = np.linspace(mono.peak_median.min(), mono.peak_median.max(), 50)     # only over the monocular range
     ax.plot(xs, icpt + slope * np.log(xs), color=fs.RULE, lw=2.4, zorder=1, solid_capstyle="round")
-    for _, r in dio.iterrows():
-        ax.plot([r.peak_median, r.peak_added_median], [r.y, r.y_add], color=fs.RULE, lw=0.5, ls=(0, (1.5, 1.5)),
-                zorder=2)
-    ax.scatter(both.peak_added_median, both.y_add, s=6, marker="D", facecolor="white", edgecolor="#b5b4af", lw=0.5,
-               zorder=3)
+    if show_added:
+        for _, r in dio.iterrows():
+            ax.plot([r.peak_median, r.peak_added_median], [r.y, r.y_add], color=fs.RULE, lw=0.5,
+                    ls=(0, (1.5, 1.5)), zorder=2)
+        ax.scatter(both.peak_added_median, both.y_add, s=6, marker="D", facecolor="white", edgecolor="#b5b4af",
+                   lw=0.5, zorder=3)
     ax.scatter(both.peak_median, both.y, s=9, marker="D", color=fs.INK, lw=0, zorder=4)
     ax.scatter(dio.peak_median, dio.y, s=22, marker="D", color=fs.INK, lw=0, zorder=5)
     ax.plot(dom.peak_median, dom.y, color=fs.COND["dominant"], lw=0.8, marker="o", ms=3.2, zorder=6)
@@ -289,7 +315,7 @@ def drive_latency(ax):
         up = r.c_dom >= 0.45                                       # the both-eyes points crowd below these two
         ax.text(r.peak_median - 0.025, r.y + (0.35 if up else -0.25), f"{100 * r.c_dom:g}", fontsize=5, ha="right",
                 va="bottom" if up else "top", color=fs.COND["dominant"])
-    ax.set_xlim(0.2, 1.9)
+    ax.set_xlim(0.2, 1.9 if show_added else 1.3)
     ax.set_yticks(np.arange(30, 46, 5))
     ax.set_xlabel("response strength (peak; dominant eye at 90% = 1)")
     ax.set_ylabel("response onset\n(ms after stimulus onset)")
@@ -297,16 +323,20 @@ def drive_latency(ax):
             va="bottom")
     keys = [("o", fs.COND["dominant"], fs.COND["dominant"], "dominant eye alone (contrast, %)"),
             ("o", fs.COND["other"], fs.COND["other"], "other eye alone"),
-            ("D", fs.INK, fs.INK, "both eyes (large: the same contrast in each)"),
-            ("D", "white", "#b5b4af", "if the two eyes' responses simply added")]
+            ("D", fs.INK, fs.INK, "both eyes (large: the same contrast in each)")]
+    if show_added:
+        keys.append(("D", "white", "#b5b4af", "if the two eyes' responses simply added"))
+    kx = 1.05 if notes else 0.42
     for k, (mk, fc, ec, lab) in enumerate(keys):
-        y = 0.95 - k * 0.12
-        ax.plot([1.05], [y], marker=mk, ms=3.0, mfc=fc, mec=ec, mew=0.6, transform=ax.transAxes, clip_on=False)
-        ax.text(1.08, y, lab, transform=ax.transAxes, va="center", fontsize=5.5, color=fs.INK)
+        y = 0.95 - k * 0.09
+        ax.plot([kx], [y], marker=mk, ms=3.0, mfc=fc, mec=ec, mew=0.6, transform=ax.transAxes, clip_on=False)
+        ax.text(kx + 0.03, y, lab, transform=ax.transAxes, va="center", fontsize=5.5, color=fs.INK)
     H = pd.read_csv(REPO / "docs" / "qc" / "v4_H.csv").set_index("test")
     rho = stats.spearmanr(X.peak_median, X.y).statistic
     h1 = H.loc["vs_added"]
     h3 = H.loc["rho"]
+    if not notes:
+        return dict(base=base, rho=rho, slope=slope, H=H)
     ax.text(1.05, 0.38, f"35 conditions, 26 penetrations\nrank correlation over conditions {rho:.2f}\n"
             f"per penetration: median {h3['median']:.2f}, {int(h3.n_in_direction)}/{int(h3.n)} negative\n"
             f"both eyes start {abs(h1['median']):.1f} ms earlier than the sum\nof the two monocular responses would "
@@ -329,24 +359,17 @@ def main():
     probe(pax)
     trial(tax)
     design(dax, kax)
-    bax, cax, oax = (axes_mm(fig, *POS[n]) for n in ("example", "crf", "odi"))
-    ex = example(bax, pop, k, meta.loc[pen, "monkey"], float(meta.loc[pen, "a"]))
+    bax, cax = (axes_mm(fig, *POS[n]) for n in ("example", "crf"))
+    ex = example_raw(bax, pop, k, meta.loc[pen, "monkey"])
     crf, ratio = crfs(cax, pop)
-    odi = ocular_dominance(oax)
-    fax = axes_mm(fig, *POS["drive"])
-    dl = drive_latency(fax)
     fs.panel_label(sax, "a", x=0.04)
-    for ax, letter in zip((dax, bax, cax, oax, fax), "bcdef"):
+    for ax, letter in zip((dax, bax, cax), "bcd"):
         fs.panel_label(ax, letter, x=-0.18 if ax is dax else -0.02)
     print(fs.save(fig, "fig1_setup"))
-    print(f"(f) drive vs onset: dominant eye at 90% onset {dl['base']:.1f} ms; rank correlation over the 35 "
-          f"conditions {dl['rho']:.3f}; monocular slope {dl['slope']:.2f} ms per e-fold of peak")
-    print(dl["H"][["n", "median", "ci_lo", "ci_hi", "n_in_direction", "p", "holds"]].round(4).to_string())
-
     print(f"(c) example: monkey {meta.loc[pen, 'monkey']}, {int(meta.loc[pen, 'n_channels'])} channels, "
-          f"median eye weight {meta.loc[pen, 'a']:.2f}, onset {meta.loc[pen, 'onset']:.1f} ms after stimulus onset")
-    for w, d in ex.items():
-        print(f"    mean {w} after onset: " + "; ".join(f"{lab} {v:.2f}" for lab, v in d.items()))
+          f"median eye weight {meta.loc[pen, 'a']:.2f}, onset {meta.loc[pen, 'onset']:.1f} ms after stimulus onset; "
+          "peaks " + "; ".join(f"{lab} {v:.2f}" for lab, v in ex.items()))
+    odi = {}
     for lab, (m, lo, hi) in crf.items():
         print(f"(d) {lab}: " + "; ".join(f"{100 * c:g}% {mm:.3f} [{l_:.3f}, {h:.3f}]"
                                          for c, mm, l_, h in zip(CONTRASTS[1:], m, lo, hi)))

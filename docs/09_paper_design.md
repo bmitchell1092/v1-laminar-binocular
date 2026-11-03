@@ -1731,6 +1731,49 @@ Scripts: `scripts/v4_full_design.py` (Q, R), `scripts/v4_depth_robust.py` (S), `
 * interocular suppression by a non-driving eye (I failed);
 * a current-before-spikes order at the sink (J failed).
 
+## V4 check V: the additivity index as the displayed measure (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): the "what the other eye adds" framing is a transformation that needs long labels; "this
+is why additivity index is so powerful"; figures should be simple, one point each (J Neurosci). The figures will show
+the additivity index AI = both eyes / (dominant eye + other eye), with a reference line for what contrast summation
+predicts in the same units, AI_sum = R_D(c_D + a·c_O) / (dominant + other). AI < AI_sum has the same sign as the
+registered shortfall per observation (the denominator is positive), but the index is a ratio of window means, so
+its tests are run anew. **Not blind** to F, L, Q (same data, response units).
+
+**V. Measure.** Window means after each channel's response onset (0–20, 30–100, 130–200 ms):
+* per penetration from `population.npz` (channel means, the penetration's median eye weight);
+* per penetration and depth group from `spacetime.npz` (channel means within the group, each channel's own eye
+  weight for AI_sum).
+AI = mean(B) / mean(D + O), AI_sum = mean(R_D(c_D + a·c_O)) / mean(D + O), where D + O > 0.12 of the dominant-eye
+peak.
+* **V1:** matched 45%, 30–100 ms, AI < AI_sum.
+* **V2:** depth, (AI − AI_sum) below − at > 0 (45%, 30–100 ms).
+* **V3:** 130–200 ms, cells with the other eye stronger (mean over cells per penetration), AI < AI_sum.
+* **V4, reported:** 0–20 ms, AI − AI_sum (two-sided; summation at onset predicts ≈ 0 or above).
+* **Criteria:** one-sided Wilcoxon over penetrations, p < .05. The halves were checked in the response-unit versions
+  (F, L, Q). Script `scripts/v4_ai_display.py`, output [qc/v4_V.csv](qc/v4_V.csv).
+
+**V results (2026-11-03). V1–V3 hold.**
+* **V1:** matched 45%, 30–100 ms: AI 0.54 against 0.62 if the contrasts add (23/25, p < 10⁻⁴).
+* **V2:** depth: AI − AI_sum below − at +0.09 (21/24, p < 10⁻⁴). By group: above −0.135 (20/21), at −0.113 (22/24),
+  below −0.020 (18/24, p = .018).
+* **V3:** other eye stronger, 130–200 ms: 0.59 against 0.65 (24/25, p < 10⁻⁵).
+* **V4, reported:** at onset, 0–20 ms, matched 45%: 0.73 against 0.71 (n.s.).
+* The figures may therefore show the additivity index with the summation reference line; the statistics on the
+  panels are V's.
+
+### Simplified figure set (Blake, 2026-11-03: one point per figure, the additivity index, J Neurosci)
+
+| Figure | The one point | Panels |
+|---|---|---|
+| 1 | The experiment | stereoscope and probe, trial, 6 × 6 design with swatches, example penetration (raw traces). The contrast responses and ocular dominance go to the supplement |
+| 2 | Response onset follows drive, and the second eye is drive, at every depth | (a) onset vs response strength, 35 conditions; (b) laminar onset, 0–50 ms: MUA by depth for both eyes and the dominant eye alone, with each one's onset at each depth |
+| 3 | Summation gives way to normalization within ~30 ms, more at and above the input layer, and more when the other eye is stronger | (a) additivity-index ridgeline by depth (45%), with the summation reference; (b) the index by depth group, 30–100 ms, data vs reference; (c, d) the index against the other eye's contrast at 0–20 and 130–200 ms |
+| 4 | A delayed pool, weighted toward the other eye | (a) sketch; (b) held-out gain of the delay by depth; (c) the other eye's drive weight vs pool weight by depth |
+
+The richer figures built earlier today (`fig2_full_design.py`, `fig3_laminar_normalization.py`,
+`fig4_model_spacetime.py`, S7, S8) become supplementary candidates.
+
 ### Revised figure set after the strength review (2026-11-03)
 
 | Figure | Claim | Script |
