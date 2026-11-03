@@ -1255,7 +1255,65 @@ the sink current.**
   ms. Peaks range from 5 ms earlier to 1 ms later. Blending neighbouring contacts accounts for part of the lead; MUA
   still reaches half its peak first in most variants. Literature: reports/CSD sink versus spiking onset order.md.
 * **For the paper:** do not say the current precedes spiking at the sink. "Earliest sink" marks the input depth, not
-  a time reference. Methods: state both filter chains and the 0.9 ms LFP delay. Legacy CSD-vs-MUA latencies carry
+  a time reference.
+
+## V4 check M: do single units at the sink follow the sink current while MUA leads it? (registered internally 2026-11-03, before running)
+
+**Why.** The literature review ([reports/CSD sink versus spiking onset order.md](../reports/CSD%20sink%20versus%20spiking%20onset%20order.md))
+found analog-MUA studies reporting sink and spiking as coincident, and the one single-unit study (Westerberg et al.
+2019) reporting the sink first. Single-axon work puts thalamic terminal spikes ~0.7 ms before their sink, and
+cortical spikes after it. Blake (2026-11-03): run the single-unit test. **Prediction of the afferent account:**
+sorted units (mostly cortical cells) start no earlier than the sink current, while analog MUA on the same contacts
+starts before it; the MUA lead over units is largest at the input depth. **Not blind** to J (MUA half-max leads
+the current by 0.5–2.7 ms depending on processing); unit timing has not been looked at.
+
+**M. Measure.**
+* **Units:** the lenient set (as `v3_units_index.py`), in cortex, with a response: peak of the smoothed rate in
+  10–150 ms above the baseline mean (−50 to 0 ms) + 5 baseline SD. Strict (well-isolated) subset reported.
+* **Presentations:** clean, either eye ≥ 45% (the sink-selection set; a strong-drive pool), blank presentations
+  subtracted. Reported: dominant eye at 90%, both eyes at 45%.
+* **Cross-validated sink contact:** the `dichoptic_csd.py` rule (earliest among strong sinks reaching 25% of its own
+  peak, dataset CSD) applied to odd presentations, all signals measured on even ones, and the reverse. Units within
+  2 contacts of that contact are "at the sink"; the others above or below.
+* **Signals (1 ms, Gaussian σ = 2 ms):** the unit's rate; analog MUA on the unit's peak contact; the sink current
+  (−CSD) at the selected contact from unsmoothed LFP (primary; the most local estimate), advanced by the measured
+  0.9 ms filter delay. Reported: the three-contact, Hamming-smoothed current of J.
+* **Estimators:** half-max of each signal's own peak (10–150 ms, interpolated; primary), 25% crossing and peak time
+  (reported). Per unit, the mean of the two directions.
+
+**Tests (units as the sample; per-penetration medians reported).**
+* **M1, the sink leads units:** unit − current > 0 for units at the sink (one-sided Wilcoxon).
+* **M2, MUA leads units on the same contact:** unit − MUA > 0 for units at the sink (one-sided).
+* **M3, reported:** MUA − current on the same contacts (J's comparison on these contacts).
+* **M4, the MUA lead is largest at the input:** (unit − MUA) at the sink > (unit − MUA) above and below (one-sided
+  Mann–Whitney, units as the sample).
+* **Criteria:** a test holds if p < .05 and both directions agree in sign; with fewer than 10 units at the sink the
+  result is inconclusive, not a failure. The paper may then say, for M1 + M2: "isolated neurons at the input depth
+  started after the sink current, while multiunit activity on the same contacts started with or before it",
+  consistent with thalamic afferent spikes in the MUA. Script: `scripts/v4_units_sink.py`, output
+  [qc/v4_M.csv](qc/v4_M.csv).
+
+**M results (2026-11-03; responsive lenient units at the cross-validated sink: 27 in 13 penetrations, 10 strict;
+above 40, below 42; per-unit values in [qc/v4_M_units.csv](qc/v4_M_units.csv)). M2 holds; M1 and M4 fail.**
+* **M1 fails (primary: single-contact, unsmoothed current):** units at the sink start +3.1 ms after the current
+  (15/27, p = .41), and the two directions disagree (+5.1, −1.4 ms). Reported, the three-contact Hamming current:
+  units +4.6 ms after it (20/27, p = .009, both directions positive; per penetration 9/13). Reported, other
+  conditions (both eyes 45%, the unit's dominant eye 90%): units 7–20 ms after the current (p ≤ .02), with fewer
+  presentations and noisier unit onsets.
+* **M2 holds:** at the sink, units start 4.1 ms after the analog MUA on their own contact (20/27, p = .003; both
+  directions +2.0, +2.3 ms; per penetration 10/13). 25% crossings: +2.6 ms (17/27, p = .014). Peaks do not differ
+  (+1.0 ms, p = .07).
+* **M3, reported:** MUA − current −3.1 ms on these contacts (20/27, p = .008), but the two directions disagree.
+* **M4 fails:** units lag the MUA by as much away from the sink as at it (above +4.8 ms, 32/40; below +3.5 ms,
+  31/42; at +4.1 ms; Mann–Whitney p = .58). The MUA's lead over single units is not specific to the input depth.
+* **Strict subset:** 9–10 units at the sink, inconclusive by the registered rule.
+* **Reading.** Single units at the input depth start after the sink current in most variants (as Westerberg et al.
+  2019 found), but the registered single-contact test is not reliable. Analog MUA reaches half its peak ~4 ms before
+  the typical isolated neuron at every depth, so its lead over the sink is better explained by MUA being a
+  population signal dominated by the earliest cells than by thalamic afferent spikes at the input (M4). For the
+  paper: "analog MUA reached half its peak about 4 ms before isolated neurons on the same contacts, at every depth;
+  isolated neurons at the input depth started after the sink current (three-contact estimate; the single-contact
+  estimate was too noisy to resolve the order)". Timing claims compare a signal with itself, as before. Methods: state both filter chains and the 0.9 ms LFP delay. Legacy CSD-vs-MUA latencies carry
   the 3.4 ms artefact (05 A1) and must not be reused.
 
 ## V4 checks K and L: normalization and the model across depth (registered internally 2026-11-03, before running)
@@ -1331,6 +1389,31 @@ half; group medians in [qc/v4_K_groups.csv](qc/v4_K_groups.csv)). K1 and K2 hold
 * **Maps (mock, scratchpad `figpolish/v5/fig4_mock.py`):** at 45% the no-delay fits add a small constant amount
   everywhere and miss the onset burst; the delayed-pool fits reproduce the burst at every depth, slightly
   underestimate the 30–60 ms dip at and above the sink, and miss the late return (strongest deep).
+
+## V4 check N: the four models by depth group, both cross-validation directions (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): on the model, "whatever you recommend … it's worth being thorough". K fitted only the
+no-delay and fixed-delay models per channel and summed the two held-out directions. N fits all four models of the
+paper per depth group, where channel averages are less noisy, and keeps each direction; K is rerun with the
+directions kept (K1′). **Not blind** to K (delay and w > a at every depth, smaller excess below the sink) or to the
+per-penetration model results (fifth model test: conductance better than fixed delay overall).
+
+**N. Measure.** Per penetration and depth group (above / at / below the earliest sink, ≥ 3 driven channels): the
+`fig5_model.py` population restricted to the group's channels (channel mean, 0–219 ms, σ = 2 ms, each channel
+oriented to its dominant eye and scaled by its dominant-eye peak at 90%), all / odd / even presentations. Models:
+'static' (no delay), 'full' (fixed delay), 'w=a' (pool weighted like the drive), 'cond' (conductance; extra start at
+the full fit, as `fig5_cond_model.py`); four starts each. Held-out error per direction: fit odd, score even
+(o→e), and the reverse (e→o). Parameters from the all-presentation fits.
+
+**Tests (one-sided Wilcoxon over penetrations within each group; a test holds if p < .05 on the summed held-out
+error and the median has the predicted sign in both directions; "at every depth" only if all three groups hold).**
+* **N1, the delay:** log(CV static / CV full) > 0.
+* **N2, the pool weights the other eye differently from the drive:** log(CV w=a / CV full) > 0.
+* **N3, conductance over fixed delay:** log(CV full / CV cond) > 0.
+* **N4, reported:** depth differences (above − at, below − at; two-sided Wilcoxon) in τ2, w − a, δ and τ_m (cond
+  fits), and in the held-out gains.
+* **K1′:** K1 with each direction kept (same channels and fits; the criterion as registered for K).
+* Script: `scripts/v4_model_groups.py`, output [qc/v4_N.csv](qc/v4_N.csv); `scripts/v4_model_depth.py` rerun for K1′.
 
 ## Competitive landscape (checked 2026-10-29)
 

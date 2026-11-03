@@ -34,6 +34,9 @@ COND = {"dominant": BLUE, "other": ORANGE, "both": INK, "linear": MUTED}
 MODEL = {"data": INK, "static": INK2, "fixed-delay": AQUA, "conductance": VIOLET, "recurrent": MAGENTA}
 MONKEY_MARKER = {"B": "o", "J": "s"}
 CSD_CMAP = LinearSegmentedColormap.from_list("csd", ["#0d366b", "#3987e5", "#f0efec", "#e34948", "#8f1f1e"])
+# depth x time maps of what the other eye adds, or of both eyes minus the summation prediction (docs/11): white = 0,
+# orange (the other eye's colour) = it adds / more than summation, grey = less (normalized)
+ADDED_CMAP = LinearSegmentedColormap.from_list("added", ["#2b2a28", "#8a8985", "#ffffff", ORANGE, "#8a3210"])
 
 # the figures' shared reading (docs/11, 2026-11-02): the response the other eye adds vs what summation predicts
 SUM_LS = (0, (3, 1.5))                                   # linear-summation prediction / reference: grey dashed
