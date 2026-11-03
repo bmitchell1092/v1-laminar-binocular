@@ -1247,9 +1247,90 @@ the sink current.**
 * **Reading (hypothesis, not tested):** analog MUA at the input depth includes thalamic afferent (presynaptic)
   spikes, and the sink grows as synaptic input accumulates; the three-contact average and spatial smoothing blend
   in neighbouring, later currents.
+* **Sensitivity (descriptive, not registered; `scripts/v4_csd_sensitivity.py`,
+  [qc/v4_J_sensitivity.csv](qc/v4_J_sensitivity.csv)).** The current corrected for the 0.9 ms delay; CSD with or
+  without Hamming smoothing, at the sink contact alone or over three contacts, with or without the 2 ms Gaussian.
+  The MUA half-max lead shrinks with the most local CSD (single contact, no smoothing at all) to 0.5 ms (dominant eye
+  90%, 13/26 MUA earlier), 1.4 ms (both eyes 45%, 17/26) and 2.6 ms (both eyes 90%, 16/26); over all variants 0.5–2.7
+  ms. Peaks range from 5 ms earlier to 1 ms later. Blending neighbouring contacts accounts for part of the lead; MUA
+  still reaches half its peak first in most variants. Literature: reports/CSD sink versus spiking onset order.md.
 * **For the paper:** do not say the current precedes spiking at the sink. "Earliest sink" marks the input depth, not
   a time reference. Methods: state both filter chains and the 0.9 ms LFP delay. Legacy CSD-vs-MUA latencies carry
   the 3.4 ms artefact (05 A1) and must not be reused.
+
+## V4 checks K and L: normalization and the model across depth (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): "The same strength at every depth is perfectly fine"; the model deserves its own
+figure, "but we want to show the modeling effects across time and depth, together. We need to make better use of
+spatiotemporal ways of showing the data." **Not blind (L):** a descriptive depth × time map (scratchpad
+`figpolish/v5/fig3_mock.py`, `depth_share.py`) shows, at 45% and 30–100 ms after onset, both eyes − "if the contrasts
+add" of −0.02 to −0.06 at and above the earliest sink (the other eye's contribution slightly negative) and about 0
+from 0.6 mm below it (the other eye keeps adding about the prediction), with similar predictions (0.03–0.05) and eye
+weights (0.64–0.72) at all depths. The V3 index-based depth tests found no depth dependence of the drop (mixed model
+p = .60) and an inverted U in monkey J only.
+
+**L. Measure.** Per channel, onset-aligned as `v4_dip_recovery.py`, all / odd / even presentations: added A and
+predicted P (dominant eye at c(1 + a) − dominant eye at c, the channel's own a) in 0–20, 30–100 and 130–200 ms.
+Per penetration and depth group (above / at / below the earliest sink, as S4c), the mean over channels.
+* **L1, normalization in every group:** A − P < 0 in 30–100 ms at 45%, one-sided Wilcoxon per group.
+* **L2, weaker below the input:** (A − P)below − (A − P)at > 0 in 30–100 ms at 45%, one-sided, paired over
+  penetrations; (A − P)above − (A − P)at reported two-sided.
+* **Reported:** 22.5 and 11%; 0–20 and 130–200 ms.
+* **Criteria:** a test holds if p < .05 on all presentations and both halves' medians have the predicted sign.
+  L2 holding would let the paper say "below the input layer the other eye kept adding what summation predicts while
+  at and above it its contribution was cancelled"; if L2 fails, "normalization at every depth" stands.
+
+**K. Measure.** Per driven channel, stimulus clock 0–219 ms (the `fig5_model.py` data, one channel at a time, scaled
+by its own dominant-eye peak at 90%): the no-delay ('static') and fixed-delay ('full') models fitted to odd and to
+even presentations (each scored on the other half; held-out error = summed held-out SSE) and to all presentations
+(parameters, predictions), four starts each. Per penetration and depth group, the median over channels.
+* **K1, the delayed pool fits better at every depth:** log(held-out error static / full) > 0 in each group,
+  one-sided Wilcoxon; "at every depth" only if all three hold.
+* **K2, the pool weights the other eye more than the drive at every depth:** w − a > 0 in each group.
+* **K3, reported:** depth differences (above − at, below − at; two-sided Wilcoxon) in the pool delay τ2, w − a and
+  the latency δ.
+* **Reported (display):** depth × time maps on the response clock of what the other eye adds and of both eyes −
+  "if the contrasts add", for data, static and full predictions, and their residuals (Fig 4 in the space-time
+  figure set).
+* **Criteria:** as for L (p < .05, both cross-validation directions or halves agree). Scripts:
+  `scripts/v4_depth_norm.py` (L, [qc/v4_L.csv](qc/v4_L.csv)) and `scripts/v4_model_depth.py`
+  (K, [qc/v4_K.csv](qc/v4_K.csv)).
+
+**L results (2026-11-03; 26 penetrations; group means in [qc/v4_L_groups.csv](qc/v4_L_groups.csv)). L2 holds:
+normalization is weaker below the input layer.** At 45%, 30–100 ms after onset (both eyes − "if the contrasts add",
+dominant-eye peak = 1):
+* **L1:** holds above the sink (−0.073, 21/23, p = .0001) and at it (−0.065, 22/25, p = .0001), both halves; fails
+  below it (−0.011, 18/25, p = .082; odd half +0.015).
+* **L2 holds:** below − at = +0.049 (18/25, p = .0003; halves +0.060, +0.043). Above − at: −0.009 (p = .57).
+* **What the other eye adds** (medians of group means): above −0.025, at −0.029, below +0.007, against predictions
+  of 0.048, 0.025 and 0.037. At and above the sink its contribution is cancelled and slightly negative; below it the
+  other eye still adds a little, short of the prediction (not tested as a net suppression).
+* **Reported:** 22.5% the same pattern (L2 +0.037, p = .006, both halves; 130–200 ms +0.021, p = .045); 11% no depth
+  difference (L2 p = .12). At onset (0–20 ms, 45%) sites below the sink add more than predicted (+0.033; L2 +0.044,
+  p = .040).
+* **Not blind:** the pattern was seen in the population depth map before the test (above). The earlier index-based
+  "no depth dependence" (V3) and this response-unit result differ because the index divides by the prediction and
+  pools windows; the text should use the response-unit result, state the windows, and keep the index result in the
+  supplement.
+* **For the paper:** "From 30 to 100 ms after onset, at and above the earliest sink the other eye's contribution was
+  cancelled; below it, the other eye kept adding (at 45% and 22.5%; the difference, 18/25 penetrations)." This
+  replaces "the same strength at every depth".
+
+**K results (2026-11-03; 24 penetrations, 520 channels; 211008 and one other lack two presentations per cell in a
+half; group medians in [qc/v4_K_groups.csv](qc/v4_K_groups.csv)). K1 and K2 hold at every depth.**
+* **K1:** the delayed pool predicts held-out data better than no delay above the sink (log error ratio 0.63, 19/21),
+  at it (1.04, 22/23) and below it (0.55, 21/23); all p < 10⁻⁴.
+* **K2:** the pool weights the other eye more than the drive does above (w − a = 0.24, 20/21), at (0.20, 21/23) and
+  below (0.09, 21/23) the sink; all p < 10⁻⁴.
+* **Deviation from the registered criterion:** the held-out error sums both cross-validation directions, so the
+  "both directions agree" check was not computed for K1, and K2 uses the all-presentation fits. Both are reported as
+  p < .05 only; a rerun can save each direction.
+* **K3 (reported):** below the sink the excess pool weight is smaller (w − a below − at −0.06, 7/23 above zero,
+  p = .030) and the delay helps less (log ratio −0.36, 3/23, p < 10⁻⁴), consistent with L. Pool delay τ2 shows no
+  depth difference (medians 20, 29, 28 ms; above − at p = .35, below − at p = .67). Latency δ +2.5 ms above (p = .07).
+* **Maps (mock, scratchpad `figpolish/v5/fig4_mock.py`):** at 45% the no-delay fits add a small constant amount
+  everywhere and miss the onset burst; the delayed-pool fits reproduce the burst at every depth, slightly
+  underestimate the 30–60 ms dip at and above the sink, and miss the late return (strongest deep).
 
 ## Competitive landscape (checked 2026-10-29)
 

@@ -1,0 +1,18 @@
+test,n,median,n_in_direction,p,holds
+"K1 log(CV static / CV full) > 0, above sink",21,0.6345960934626521,19.0,2.384185791015625e-06,True
+"K2 w - a > 0, above sink",21,0.23785128162087557,20.0,1.5735626220703125e-05,True
+"K1 log(CV static / CV full) > 0, at sink",23,1.0389967990088593,22.0,2.384185791015625e-07,True
+"K2 w - a > 0, at sink",23,0.19624900016343583,21.0,5.125999450683594e-06,True
+"K1 log(CV static / CV full) > 0, below sink",23,0.5548589173081329,21.0,5.960464477539062e-07,True
+"K2 w - a > 0, below sink",23,0.09205224593480288,21.0,1.6689300537109375e-06,True
+"K3 full_tau2, above - at sink",20,-4.487061082865601,8.0,0.34881019592285156,
+"K3 full_tau2, below - at sink",23,-3.2155192423829533,11.0,0.6649994850158691,
+"K3 w_minus_a, above - at sink",20,0.01036754191914846,10.0,0.6476554870605469,
+"K3 w_minus_a, below - at sink",23,-0.06042819585535264,7.0,0.030086994171142578,
+"K3 full_delta, above - at sink",20,2.4735283812893094,14.0,0.069580078125,
+"K3 full_delta, below - at sink",23,-0.01778936112599183,11.0,0.9405548572540283,
+"K3 gain, above - at sink",20,-0.28851549097984874,6.0,0.069580078125,
+"K3 gain, below - at sink",23,-0.3597225979432639,3.0,2.09808349609375e-05,
+"(reported) median tau2, above sink",21,19.986132742715473,,,
+"(reported) median tau2, at sink",23,28.9959916111682,,,
+"(reported) median tau2, below sink",23,27.817341477547778,,,
