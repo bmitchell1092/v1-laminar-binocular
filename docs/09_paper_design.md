@@ -1533,6 +1533,12 @@ Open for Blake: whether the one temporal panel opens Fig 2 (recommended, as the 
 the map index; which Mitchell et al. 2024; "normalize later". S2a still says "linear sum": relabel "contrasts add"
 when it moves.
 
+**Decided (Blake, 2026-11-03):** the one temporal panel opens Fig 2; the maps show "added by the other eye", with
+the additivity index (both / (dominant + other)), which readers know, in the supplement and its relation stated in
+the legend; "Mitchell et al. 2024" was Mitchell et al. 2023 (Curr Biol). Fig 2 is the space-time resolution of
+binocular summation; Fig 3 the laminar organization of normalization. Open: how Fig 3 differs from the model figure
+and what shows that normalization occurs (checks I and J above; proposal in the reply of 2026-11-03).
+
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on
 the same (artifact-cleaned) data without registration language; the as-run registered outcomes stay in docs/09-10.
