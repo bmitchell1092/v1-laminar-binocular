@@ -1100,6 +1100,61 @@ at every contrast; G5 finds no extra delay.**
   second eye still gains 1.5–1.8 ms, as if the single-eye limit lay before the cortex and the second eye added drive
   the first could not.
 
+## V4 check H: does onset latency follow drive across the whole 6 × 6 design? (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): "our eye conditions have a rank ordered drive, and it all lines up. If we rank order
+the conditions by effective drive, then the latency to response onset also match that effective drive. This means
+it's important to look at the response in a manner that compares their peaks, not just windows or bins." **Not
+blind** to G (dioptic cells: both eyes start earlier than the dominant eye alone, and at 45% earlier than contrast
+summation predicts); the dichoptic cells, the summed-response comparison and the peak readout are new.
+
+**H. Measure.** G's channels, presentations, smoothing, scaling (dominant-eye peak at 90% = 1), splits and onset
+estimator, for all 35 non-blank cells (dominant-eye contrast × other-eye contrast).
+* **Drive** of a cell = its peak response in 10–250 ms (the peak the onset estimator uses).
+* **Monocular drive–latency curve,** per channel: least-squares line of onset on log peak through the eight
+  monocular cells (each eye alone at 11–90%) with defined onsets (at least 5). Read at a binocular peak only up to
+  1.5 × the largest monocular peak.
+* **If the responses added:** for a binocular cell, the onset of D(c_D, t) + O(c_O, t), the sum of the two measured
+  monocular responses of the channel, with the same estimator.
+* Binocular cells for H1–H2: both contrasts ≥ 11% (16 cells). Per channel, the median over cells with defined
+  values; then the median over channels per penetration; tests over penetrations.
+
+**Tests.**
+* **H1, earlier than adding the responses:** onset(both eyes) − onset(D + O) < 0, one-sided Wilcoxon.
+* **H2, on the monocular drive curve:** onset(both eyes) − curve(peak(both eyes)); holds if the 95% CI of the median
+  lies within ±1 ms and both halves' medians do (two-sided Wilcoxon reported).
+* **H3, rank order:** per penetration, Spearman ρ between peak and onset over all cells with defined onsets; holds
+  if ρ < 0 in ≥ 80% of penetrations, sign test p < .05, and both halves' medians are negative.
+* **Reported (descriptive):** a peak-based linearity index at 11, 22.5 and 45% in each eye: the binocular peak placed
+  on the dominant eye's peak-vs-contrast curve (`invert_crf`), with a peak-based eye weight; L_peak = (k − 1)/a,
+  censored values (k·c > 90%) kept as lower bounds and counted. And the binocular peak minus the dominant eye's peak
+  at c(1 + a).
+
+**Criteria.** H1 and H3 hold if p < .05 on all presentations and both halves agree in sign. The paper may then
+say: H1, "both eyes started earlier than the sum of the two monocular responses would have"; H1 + H2, "the
+binocular response started when a single eye driving the same peak would have"; H3, "onset followed drive across
+all 35 conditions". Script: `scripts/v4_drive_latency.py`, output [qc/v4_H.csv](qc/v4_H.csv).
+
+**H results (2026-11-03; 26 penetrations, 570 channels; population medians per cell in
+[qc/v4_H_cells.csv](qc/v4_H_cells.csv)). H1 and H3 hold; H2 fails.**
+* **H1 holds:** both eyes start 1.5 ms earlier than the sum of the two monocular responses would (median over the 16
+  cells; 25/26 penetrations; p < 10⁻⁴; odd −1.70, even −1.31 ms). Adding the responses would make the response
+  larger (peak 1.80 at 90/90, against 1.23 measured) but not earlier.
+* **H2 fails:** the binocular onset is 0.93 ms earlier than a single eye driving the same peak (95% CI −1.22 to
+  −0.43; p = .002; 13/26 within ±1 ms; odd half −1.58). The gap is clearest at high drive: within one eye the onset
+  gains only 1.3 ms from 45 to 90%, while the binocular cells keep getting earlier (−1.8 ms at 90/90).
+* **H3 holds:** per penetration, the rank correlation between peak and onset has median −0.64 (24/26 negative; sign
+  test p < 10⁻⁵; halves −0.51 and −0.55). Over the 35 population medians it is −0.98 (descriptive).
+* **Reported, peaks:** the binocular peak does not differ from the dominant eye's peak at c(1 + a) (−0.028, −0.008,
+  −0.017 at 11, 22.5, 45%; 95% CIs within −0.04 to +0.03; p ≥ .17). Peak-based linearity index 0.70 (CI
+  0.55–1.03), 0.99 (0.60–1.15) and 0.91 (0.74–1.00; 38% censored, so lower bounds).
+* **For the paper:** "Across all 35 conditions the response started sooner the stronger it was. The response to
+  both eyes started 1.5 ms earlier than the sum of the two monocular responses would have, and about 1 ms earlier
+  than a single eye driving the same peak. At their peaks, binocular responses did not differ from what summing the
+  two eyes' contrasts predicts." Not: "on the same curve as a single eye" (H2 failed).
+* **Figure:** Fig 1, last panel (Blake: "a very powerful visual to set up the entire paper"); mock in the
+  scratchpad (`figpolish/v5/drive_mock.py`).
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
@@ -1361,6 +1416,26 @@ above. Maps mocked in the scratchpad (`figpolish/v5/fig2_mock.py`, `st_mock.py`)
 **Blake to decide:** the map index; five main figures or Fig 3 folded into Fig 2; moving the CSD map into Fig 1;
 which "Mitchell et al. 2024" is meant (the text cites Mitchell et al. 2022, iScience, and 2023, Curr Biol; docs/10
 also lists the 2024 dissertation); and, still open, how to phrase "normalize later".
+
+**Revised the same day after Blake's next notes (supersedes the table above).** Blake: the linearity index across
+time and contrast (S2a) "is a strong and easily readable result, and effectively all we would need to show for the
+add first, normalize afterwards … it can literally be one single figure panel. But I think Figure 2 really needs to
+get to the spatiotemporal profile fast, so as to not step on the toes of the iScience paper, current bio paper, and
+journal of vision paper from Cox." Fig 1 can make the latency points: conditions rank by drive and onsets follow
+("it's important to look at the response in a manner that compares their peaks, not just windows or bins"); the
+drive-by-latency panel is the last panel of Fig 1. Check H supplies it.
+
+| Figure | Claim | Panels |
+|---|---|---|
+| 1 | The experiment; onset follows drive, and both eyes are drive | (a)–(e) as now; (f) onset vs peak response for all 35 conditions, with what adding the two monocular responses would give (H) |
+| 2 | Space-time profile, fast | (a) linearity index over time at 11, 22.5, 45% (the S2a data, without the null lines): the whole temporal claim in one panel; (b) population CSD with the MUA onset at each depth (G4; moved from Fig 3d); (c, d) what the other eye adds, depth × time at 45%, stimulus clock vs each site's response clock |
+| 3 | Laminar organization of normalization | response-clock maps at 11 and 22.5% (or depth profiles); transition index vs contrast; current added at the earliest sink |
+| 4 | Delayed normalization | the current Fig 4 |
+| S | Moved out of the main text | the current Fig 2 (sketch, time courses, added vs summation, early vs late per penetration); G's onset-vs-contrast and by-depth panels; additivity-index maps; S2a's fixed-rule null |
+
+Open for Blake: whether the one temporal panel opens Fig 2 (recommended, as the bridge to the maps) or closes Fig 1;
+the map index; which Mitchell et al. 2024; "normalize later". S2a still says "linear sum": relabel "contrasts add"
+when it moves.
 
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on
