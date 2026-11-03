@@ -1,0 +1,55 @@
+test,n,median,n_in_direction,p,median_o_to_e,median_e_to_o,holds
+"N1 delay: log(CV static / CV full) > 0, above sink",14,1.0982145028315726,13.0,0.0001220703125,1.1168526056144006,1.0805219433088022,True
+"N1 delay: log(CV static / CV full) > 0, at sink",23,1.2535852492892825,22.0,2.384185791015625e-07,1.22380164077809,1.2690601623549522,True
+"N1 delay: log(CV static / CV full) > 0, below sink",23,0.9077160809789565,21.0,8.344650268554688e-07,0.9176061503654425,0.9118624608521783,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, above sink",14,0.05529625283185027,12.0,0.00030517578125,0.0486431564098967,0.06205226748145445,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, at sink",23,0.017008182431553973,21.0,8.344650268554688e-06,0.02556634572626919,0.009783306423178808,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, below sink",23,0.009071518520436066,19.0,5.125999450683594e-06,0.011034801916433403,0.011765231096833152,True
+"N3 conductance: log(CV full / CV cond) > 0, above sink",14,0.004056749092245826,11.0,0.01226806640625,0.0041833620672196425,4.287367310125164e-05,True
+"N3 conductance: log(CV full / CV cond) > 0, at sink",23,0.008153700601770928,19.0,0.00031936168670654297,0.01232263881057999,0.005740395134159362,True
+"N3 conductance: log(CV full / CV cond) > 0, below sink",23,0.023882652084278366,19.0,3.0159950256347656e-05,0.030556532464061377,0.014743109343267956,True
+"N4 cond_p_tau2, above - at sink",14,-10.034814393496307,5.0,0.2957763671875,,,
+"N4 cond_p_tau2, below - at sink",22,3.2496011695258993,13.0,0.5879268646240234,,,
+"(reported) median cond_p_tau2, above sink",14,33.44315042696387,,,,,
+"(reported) median cond_p_tau2, at sink",23,37.034376524558745,,,,,
+"(reported) median cond_p_tau2, below sink",23,39.2230868381531,,,,,
+"N4 cond_p_tau_m, above - at sink",14,-1.1201544899974714e-10,6.0,0.855224609375,,,
+"N4 cond_p_tau_m, below - at sink",22,4.184071230194676,15.0,0.15597057342529297,,,
+"(reported) median cond_p_tau_m, above sink",14,3.3410422803972697,,,,,
+"(reported) median cond_p_tau_m, at sink",23,8.214244447084608,,,,,
+"(reported) median cond_p_tau_m, below sink",23,19.76549425610844,,,,,
+"N4 cond_p_delta, above - at sink",14,3.825572169788651,9.0,0.0494384765625,,,
+"N4 cond_p_delta, below - at sink",22,-1.5339357992641567,5.0,0.022916316986083984,,,
+"(reported) median cond_p_delta, above sink",14,23.673277560022512,,,,,
+"(reported) median cond_p_delta, at sink",23,19.647516394227114,,,,,
+"(reported) median cond_p_delta, below sink",23,15.914246056103808,,,,,
+"N4 w_minus_a, above - at sink",14,0.011481321381698883,8.0,0.6697998046875,,,
+"N4 w_minus_a, below - at sink",22,-0.09472004608902274,5.0,0.003239154815673828,,,
+"(reported) median w_minus_a, above sink",14,0.23043318233704796,,,,,
+"(reported) median w_minus_a, at sink",23,0.1920477119125057,,,,,
+"(reported) median w_minus_a, below sink",23,0.13428918918227395,,,,,
+"N4 full_p_tau2, above - at sink",14,-3.8320699873102857,7.0,0.855224609375,,,
+"N4 full_p_tau2, below - at sink",22,-0.9667679877231468,10.0,0.9492697715759277,,,
+"(reported) median full_p_tau2, above sink",14,24.368023899908696,,,,,
+"(reported) median full_p_tau2, at sink",23,34.06980958754224,,,,,
+"(reported) median full_p_tau2, below sink",23,26.575796908308416,,,,,
+"N4 w_minus_a_full, above - at sink",14,0.011031555272636495,8.0,0.71484375,,,
+"N4 w_minus_a_full, below - at sink",22,-0.09474611845317865,5.0,0.0019183158874511719,,,
+"(reported) median w_minus_a_full, above sink",14,0.22725571385999876,,,,,
+"(reported) median w_minus_a_full, at sink",23,0.1963784046029744,,,,,
+"(reported) median w_minus_a_full, below sink",23,0.1161049303499555,,,,,
+"N4 gain_delay, above - at sink",14,-0.04385401606295438,7.0,0.9515380859375,,,
+"N4 gain_delay, below - at sink",22,-0.3004811365977163,7.0,0.007443428039550781,,,
+"(reported) median gain_delay, above sink",14,1.0982145028315726,,,,,
+"(reported) median gain_delay, at sink",23,1.2535852492892825,,,,,
+"(reported) median gain_delay, below sink",23,0.9077160809789565,,,,,
+"N4 gain_weight, above - at sink",14,0.011616183857703105,9.0,0.10400390625,,,
+"N4 gain_weight, below - at sink",22,-0.010254572467768631,8.0,0.050072669982910156,,,
+"(reported) median gain_weight, above sink",14,0.05529625283185027,,,,,
+"(reported) median gain_weight, at sink",23,0.017008182431553973,,,,,
+"(reported) median gain_weight, below sink",23,0.009071518520436066,,,,,
+"N4 gain_cond, above - at sink",14,0.004023786561158295,9.0,0.6697998046875,,,
+"N4 gain_cond, below - at sink",22,0.0008072400710037162,12.0,0.4434065818786621,,,
+"(reported) median gain_cond, above sink",14,0.004056749092245826,,,,,
+"(reported) median gain_cond, at sink",23,0.008153700601770928,,,,,
+"(reported) median gain_cond, below sink",23,0.023882652084278366,,,,,

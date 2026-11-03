@@ -1415,6 +1415,29 @@ error and the median has the predicted sign in both directions; "at every depth"
 * **K1′:** K1 with each direction kept (same channels and fits; the criterion as registered for K).
 * Script: `scripts/v4_model_groups.py`, output [qc/v4_N.csv](qc/v4_N.csv); `scripts/v4_model_depth.py` rerun for K1′.
 
+**N results (2026-11-03; 24 penetrations, 60 groups: above 14, at 23, below 23). N1, N2 and N3 hold in every
+group; K1′ holds.**
+* **N1, the delay:** log(CV static / CV full) 1.10 above (13/14), 1.25 at (22/23), 0.91 below (21/23); all
+  p ≤ .0001; both directions.
+* **N2, pool weighting:** log(CV w=a / CV full) 0.055 (12/14), 0.017 (21/23), 0.009 (19/23); p ≤ .0003; both
+  directions. Small gains, consistent everywhere.
+* **N3, conductance:** log(CV full / CV cond) 0.004 (11/14, p = .012), 0.008 (19/23, p = .0003), 0.024 (19/23,
+  p < 10⁻⁴). Above the sink one direction's median is barely above zero (< 0.0001): the conductance gain there is
+  marginal.
+* **N4, by depth (reported):** the excess pool weight w − a is smaller below the sink (conductance fits: 0.23, 0.19,
+  0.13; below − at −0.095, 5/22 above zero, p = .003), and the delay helps less there (p = .007), both as in K and L.
+  No depth difference in the pool delay τ2 (33, 37, 39 ms; p = .30, .59) or the conductance time constant τ_m
+  (3.3, 8.2, 19.8 ms; below − at p = .16). The input delay δ is 3.8 ms longer above (p = .049) and 1.5 ms shorter
+  below (p = .023) than at the sink.
+* **K1′ holds:** the per-channel delay gain is positive in both directions in every group (above 0.65 / 0.62, at
+  1.02 / 1.03, below 0.51 / 0.56). The K deviation is resolved.
+* **For the paper:** "At every depth, a delayed normalization pool that weights the other eye more than the drive
+  does predicted held-out responses better than no delay or an equally weighted pool; acting as a conductance
+  improved it slightly further. The extra weight on the other eye was smallest below the input layer, where the
+  other eye kept adding (Fig 3). The pool delay, 33–39 ms, did not differ with depth."
+* **Display:** the conductance model per channel (all presentations, no tests; `v4_model_depth.py 6 cond`) for the
+  Fig 4 maps.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
