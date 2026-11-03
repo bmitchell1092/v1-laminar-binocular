@@ -1534,6 +1534,63 @@ held-out error of the six models (static, full, w=a, cond, org, 2stage).
   these gains (1–3%) are small beside the delay itself (60–71%).
 * **Figure:** Fig 4e now shows all four comparisons by depth; best-model counts in the legend.
 
+## Strength and novelty, re-assessed (2026-11-03; Blake asked to step back)
+
+An independent, skeptical review (subagent given the figures, the qc tables and the literature notes, not our
+conclusions) and our own read agree on most points.
+
+* **Robust:**
+  * onset follows drive, and the second eye counts as drive (G, H; both monkeys in sign; expected under any
+    normalization model, so not diagnostic of one);
+  * the eyes' contrasts sum for ~20 ms after onset and then fall short of summation (F1, Fig 2a), clearest at 45%;
+  * the transition deepens with contrast (26/26);
+  * the pool weights the other eye more than the drive (24/25; K2, N4).
+* **Moderate to weak:**
+  * the laminar difference (L2 holds, but it was seen before it was tested, is ~0.05 of peak, B is 5/7, and the
+    index-based depth test was null);
+  * normalization time by depth (Fig 3d, descriptive; the earlier timing measures failed split-half reliability);
+  * conductance, two-stage and recurrent gains (0.4–3%);
+  * all CSD results.
+* **Known, so incremental:**
+  * the summation-then-normalization sequence (Cox et al. 2019; Dougherty et al. 2019; Mitchell et al. 2022);
+  * delayed normalization (Carandini, Heeger & Movshon 1997 and later);
+  * interocular normalization weighted by ocular dominance, **time-averaged, in these same recordings** (Mitchell
+    et al. 2023, Curr Biol: B + J, 25 penetrations, 502 MUA channels; docs/03 item 6);
+  * a 2023 SfN abstract on normalization across condition, depth and time (docs/03 item 7).
+  * The reviewer reports the 2024 dissertation says normalization is "weakest in the geniculate input layers and
+    strengthened through the cortical circuit", which needs reconciling with L (strong at the sink). Blake to check.
+* **Undersold (reviewer, post hoc, re-run and reproduced here; not registered):** in the unequal-contrast cells
+  with a strong other eye, the shortfall from summation is larger and sustained. Both eyes − "if the contrasts add",
+  130–200 ms: dominant 11% + other 45% −0.033 (23/26), + other 90% −0.048 (20/23); dominant 22.5% + other 90%
+  −0.046 (16/18). On the equal-contrast diagonal the effect is transient at 45% (check F). This uses the full 6 × 6
+  design and extends Mitchell et al. 2023 into time.
+* **Main objections:** same data as Mitchell et al. 2023; two monkeys with B underpowered (8 penetrations) and
+  weaker in several tests; MUA sites nearly all binocular, so onset summation could be across neurons; analysis
+  flexibility (index vs response units disagree on depth); zero-disparity gratings with one eye tracked (disparity
+  suppression lags excitation by ~7 ms, Tanabe & Cumming 2014).
+* **Framing:** "1 ms resolution of binocular summation" overstates: onsets are resolved to ~1 ms, the combination
+  rule to tens of ms.
+* **Figure problems flagged:**
+  * Fig 2c–d grey reads as suppression, which F4 rejected;
+  * Fig 2b's sink/source bands above the sink may be contact-gain stripes, and the onset overlay invites the
+    current-before-spikes reading that J rejected;
+  * Fig 2a bands are wide, and a negative index is not a "share added";
+  * Fig 3d has no test behind it;
+  * Fig 4's lead comparison is against a no-delay model with no transient (a straw man);
+  * Fig 4a is drawn with exponent 2 (fitted ~1);
+  * Fig 1f's grey band extrapolates beyond the monocular range.
+* **Tier:** J Neurosci or eLife as is; Curr Biol a stretch.
+* **Proposed action list (awaiting Blake):**
+  1. one hierarchical model for the main claims (monkey, session, penetration);
+  2. the 6 × 6 time course as the centrepiece (registered, with a held-out test on the dual-probe cross-recordings);
+  3. depth robustness for L (L4/5-landmark alignment, continuous depth, deep-sink exclusion);
+  4. units hierarchically by ocular dominance;
+  5. the figure fixes;
+  6. an explicit novelty statement against Mitchell et al. 2023, the SfN abstract and the dissertation.
+* Reviewer scripts (post hoc, not in the repo): scratchpad `offdiag.py`, `shift_null.py`. Shifting the summation
+  prediction 1 ms earlier halves the early surplus (+0.031 → +0.017) and leaves the 30–100 ms shortfall (−0.037,
+  23/26).
+
 ### Space-time figure set: status (2026-11-03)
 
 **Decided (Blake, 2026-11-03):** the CSD analyses go to the supplement (Supplementary Fig S7: current additivity,
