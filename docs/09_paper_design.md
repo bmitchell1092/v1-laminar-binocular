@@ -1437,6 +1437,26 @@ group; K1′ holds.**
   other eye kept adding (Fig 3). The pool delay, 33–39 ms, did not differ with depth."
 * **Display:** the conductance model per channel (all presentations, no tests; `v4_model_depth.py 6 cond`) for the
   Fig 4 maps.
+* **What the model misses (descriptive, Fig 4b, c, h):** on the response clock at 45%, data − conductance fits is
+  +0.016 in 0–20 ms (the onset burst is captured at every depth), −0.003 in 30–100 ms averaged over depth but grey
+  at and above the sink (the data dip deeper), and +0.031 in 130–150 ms (the late return, strongest deep, is
+  missed). By depth group, both eyes − "if the contrasts add" (30–100 ms, medians): data −0.056 / −0.061 / −0.020
+  above / at / below; conductance fits −0.039 / −0.020 / −0.017. The fits normalize about equally at every depth:
+  they underestimate normalization where it is strongest and do not reproduce the laminar difference of check L,
+  although their extra pool weight is smaller below. For the paper: a limit of a single-stage delayed pool fitted
+  per depth; candidate next model (needs its own registration): a stronger or faster pool at and above the input.
+
+### Space-time figure set: status (2026-11-03)
+
+| Figure | Claim | Status | Script |
+|---|---|---|---|
+| 1 | The experiment; onset follows drive | panels a–e built; the drive-by-onset panel (check H) mocked | `fig1_setup.py`; mock `figpolish/v5/drive_mock.py` |
+| 2 | Space-time summation | mocked: one temporal panel (S2a data), CSD with MUA onset by depth, added maps on both clocks | mocks `figpolish/v5/fig2_mock.py` |
+| 3 | Laminar organization of normalization | **built** (maps at three contrasts, ridgeline at 45%, strength by depth group, normalization time) | `fig3_laminar_normalization.py` |
+| 4 | Delayed normalization across time and depth | **built** (sketch; data / no delay / conductance maps; residuals; held-out gains, pool weight and delay by depth; data vs model normalization by depth) | `fig4_model_spacetime.py` |
+
+The V4-era `fig2_add_then_normalize.py`, `fig3_contrast_depth.py` and `fig4_model.py` stay until the set is
+approved (S2 imports from `fig3_contrast_depth.py`; the new Fig 4 imports the sketch from `fig4_model.py`).
 
 ## Competitive landscape (checked 2026-10-29)
 
