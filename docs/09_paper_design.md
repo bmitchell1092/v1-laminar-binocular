@@ -1155,6 +1155,102 @@ all 35 conditions". Script: `scripts/v4_drive_latency.py`, output [qc/v4_H.csv](
 * **Figure:** Fig 1, last panel (Blake: "a very powerful visual to set up the entire paper"); mock in the
   scratchpad (`figpolish/v5/drive_mock.py`).
 
+## V4 check I: does the other eye suppress where it barely drives? (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): Fig 3 is the laminar organization of normalization, and "we need to think carefully
+about what Figure 3 could add to really show 'normalization' is occurring here", without repeating the model
+figure. A binocular response below summation can come from normalization, from output saturation, or from response
+decay; the summation prediction (the site's own dominant eye at c(1 + a), same window) already controls the last
+two. The defining signature of normalization is suppression by an input that drives the site little (a suppressive
+pool broader than the excitatory drive; Fig 4e's w > a is the model version). Here: at strongly monocular sites, the
+other eye's grating should *lower* the response to the dominant eye (added < 0). Linear summation cannot do that,
+and neither can saturation, because the contrast response does not supersaturate in this dataset (07). **Not
+blind** to A3 (the late linearity index is most negative in the most monocular tercile, −0.56 at 45%; index units,
+magnified by small eye weights) or to F4 (no undershoot over all sites). The response-unit test by ocular dominance
+and depth is new.
+
+**I. Measure.** Channels, presentations, smoothing, dominance, scaling and onset as `v4_dip_recovery.py`
+(onset-aligned, dominant-eye peak at 90% = 1). Added A = R(c, c) − R(c, 0) per channel, in the F windows after
+onset: early 0–20, dip 30–100, late 130–200 ms. Ocular dominance |ODI| (90%, 40–250 ms) from one half of the
+presentations; A from the other half; both directions (odd → even, even → odd), with global tercile edges per
+direction. Per penetration and tercile, the mean over channels; the two directions averaged; tests over
+penetrations. 45% primary; 22.5 and 11% reported.
+
+**Tests (one-sided Wilcoxon over penetrations).**
+* **I1, suppression without drive:** most monocular tercile, A < 0 in 30–100 ms.
+* **I2, delayed, not immediate:** most monocular tercile, A > 0 in 0–20 ms. (An interocular phase or disparity
+  mismatch would act from onset; normalization is delayed. Caveat: disparity tuning also sharpens over tens of ms.)
+* **I3, graded with the other eye's drive:** A(most binocular) − A(most monocular) > 0 in 30–100 ms.
+* **I4, by depth (reported; "at every depth" only if all three hold):** I1 within depth groups relative to the
+  earliest sink (above / at / below), terciles as above.
+* **Reported:** the same in 130–200 ms; 11 and 22.5%; all-presentation values for display.
+
+**Criteria.** I1–I3 hold if p < .05 and the two cross-validation directions agree in sign. The paper may then say:
+I1, "at sites the other eye barely drives, its grating lowered the response to the dominant eye"; I1 + I2, "…but
+only after the first ~20 ms"; I3, "the more monocular the site, the stronger the suppression". If I1 fails, Fig 3
+cannot claim suppression without drive and falls back to contrast dependence (the transition index, 26/26). Script:
+`scripts/v4_suppression.py`, output [qc/v4_I.csv](qc/v4_I.csv).
+
+## V4 check J: does the current at the earliest sink start and peak before the MUA there? (registered internally 2026-11-03, before running)
+
+**Why.** Blake (2026-11-03): "Shouldn't the CSD peak before the MUA? It does, right?", and whether the LFP filtering
+smears it in time. **Filter chains (read from the code and the NSx headers, all 36 bminteroc files):** the LFP is
+the amplifier's own 1 kHz stream (0.3 Hz first-order high-pass, 500 Hz fourth-order low-pass, both causal; no
+software filtering), and the CSD is computed from it in space only (bad contacts interpolated, 3-point Hamming
+across contacts). The MUA envelope is software, zero-phase: 500–5000 Hz band-pass, rectification, 200 Hz low-pass
+(fourth order, `sosfiltfilt`), from the 30 kHz stream (0.3 Hz–7.5 kHz hardware). The figure caches then add a
+Gaussian σ = 2 ms (zero-phase) to both. Both streams are read on the NSP tick clock, so the legacy 3.4 ms LFP/CSD lag
+(05 A1) is gone. The two chains bias a CSD-vs-MUA comparison in opposite directions (causal delay on the CSD,
+acausal spread on the MUA), so the comparison needs the bias measured. **Not blind:** `dichoptic_csd.py` recorded
+"MUA onset minus sink onset", but with different thresholds (MUA half-max, sink 25% of peak), which favours the sink.
+
+**J. Measure.** `sink.npz`: the sink current (−CSD over the sink channel and its two neighbours) and MUA on the same
+channels, per penetration, on the sink-onset clock, for the dominant eye at 90% and both eyes at 45%. The same
+estimators for both signals: half-max onset of its own peak (−5 to 150 ms, interpolated, as G) and peak time
+(0–80 ms). Per penetration, MUA − current. **Filter bias:** both chains applied to the same test responses
+(rises of 4–12 ms, 10–90%), the expected MUA − current difference read with the same estimators; reported results
+are shown raw and with this bias removed.
+
+**Tests (one-sided Wilcoxon over penetrations, raw and bias-corrected).** J1: the MUA half-max onset is later than
+the current's. J2: the MUA peak is later than the current's. **Criteria:** a test holds if p < .05 raw *and* bias-
+corrected. The paper may then say "the current at the earliest sink started (J1) / peaked (J2) X ms before spiking
+on the same channels". Script: `scripts/v4_csd_timing.py`, output [qc/v4_J.csv](qc/v4_J.csv).
+
+**I results (2026-11-03; 26 penetrations, 570 channels; |ODI| tercile edges 0.048 and 0.165;
+[qc/v4_I.csv](qc/v4_I.csv), means in [qc/v4_I_summary.csv](qc/v4_I_summary.csv)). I1, I3 and I4 fail; I2 holds.**
+* **I1 fails:** at the most monocular sites the other eye's grating does not reliably lower the response in
+  30–100 ms at 45% (median −0.021 of the dominant-eye peak, 15/24 below zero, p = .20; both directions negative).
+  Reported: not at 22.5% (+0.007) or 11% (+0.053) either.
+* **I2 holds:** at the same sites the other eye adds at onset (0–20 ms, 45%: +0.095, 18/24, p = .002, both
+  directions; 22.5% +0.080; 11% +0.059).
+* **I3 fails** in 30–100 ms (+0.010, 13/22, p = .29). Reported, 130–200 ms: +0.024 (15/22, p = .018, both
+  directions).
+* **I4 fails** in every depth group (above −0.031, at −0.034, below −0.015; p = .13–.52).
+* **Caveat:** MUA sites are seldom monocular. The most monocular tercile starts at |ODI| 0.17 (about 1.4 : 1).
+* **For the paper:** no claim of interocular suppression without drive in MUA. Fig 3 falls back to contrast
+  dependence, as registered.
+
+**J results (2026-11-03; 26 penetrations; [qc/v4_J.csv](qc/v4_J.csv),
+[qc/v4_J_penetrations.csv](qc/v4_J_penetrations.csv)). J1 and J2 fail: spiking on the sink channels starts before
+the sink current.**
+* **Clock check (QC; `scripts/qc_nsx_clock.py`, two sessions per monkey):** the 1 kHz LFP equals the 30 kHz signal
+  passed through the amplifier's causal 500 Hz filter at lag 0 (r = 1.000). Against a zero-phase version it lags by
+  0.9 ms. The two streams share one clock; the LFP and CSD carry the 0.9 ms delay of the causal filter.
+* **Filter chains, simulated (rises 4–12 ms, 10–90%):** current half-max +0.6 ms late, peak +1 to +3 ms; MUA
+  half-max −0.1 to −0.2 ms, peak 0 to +2 ms. Expected MUA − current bias −0.8 ms (half-max) and −1 ms (peak).
+* **Half-max onset, MUA − current:** dominant eye 90% −3.3 ms raw (MUA later in 4/26), −2.5 ms corrected (95% CI
+  −5.1 to −0.5); both eyes 45% −3.0 raw, −2.2 corrected (CI −3.7 to −0.3).
+* **Peak, MUA − current:** dominant eye 90% −4.5 raw, −3.5 corrected (CI −6 to +1); both eyes 45% −3.0 / −2.0
+  (CI −10 to +2).
+* **Descriptive (not registered):** at every crossing threshold from 10 to 75% of its own peak the MUA leads (−3.8,
+  −3.5, −3.3, −3.5 ms at 10, 25, 50, 75%, dominant eye 90%).
+* **Reading (hypothesis, not tested):** analog MUA at the input depth includes thalamic afferent (presynaptic)
+  spikes, and the sink grows as synaptic input accumulates; the three-contact average and spatial smoothing blend
+  in neighbouring, later currents.
+* **For the paper:** do not say the current precedes spiking at the sink. "Earliest sink" marks the input depth, not
+  a time reference. Methods: state both filter chains and the 0.9 ms LFP delay. Legacy CSD-vs-MUA latencies carry
+  the 3.4 ms artefact (05 A1) and must not be reused.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the

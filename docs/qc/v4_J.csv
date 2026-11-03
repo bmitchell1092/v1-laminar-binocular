@@ -1,0 +1,12 @@
+test,n,median,ci_lo,ci_hi,n_in_direction,p,holds,rise_ms,current_onset,mua_onset,current_peak,mua_peak,bias_onset,bias_peak
+"J1 MUA - current, onset, dominant eye 90%, raw",26.0,-3.297724813087017,-5.886115426375649,-1.3289525811453684,4.0,0.9999527484178543,False,,,,,,,
+"J1 MUA - current, onset, dominant eye 90%, bias-corrected",26.0,-2.496388759500592,-5.084779372789224,-0.5276165275589433,7.0,0.9994174391031265,False,,,,,,,
+"J2 MUA - current, peak, dominant eye 90%, raw",26.0,-4.5,-7.0,0.0,7.0,0.9904744183305709,False,,,,,,,
+"J2 MUA - current, peak, dominant eye 90%, bias-corrected",26.0,-3.5,-6.0,1.0,10.0,0.963334795709664,False,,,,,,,
+"J1 MUA - current, onset, both eyes 45%, raw",26.0,-2.9698195943773857,-4.534528243953351,-1.0760247296376553,4.0,0.9998912662267685,False,,,,,,,
+"J1 MUA - current, onset, both eyes 45%, bias-corrected",26.0,-2.1684835407909606,-3.733192190366926,-0.27468867605123015,7.0,0.9974334090948105,False,,,,,,,
+"J2 MUA - current, peak, both eyes 45%, raw",26.0,-3.0,-11.0,1.0,10.0,0.9634163626598778,False,,,,,,,
+"J2 MUA - current, peak, both eyes 45%, bias-corrected",26.0,-2.0,-10.0,2.0,10.0,0.9150182223507544,False,,,,,,,
+"filter bias (MUA - current), simulated",,,,,,,,4.0,0.6433871502207822,-0.17716234994043845,3.0,2.0,-0.8205495001612206,-1.0
+"filter bias (MUA - current), simulated",,,,,,,,8.0,0.6297953595101049,-0.08057716036486084,2.0,1.0,-0.7103725198749657,-1.0
+"filter bias (MUA - current), simulated",,,,,,,,12.0,0.5721900927809074,-0.22914596080551775,1.0,0.0,-0.8013360535864251,-1.0
