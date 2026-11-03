@@ -15,7 +15,12 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetrati
     the penetration's median eye weight a (v1lb.binocular.response_at); the figure names the monkey, not the session;
 (d) monocular contrast response per eye, mean MUA 40-250 ms after stimulus onset in units of each channel's
     dominant-eye peak, penetration means (95% bootstrap CI over penetrations);
-(e) ocular dominance index at 90% for driven MUA channels and isolated single units.
+(e) ocular dominance index at 90% for driven MUA channels and isolated single units;
+(f) response onset against response strength for all 35 conditions of the design (check H, v4_drive_latency.py):
+    half-max onset of each condition's own peak and that peak, per channel; medians over channels per penetration,
+    then over penetrations; onsets relative to each channel's dominant eye at 90% plus that onset's population median;
+    open diamonds, the sum of the two measured monocular responses (dotted lines join the equal-contrast cells);
+    grey band, the least-squares line of onset on log peak through the monocular conditions.
 The example flash CSD with the laminar alignment is in Supplementary Fig S1 (figS1_methods.py).
 Inputs: figure_data.py (population.npz, population_meta.parquet), run_crf.py, run_dichoptic.py.
 Writes <out_root>/figures/fig1_setup.pdf and .png; prints the statistics shown.
@@ -24,6 +29,7 @@ Writes <out_root>/figures/fig1_setup.pdf and .png; prints the statistics shown.
 import glob
 import sys
 import warnings
+from pathlib import Path
 
 import matplotlib
 
@@ -31,16 +37,19 @@ matplotlib.use("Agg")
 import matplotlib.patches as mpatches  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
+from scipy import stats  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
 from v1lb.binocular import CONTRASTS, response_at  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
-H_MM = 104
-POS = {"stereo": (2, 60, 40, 38), "probe": (44, 60, 22, 38), "trial": (2, 45, 64, 10),       # (x, y, w, h) in mm
-       "matrix": (97, 57, 35, 35), "key": (137, 57, 37, 35),
-       "example": (14, 9, 58, 28), "crf": (95, 9, 30, 28), "odi": (140, 9, 32, 28)}
+REPO = Path(__file__).resolve().parents[2]
+H_MM = 152
+POS = {"stereo": (2, 108, 40, 38), "probe": (44, 108, 22, 38), "trial": (2, 93, 64, 10),     # (x, y, w, h) in mm
+       "matrix": (97, 105, 35, 35), "key": (137, 105, 37, 35),
+       "example": (14, 57, 58, 28), "crf": (95, 57, 30, 28), "odi": (140, 57, 32, 28),
+       "drive": (16, 10, 84, 34)}
 SWATCH_CMAP = "gray"
 
 
@@ -252,6 +261,60 @@ def ocular_dominance(ax):
     return {k: np.asarray(v) for k, v in odi.items()}
 
 
+def drive_latency(ax):
+    """Response onset against response strength (peak) for all 35 conditions (check H, v4_drive_latency.py)."""
+    X = pd.read_csv(REPO / "docs" / "qc" / "v4_H_cells.csv")
+    C = pd.read_parquet(out_root() / "binocular" / "v4_H_cells.parquet")
+    A = C[(C.split == "all") & (C.c_dom == 0.9) & (C.c_oth == 0)]
+    base = float(A.groupby("penetration").onset.median().median())       # dominant eye at 90%, absolute onset
+    X["y"], X["y_add"] = X.onset_rel_median + base, X.onset_added_rel_median + base
+    dom = X[X.c_oth == 0].sort_values("c_dom")
+    oth = X[X.c_dom == 0].sort_values("c_oth")
+    both = X[(X.c_dom > 0) & (X.c_oth > 0)]
+    dio = both[np.isclose(both.c_dom, both.c_oth)]
+    mono = pd.concat([dom, oth])
+    slope, icpt = np.polyfit(np.log(mono.peak_median), mono.y, 1)
+    xs = np.linspace(0.27, 1.25, 50)
+    ax.plot(xs, icpt + slope * np.log(xs), color=fs.RULE, lw=2.4, zorder=1, solid_capstyle="round")
+    for _, r in dio.iterrows():
+        ax.plot([r.peak_median, r.peak_added_median], [r.y, r.y_add], color=fs.MUTED, lw=0.5, ls=(0, (1.5, 1.5)),
+                zorder=2)
+    ax.scatter(both.peak_added_median, both.y_add, s=9, marker="D", facecolor="white", edgecolor=fs.MUTED, lw=0.6,
+               zorder=3)
+    ax.scatter(both.peak_median, both.y, s=9, marker="D", color=fs.INK, lw=0, zorder=4)
+    ax.scatter(dio.peak_median, dio.y, s=22, marker="D", color=fs.INK, lw=0, zorder=5)
+    ax.plot(dom.peak_median, dom.y, color=fs.COND["dominant"], lw=0.8, marker="o", ms=3.2, zorder=6)
+    ax.plot(oth.peak_median, oth.y, color=fs.COND["other"], lw=0.8, marker="o", ms=3.2, zorder=6)
+    for _, r in dom.iterrows():
+        up = r.c_dom >= 0.45                                       # the both-eyes points crowd below these two
+        ax.text(r.peak_median - 0.025, r.y + (0.35 if up else -0.25), f"{100 * r.c_dom:g}", fontsize=5, ha="right",
+                va="bottom" if up else "top", color=fs.COND["dominant"])
+    ax.set_xlim(0.2, 1.9)
+    ax.set_yticks(np.arange(30, 46, 5))
+    ax.set_xlabel("response strength (peak; dominant eye at 90% = 1)")
+    ax.set_ylabel("response onset\n(ms after stimulus onset)")
+    ax.text(0.26, icpt + slope * np.log(0.26) + 0.5, "stronger drive, earlier start", fontsize=5.5, color=fs.INK2,
+            va="bottom")
+    keys = [("o", fs.COND["dominant"], fs.COND["dominant"], "dominant eye alone (contrast, %)"),
+            ("o", fs.COND["other"], fs.COND["other"], "other eye alone"),
+            ("D", fs.INK, fs.INK, "both eyes (large: the same contrast in each)"),
+            ("D", "white", fs.MUTED, "if the two eyes' responses simply added")]
+    for k, (mk, fc, ec, lab) in enumerate(keys):
+        y = 0.95 - k * 0.12
+        ax.plot([1.05], [y], marker=mk, ms=3.0, mfc=fc, mec=ec, mew=0.6, transform=ax.transAxes, clip_on=False)
+        ax.text(1.08, y, lab, transform=ax.transAxes, va="center", fontsize=5.5, color=fs.INK)
+    H = pd.read_csv(REPO / "docs" / "qc" / "v4_H.csv").set_index("test")
+    rho = stats.spearmanr(X.peak_median, X.y).statistic
+    h1 = H.loc["vs_added"]
+    h3 = H.loc["rho"]
+    ax.text(1.05, 0.38, f"35 conditions, 26 penetrations\nrank correlation over conditions {rho:.2f}\n"
+            f"per penetration: median {h3['median']:.2f}, {int(h3.n_in_direction)}/{int(h3.n)} negative\n"
+            f"both eyes start {abs(h1['median']):.1f} ms earlier than the sum\nof the two monocular responses would "
+            f"({int(h1.n_in_direction)}/{int(h1.n)}, {fs.fmt_p(h1.p)})",
+            transform=ax.transAxes, va="top", fontsize=5.5, color=fs.INK2, linespacing=1.15)
+    return dict(base=base, rho=rho, slope=slope, H=H)
+
+
 def main():
     pen = sys.argv[1] if len(sys.argv) > 1 else "221212_J_eA"
     fs.apply()
@@ -270,10 +333,15 @@ def main():
     ex = example(bax, pop, k, meta.loc[pen, "monkey"], float(meta.loc[pen, "a"]))
     crf, ratio = crfs(cax, pop)
     odi = ocular_dominance(oax)
+    fax = axes_mm(fig, *POS["drive"])
+    dl = drive_latency(fax)
     fs.panel_label(sax, "a", x=0.04)
-    for ax, letter in zip((dax, bax, cax, oax), "bcde"):
+    for ax, letter in zip((dax, bax, cax, oax, fax), "bcdef"):
         fs.panel_label(ax, letter, x=-0.18 if ax is dax else -0.02)
     print(fs.save(fig, "fig1_setup"))
+    print(f"(f) drive vs onset: dominant eye at 90% onset {dl['base']:.1f} ms; rank correlation over the 35 "
+          f"conditions {dl['rho']:.3f}; monocular slope {dl['slope']:.2f} ms per e-fold of peak")
+    print(dl["H"][["n", "median", "ci_lo", "ci_hi", "n_in_direction", "p", "holds"]].round(4).to_string())
 
     print(f"(c) example: monkey {meta.loc[pen, 'monkey']}, {int(meta.loc[pen, 'n_channels'])} channels, "
           f"median eye weight {meta.loc[pen, 'a']:.2f}, onset {meta.loc[pen, 'onset']:.1f} ms after stimulus onset")

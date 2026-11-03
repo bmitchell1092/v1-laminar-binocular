@@ -1536,10 +1536,16 @@ held-out error of the six models (static, full, w=a, cond, org, 2stage).
 
 ### Space-time figure set: status (2026-11-03)
 
+**Decided (Blake, 2026-11-03):** the CSD analyses go to the supplement (Supplementary Fig S7: current additivity,
+contrast summation in the current, sink vs MUA vs unit timing); the CSD map stays in Fig 2 only as the landmark that
+defines the depth axis. The two-stage result is reported in Fig 4e and one Results sentence, not in the title or
+abstract (gains 1–3%, best-model counts descriptive, no direct test against conductance).
+
 | Figure | Claim | Status | Script |
 |---|---|---|---|
-| 1 | The experiment; onset follows drive | panels a–e built; the drive-by-onset panel (check H) mocked | `fig1_setup.py`; mock `figpolish/v5/drive_mock.py` |
-| 2 | Space-time summation | mocked: one temporal panel (S2a data), CSD with MUA onset by depth, added maps on both clocks | mocks `figpolish/v5/fig2_mock.py` |
+| 1 | The experiment; onset follows drive | **built** (a–e as before; f, onset vs response strength for all 35 conditions, check H) | `fig1_setup.py` |
+| 2 | Space-time summation | **built** (a, linearity index over time at 11, 22.5, 45%; b, CSD with the spiking onset at each depth; c, d, what the other eye adds at 45% on the stimulus and response clocks) | `fig2_spacetime.py` |
+| S7 | The synaptic current at the input | **built** (checks J, M, O) | `figS7_input_current.py` |
 | 3 | Laminar organization of normalization | **built** (maps at three contrasts, ridgeline at 45%, strength by depth group, normalization time) | `fig3_laminar_normalization.py` |
 | 4 | Delayed normalization across time and depth | **built** (sketch; data / no delay / conductance maps; residuals; held-out gains, pool weight and delay by depth; data vs model normalization by depth) | `fig4_model_spacetime.py` |
 
