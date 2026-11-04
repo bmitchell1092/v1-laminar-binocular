@@ -2022,6 +2022,61 @@ numbers. If X1 fails, the paper reports normalization at every depth and drops "
 the sink-based result moves to the supplement with its dependence on the depth reference stated. Script:
 `scripts/x_depth_v3.py`; outputs `docs/qc/x_depth_v3.csv`, `x_groups.csv`.
 
+**X results (2026-11-03). X1, X2, X4 and X5 hold and are robust to the depth reference; X3 holds for the
+superficial group and fails for the deep group.**
+* **Data:** 22 penetrations; 424 first-sheet channels.
+  * 92 of these are superficial channels that v2's spontaneous-rate top had placed above the cortex.
+  * For the 341 channels shared with L, the per-channel values are identical to L's (differences < 10⁻¹⁵), and all
+    341 were also driven in `run_crf.py`.
+  * Group medians per penetration: superficial 8 channels, input 5, deep 7.
+  * Group values in [qc/x_groups.csv](qc/x_groups.csv).
+* **X1 holds:** (A − P) deep − input = +0.052 (18/22, p < 10⁻⁴; halves +0.040, +0.052).
+  * L1 by group: superficial −0.078 (20/21, p = .0001), input −0.073 (20/22, p = .0001), deep −0.029 (15/22,
+    p = .053, so it fails below the boundary).
+  * Superficial − input: −0.006 (p = .52).
+* **X2 holds:** (AI − AI_sum) deep − input = +0.11 (18/21, p = .0001).
+  * The index from 30 to 100 ms, against summation: superficial 0.51 vs 0.67, input 0.49 vs 0.66, deep 0.55 vs
+    0.60. Deep is still below summation (15/21, p = .010).
+* **X3:**
+  * **Superficial holds:** the superficial onset is 5.3 ms later than the input onset (18/21, p = .0001; halves
+    5.7, 5.2).
+  * **Deep fails:** deep − input = −1.35 ms (8/22 later; one-sided p = .88). The deep group starts no later than
+    the input group, and earlier in 14/22 (two-sided p = .26, descriptive).
+  * **By 0.2 mm bin** (median over penetrations, relative to each penetration's median onset; descriptive): the
+    earliest onsets lie 0.1–0.6 mm below the anchor (−1.8 to −2.9 ms). Onsets rise to 0 ms at 0.7 mm below and
+    to +3 to +8 ms above 0.8 mm above the anchor.
+  * **Why G4 differed:** G4's "below the sink" group (+1.4 ms later) had no deep limit, so it included the later
+    contacts beyond the cap.
+  * **Reading (not tested):** fast deep onsets are real and sit in the 0.6 mm below the input/deep boundary. That
+    fits direct geniculate input to layer 6, possibly with thalamic axon spikes in the MUA. It does not point to
+    a second fold or a misalignment.
+* **X4 holds in every group:** the binocular advance at 45% is −2.0 ms superficial (20/21), −1.5 ms input (20/22)
+  and −1.1 ms deep (17/22, p = .005), with both halves in every group.
+* **X5 holds:** the shortfall rises by +0.030 per mm of depth from the anchor (p < 10⁻⁴; 424 channels).
+* **Sensitivity: X1 and X2 hold in all three variants**, so "robust to the depth reference" is allowed.
+
+  | Variant | X1 | X2 |
+  |---|---|---|
+  | (a) 0.5 mm cap | +0.041 (17/22, p = .0001) | +0.090 (p = .0001) |
+  | (b) sink anchor | +0.031 (17/22, p = .003) | +0.067 (p = .0003) |
+  | (c) 15 flip-anchored penetrations | +0.035 (11/15, p = .006) | +0.061 (p = .003) |
+* **Ridgeline:** Fig 3a and 3b redrawn on v3 (`fig3_normalization_ai.py`; the sink version is kept as
+  `fig3_normalization_ai_sink`). From 30 to 100 ms the index falls furthest below summation 0.1–0.7 mm above the
+  boundary:
+
+  | Depth from the anchor | 0.7 above | 0.5 above | 0.3 above | 0.1 above | 0.1 below | 0.3 below | 0.5 and 0.7 below |
+  |---|---|---|---|---|---|---|---|
+  | Shortfall below summation | 0.14 | 0.17 | 0.14 | 0.11 | 0.07 | 0.04 | 0 |
+
+  Superficial bins fall 0.06–0.09 short.
+* **For the paper:** "Normalization was strongest in and above the input layer and faded below the input/deep
+  boundary. From 30 to 100 ms after onset, the additivity index fell 0.17 below the summation prediction within
+  0.5 mm above the boundary, and 0.05 below it in the 0.7 mm beneath (18 of 21 penetrations). The result held for
+  three alternative depth references. Responses began 5 ms later in the superficial layers than in the input
+  layer; deep sites began no later than the input layer. Adding the other eye advanced the onset at every depth."
+* **Still on the sink groups** (rerun on v3 before they enter the figures): the model by depth (K3, N), U5 in the
+  hierarchical model, and the laminar latency panel planned for Fig 1.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the

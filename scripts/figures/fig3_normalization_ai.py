@@ -5,17 +5,23 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig3_normalization_ai.py
 Additivity index AI = both eyes / (dominant eye + other eye); the dashed reference is the index that summation of the
 two eyes' contrasts predicts: the dominant eye's response at c_D + a c_O over the same denominator (each channel's or
 penetration's eye weight a). Time from each channel's response onset.
-(a) AI over time at 45% in each eye, one trace per 0.2 mm depth bin relative to the earliest sink (population: mean
-    over penetrations of the channel means; ratio of the means; >= 10 penetrations; 5 ms running mean); grey where
-    the index falls below the summation reference; the thin rule under each trace is AI = 0.5;
-(b) AI 30-100 ms after onset per penetration and depth group (above / at, within 0.2 mm / below the sink), data and
-    summation reference; medians and interquartile ranges; check V2 (below - at, one-sided Wilcoxon);
+(a) AI over time at 45% in each eye, one trace per 0.2 mm depth bin from the input/deep boundary of laminar
+    alignment v3 (docs/09 X; population: mean over penetrations of the channel means; ratio of the means; >= 10
+    penetrations; 5 ms running mean); grey where the index falls below the summation reference; the thin rule under
+    each trace is AI = 0.5;
+(b) AI 30-100 ms after onset per penetration and depth group (superficial / input, 0.5 mm above the boundary /
+    deep, to 0.7 mm below), data and summation reference; medians and interquartile ranges; check X2 (deep - input,
+    one-sided Wilcoxon);
 (c, d) AI against the other eye's contrast with the dominant eye at 11%, 0-20 ms (c) and 130-200 ms (d) after
     onset; penetration means and 95% bootstrap CI; check V3 (all cells with the other eye's contrast higher).
-Inputs: spacetime_data.py (spacetime.npz, spacetime_meta.parquet); docs/qc/v4_V.csv, v4_V_cells.csv, v4_V_groups.csv.
-Writes <out_root>/figures/fig3_normalization_ai.pdf and .png; prints the statistics shown.
+`sink` as argument: the earlier version, depth relative to the earliest sink (groups above / at / below; check V2).
+Inputs: x_depth_v3.py (spacetime_v3.npz, docs/qc/x_depth_v3.csv, x_groups.csv) or spacetime_data.py (spacetime.npz;
+docs/qc/v4_V.csv, v4_V_groups.csv); docs/qc/v4_V_cells.csv.
+Writes <out_root>/figures/fig3_normalization_ai.pdf and .png (fig3_normalization_ai_sink for `sink`); prints the
+statistics shown.
 """
 
+import sys
 import warnings
 from pathlib import Path
 
@@ -33,9 +39,18 @@ warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
 QC = REPO / "docs" / "qc"
 H_MM = 104
-BIN = 2
-EDGES = np.arange(-9, 14, BIN)
+BIN = 2                                          # contacts (0.2 mm)
 MIN_PEN = 10
+DEPTH = {
+    "v3": dict(data="spacetime_v3", rel="rel_anchor_mm", per_contact=10, edges=np.arange(-16, 9, BIN),
+               label="depth from input/deep boundary (mm)", groups=("superficial", "input", "deep"),
+               names=("superficial", "input", "deep"), files=("x_groups.csv", "x_depth_v3.csv"),
+               test="X2 (AI - AI_sum) deep - input > 0, 45%, 30-100 ms", contrast="deep − input"),
+    "sink": dict(data="spacetime", rel="rel_sink", per_contact=1, edges=np.arange(-9, 14, BIN),
+                 label="depth relative to earliest sink (mm)", groups=("above", "at", "below"),
+                 names=("above", "at sink", "below"), files=("v4_V_groups.csv", "v4_V.csv"),
+                 test="V2 (AI - AI_sum) below - at the sink > 0, 45%, 30-100 ms", contrast="below − at sink"),
+}
 CS4 = (0.11, 0.225, 0.45, 0.9)
 POS = {"a": (20, 10, 62, 86), "b": (104, 58, 40, 36), "c": (104, 10, 28, 32), "d": (138, 10, 28, 32)}
 
@@ -45,12 +60,13 @@ def axes_mm(fig, x, y, w, h):
     return fig.add_axes((x / W, y / H, w / W, h / H))
 
 
-def depth_ai(X, meta, c=0.45):
+def depth_ai(X, meta, cfg, c=0.45):
     i, j = list(CONTRASTS).index(c), CS4.index(c)
     D, O, B = X[:, i], X[:, 6 + j], X[:, 10 + j]
     P = np.stack([response_at(X[q, :6], c * (1 + meta.a.iloc[q])) for q in range(len(meta))])
-    b = np.digitize(meta.rel_sink.to_numpy(), EDGES) - 1
-    centres = (EDGES[:-1] + BIN / 2) * 0.1
+    edges = cfg["edges"]
+    b = np.digitize(meta[cfg["rel"]].to_numpy() * cfg["per_contact"], edges) - 1
+    centres = (edges[:-1] + BIN / 2) * 0.1
     pen = meta.penetration.to_numpy()
     out, z = {k: [] for k in "DOBP"}, []
     for k in range(len(centres)):
@@ -67,7 +83,7 @@ def depth_ai(X, meta, c=0.45):
     return np.array(z), np.where(ok, M["B"] / den, np.nan), np.where(ok, M["P"] / den, np.nan)
 
 
-def ridgeline(ax, rel, z, AI, AS, gap=0.5):
+def ridgeline(ax, rel, z, AI, AS, label, gap=0.5):
     sel = (rel >= 0) & (rel <= 150)
     t = rel[sel]
     for k in range(len(z))[::-1]:
@@ -85,17 +101,16 @@ def ridgeline(ax, rel, z, AI, AS, gap=0.5):
     ax.set_xlim(0, 150)
     ax.set_ylim(-gap * (len(z) - 1) + 0.35, 1.35)
     ax.set_xlabel("time from response onset (ms)")
-    ax.text(-26, -gap * (len(z) - 1) / 2 + 0.6, "depth relative to earliest sink (mm)", rotation=90, ha="center",
+    ax.text(-26, -gap * (len(z) - 1) / 2 + 0.6, label, rotation=90, ha="center",
             va="center", fontsize=7, color=fs.INK)
     ax.set_title("additivity index, both eyes 45%", fontsize=6.5, loc="left")
     fs.line_key(ax, [("measured", fs.INK, "-"), (fs.SUM, fs.MUTED, fs.SUM_LS)], x=0.5, y=1.0, dy=0.035, length=0.08)
 
 
-def by_group(ax, G, V):
-    rng = np.random.default_rng(7)
-    D = G[G.window == "dip"]
+def by_group(ax, G, V, cfg):
+    D = G[G.window == "dip"] if "window" in G else G
     rows = []
-    for k, g in enumerate(("above", "at", "below")):
+    for k, g in enumerate(cfg["groups"]):
         x = D[D.grp == g]
         for col, colr, dy, mfc in (("AI", fs.INK, -0.12, fs.INK), ("AI_sum", fs.MUTED, 0.12, "white")):
             v = x[col].dropna()
@@ -103,13 +118,13 @@ def by_group(ax, G, V):
             ax.plot([q1, q3], [k + dy] * 2, color=colr, lw=0.9)
             ax.plot([md], [k + dy], marker="o", ms=3.6, mfc=mfc, mec=colr, mew=0.9, zorder=3)
             rows.append(dict(grp=g, series=col, n=len(v), median=md))
-    ax.set_yticks(range(3), ["above", "at sink", "below"])
+    ax.set_yticks(range(3), list(cfg["names"]))
     ax.tick_params(axis="y", length=0)
     ax.set_ylim(2.6, -0.6)
     ax.set_xlim(0.3, 0.9)
     ax.set_xlabel("additivity index, 30–100 ms")
-    v2 = V.set_index("test").loc["V2 (AI - AI_sum) below - at the sink > 0, 45%, 30-100 ms"]
-    ax.text(1.03, 0.98, f"measured\n{fs.SUM} (open)\n\nbelow − at sink:\n{int(v2.n_in_direction)}/{int(v2.n)} "
+    v2 = V.set_index("test").loc[cfg["test"]]
+    ax.text(1.03, 0.98, f"measured\n{fs.SUM} (open)\n\n{cfg['contrast']}:\n{int(v2.n_in_direction)}/{int(v2.n)} "
             f"penetrations,\n{fs.fmt_p(v2.p)}", transform=ax.transAxes, ha="left", va="top", fontsize=5.5,
             color=fs.INK2, linespacing=1.1)
     return pd.DataFrame(rows)
@@ -141,21 +156,26 @@ def by_other(axs, C, V):
 
 
 def main():
+    version = sys.argv[1] if len(sys.argv) > 1 else "v3"
+    cfg = DEPTH[version]
     fs.apply()
-    Z = np.load(out_root() / "figures" / "data" / "spacetime.npz")
-    meta = pd.read_parquet(out_root() / "figures" / "data" / "spacetime_meta.parquet")
-    V = pd.read_csv(QC / "v4_V.csv")
-    C, G = pd.read_csv(QC / "v4_V_cells.csv"), pd.read_csv(QC / "v4_V_groups.csv")
+    Z = dict(np.load(out_root() / "figures" / "data" / f"{cfg['data']}.npz"))
+    meta = pd.read_parquet(out_root() / "figures" / "data" / f"{cfg['data']}_meta.parquet")
+    if version == "v3":                                     # first sheet only (the file also holds sink-anchor channels)
+        keep = (meta.grp != "").to_numpy()
+        Z["onset"], meta = Z["onset"][keep], meta[keep].reset_index(drop=True)
+    G, V = pd.read_csv(QC / cfg["files"][0]), pd.read_csv(QC / cfg["files"][1])
+    C, Vc = pd.read_csv(QC / "v4_V_cells.csv"), pd.read_csv(QC / "v4_V.csv")
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")
     ax = {k: axes_mm(fig, *v) for k, v in POS.items()}
-    z, AI, AS = depth_ai(Z["onset"], meta)
-    ridgeline(ax["a"], Z["rel"], z, AI, AS)
-    B = by_group(ax["b"], G, V)
-    O = by_other([ax["c"], ax["d"]], C, V)
+    z, AI, AS = depth_ai(Z["onset"], meta, cfg)
+    ridgeline(ax["a"], Z["rel"], z, AI, AS, cfg["label"])
+    B = by_group(ax["b"], G, V, cfg)
+    O = by_other([ax["c"], ax["d"]], C, Vc)
     for k, x in (("a", -0.2), ("b", -0.32), ("c", -0.45)):
         fs.panel_label(ax[k], k, x=x)
-    print(fs.save(fig, "fig3_normalization_ai"))
+    print(fs.save(fig, "fig3_normalization_ai" + ("" if version == "v3" else "_sink")))
     pd.set_option("display.width", 200)
     rel = Z["rel"]
     for k in range(len(z)):
