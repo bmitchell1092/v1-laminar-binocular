@@ -58,6 +58,25 @@ def channel_table(n: int, orientation: str, l45: float, top_of_cortex: int, deep
                          "beyond_deep_limit": beyond})
 
 
+ALIGNMENT_V3 = "laminar_alignment_v3.csv"  # cross-checked input/deep anchor (docs/09 X); applied at analysis time
+INPUT_MM = 0.5                               # the input group: INPUT_MM above the anchor to the anchor
+
+
+def anchor_depth(contacts, orientation: str, anchor_contact: float, top_contact: int,
+                 deep_cap_mm: float = 0.7) -> pd.DataFrame:
+    """Depth of each contact relative to the v3 input/deep anchor (mm, + = deeper) and its group: 'superficial'
+    (above the input group, at or below the top of cortex), 'input' (INPUT_MM above the anchor to it), 'deep' (the
+    anchor to deep_cap_mm below), '' outside the first sheet. Works on contact numbers, so the dataset's channel order
+    does not matter."""
+    c = np.asarray(contacts, float)
+    sign = 1 if orientation == "ascending" else -1
+    rel = sign * (c - anchor_contact) / 10
+    in_cortex = sign * (c - top_contact) >= 0
+    grp = np.where(~in_cortex | (rel > deep_cap_mm + 1e-9), "",
+                   np.where(rel > 0, "deep", np.where(rel >= -INPUT_MM - 1e-9, "input", "superficial")))
+    return pd.DataFrame({"contact": c.astype(int), "rel_anchor_mm": rel, "grp": grp})
+
+
 def lfp_epochs(ns2: NsxFile, labels: list[str], onsets: np.ndarray, window_ms=WINDOW_MS) -> np.ndarray:
     """LFP [events, time, channels] (uV) on an exact 1 ms grid locked to each onset tick.
 

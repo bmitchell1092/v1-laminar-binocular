@@ -1893,8 +1893,9 @@ groups and predictions are registered before any of them is computed.
     reversal). The exceptions are 221128_J_eA and 221214_J_eA.
   * The SPI falls with depth in 18/26 (10/14). It does not fall in 211012_B_eA, 211217_B_eA, 221202_J_eA, 221202_J_eB,
     221206_J_eA, 221214_J_eA, 221214_J_eB or 221215_J_eA.
-* **Orientation.** The three votes agree in 16/26 penetrations; 10 go 2-of-3. The call differs from v2 in 2
-  (221204_J_eB, 221215_J_eA; both already 2-of-3 in v2).
+* **Orientation.** The three votes agree in 16/26 penetrations; 10 go 2-of-3. The call differs from the laminar
+  report's in 2 (221204_J_eB, 221215_J_eA) and from v2 (which built the datasets) in 1 (221206_J_eB). *Corrected
+  2026-11-03: this line first said "differs from v2"; the card's "legacy" field is the laminar-report call.*
 * **Phase reversal.**
   * Clear (≥ 1 rad, on the probe) in 14/26.
   * Small (0.5–0.8 rad) in 6: 221212_J_eA, 211008_B_eA, 221202_J_eB, 221206_J_eA, 221209_J_eB, 221214_J_eB.
@@ -1934,6 +1935,92 @@ groups and predictions are registered before any of them is computed.
 * which top-of-cortex rule to use;
 * the bottom of V1 and any second sheet, by eye (candidate: 211217_B_eA);
 * 221109_J_eA's reversal.
+
+## Laminar alignment v3 and the depth rerun X (registered internally 2026-11-03, before running; Blake: "Okay yes. Go ahead … On the ones that need my eye, I would just make a decision that you think is best.")
+
+**Why.** W showed that the phase flip alone gives a depth reference in 14/26 penetrations and is wrong in 2 of them.
+Blake accepted the recommendations: a cross-checked flip as the anchor, the evoked-MUA top of cortex, a fixed deep
+cap instead of a white-matter call, and the rule's outcome on the cards flagged for his eye. **Not blind:** the depth
+results L, V2, G4 and S on the sink-based groups are known (all hold). Nothing binocular has been computed on v3.
+
+**Alignment v3** (`scripts/freeze_laminar_alignment_v3.py` → `metadata/laminar_alignment_v3.csv`; laminar markers
+only, frozen before this registration):
+* **Three estimates of the input/deep boundary:**
+  * the phase flip, if on the probe with a step ≥ 0.5 rad;
+  * the earliest monocular sink + 0.3 mm;
+  * the alpha/beta–gamma crossing + 0.1 mm.
+
+  The offsets are W's medians over the 14 clear flips. The earliest-MUA depth is not used: it is noisy, and using
+  it would make the onset-by-depth tests circular.
+* **Anchor:**
+  * the flip, if the sink or the crossing lies within 0.4 mm of it;
+  * otherwise the mean of the sink and the crossing, if they lie within 0.4 mm of each other;
+  * otherwise none, and the penetration is left out of the depth analyses.
+
+  The anchor is rounded to the nearest boundary between contacts.
+* **Top of cortex:** the evoked-MUA top. With it, the top lies 1.25 mm above the anchor (IQR 0.80–1.52), as expected
+  for the pia to the bottom of layer 4C. With the spontaneous-rate top the distance is 0.85 mm, too short.
+* **Deep cap:** contacts more than 0.7 mm below the anchor are excluded, which covers layers 5 and 6 plus slack for
+  oblique penetrations. There is no white-matter call; any second sheet falls beyond the cap.
+* **Depth groups:**
+  * superficial: from the top of cortex to 0.5 mm above the anchor;
+  * input: 0.5 mm above the anchor to the anchor;
+  * deep: the anchor to 0.7 mm below.
+
+  With the anchor between contacts, the input group has 5 contacts and the deep group 7.
+* **Freeze result:**
+  * 22/26 penetrations anchored: 15 on the flip (11 clear flips and 4 small steps confirmed by the sink or
+    crossing), 7 on the sink and crossing.
+  * Left out: 211210_B_eA, 221118_J_eA, 221204_J_eB, 221206_J_eB.
+  * The orientation matches v2 in all 22 (it differs only in 221206_J_eB, which is left out), so the datasets'
+    channel order is unaffected. Depth is computed from contact numbers (`dataset.anchor_depth`).
+* **Cards flagged for Blake's eye** (delegated; each keeps the rule's outcome):
+  * 221215_J_eA: orientation as v2; flip, crossing and earliest MUA agree. The sink (0.75 mm below) and the
+    reversed step lie beyond the cap.
+  * 221214_J_eA: the sink and crossing agree with an on-probe phase step (π → ~0 rad) that the template fit
+    missed. Its alpha/beta inversion comes from contacts beyond the cap.
+  * 221118_J_eA: left out; the flip, sink and crossing spread over 1.1 mm.
+  * 211217_B_eA: no second sheet. The deep early zone is low-amplitude and patchy, with no reversed phase step,
+    and it lies beyond the cap.
+  * 211025_B_eA and 221109_J_eA, anchored on the sink and crossing: the flip lies 0.25 mm below the top of cortex
+    (211025), or in unresponsive tissue at the deep end of the probe (221109).
+
+**Channels.** MUA channels in the first sheet (below the evoked-MUA top, no deeper than the cap) that are driven by
+the `run_crf.py` rule. That rule is a one-way ANOVA across the six monocular contrasts, p < .01, with a positive
+peak, in either eye and either window. It is recomputed here for every contact, because v2 placed some superficial
+contacts above the cortex.
+
+**Measures, as registered for L, V and G** (per channel, clean presentations, condition means blank subtracted,
+Gaussian σ = 2 ms, dominant eye and scale from all presentations):
+* **L:** added A and predicted P at 45%, 30–100 ms after the channel's onset; all, odd and even presentations.
+* **V:** AI and AI_sum per penetration and group, as the ratio of channel means; all presentations.
+* **G:** the dominant eye's interpolated half-max onset at 90%, and the binocular advance at 45%. Per channel, then
+  the median per penetration and group.
+
+**Tests** (one-sided Wilcoxon over penetrations; a test holds if p < .05 and, where halves exist, both halves'
+medians lie in the predicted direction):
+* **X1 (L2 on v3):** (A − P)deep − (A − P)input > 0. Reported: superficial − input (two-sided), and L1 per group.
+* **X2 (V2 on v3):** (AI − AI_sum)deep − (AI − AI_sum)input > 0.
+* **X3 (G4 on v3):** the dominant eye's onset at 90% is later in the superficial group than in the input group, and
+  later in the deep group than in the input group (each > 0). The deep comparison is the less certain of the two:
+  layer 6 receives geniculate input, and W found the earliest MUA at the flip.
+* **X4 (G3 on v3):** the binocular advance at 45% is < 0 in each group.
+* **X5 (S1 on v3):** per-channel shortfall A − P ~ depth from the anchor (mm), with a penetration random intercept;
+  slope > 0.
+* **Sensitivity of X1 and X2:**
+  * (a) deep cap 0.5 mm;
+  * (b) the sink anchor (input group = the 5 contacts centred on the earliest monocular sink) in the same 22
+    penetrations;
+  * (c) only the 15 penetrations anchored on the flip.
+
+  "Robust to the depth reference" only if X1 holds in all three.
+* **Ridgeline (display only):** Fig 3a redrawn on v3 depth, in 0.2 mm bins from the anchor, with ≥ 10 penetrations
+  per bin.
+
+**Commitment.** v3 is the alignment for the paper whichever way X comes out. The figures and text take X's
+numbers. If X1 fails, the paper reports normalization at every depth and drops "weaker below the input layer";
+the sink-based result moves to the supplement with its dependence on the depth reference stated. Script:
+`scripts/x_depth_v3.py`; outputs `docs/qc/x_depth_v3.csv`, `x_groups.csv`.
 
 ## Competitive landscape (checked 2026-10-29)
 

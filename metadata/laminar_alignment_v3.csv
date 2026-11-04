@@ -1,0 +1,27 @@
+penetration,depth_usable,orientation,orientation_votes,orientation_v2,n_contacts,anchor_contact,anchor_basis,flip_contact,flip_step_rad,sink_contact,crossing_contact,top_contact,top_rate_contact,top_to_anchor_mm,deep_cap_mm,sink_anchor_contact,note
+221212_J_eA,True,ascending,asce/asce/asce,ascending,32,17.5,"flip (sink, crossing agree)",17.5,0.78,13,13.9,2,5,1.55,0.7,15.5,
+211008_B_eA,True,ascending,asce/asce/asce,ascending,32,20.5,sink and crossing (flip absent or disagrees),9.5,0.55,16,21.7,3,3,1.75,0.7,18.5,
+211012_B_eA,True,descending,desc/desc/desc,descending,32,26.5,"flip (sink, crossing agree)",26.5,3.12,29,28.0,32,32,0.55,0.7,26.5,
+211027_B_eA,True,descending,desc/desc/desc,descending,32,26.5,"flip (sink, crossing agree)",26.5,1.51,29,25.5,32,32,0.55,0.7,26.5,
+211103_B_eA,True,ascending,asce/asce/asce,ascending,32,12.5,"flip (sink, crossing agree)",12.5,2.71,12,15.3,5,11,0.75,0.7,14.5,
+211208_B_eA,True,ascending,asce/asce/asce,ascending,32,12.5,"flip (sink, crossing agree)",12.5,-2.41,10,13.9,1,6,1.15,0.7,12.5,
+211210_B_eA,False,ascending,asce/asce/desc,ascending,32,,none: no two estimates within 0.4 mm,,,20,,1,14,,0.7,22.5,
+211217_B_eA,True,descending,desc/asce/desc,descending,32,19.5,flip (sink agree),19.5,-1.92,24,30.9,32,29,1.25,0.7,21.5,"no second sheet: the deep early zone is low-amplitude and patchy, no reversed phase step; beyond the deep cap"
+221118_J_eA,False,ascending,asce/asce/asce,ascending,32,,none: no two estimates within 0.4 mm,26.5,1.08,18,14.7,8,14,,0.7,20.5,"left out: flip, sink and crossing spread over 1.1 mm"
+221119_J_eA,True,ascending,asce/asce/asce,ascending,32,15.5,flip (crossing agree),15.5,1.52,6,10.9,1,4,1.45,0.7,8.5,
+221121_J_eA,True,ascending,asce/asce/asce,ascending,32,18.5,"flip (sink, crossing agree)",18.5,2.19,13,18.4,6,8,1.25,0.7,15.5,
+221123_J_eA,True,ascending,asce/asce/asce,ascending,32,18.5,sink and crossing (flip absent or disagrees),,,14,19.0,7,13,1.15,0.7,16.5,
+221128_J_eA,True,descending,desc/desc/desc,descending,32,22.5,flip (sink agree),22.5,1.32,26,,32,31,0.95,0.7,23.5,
+221130_J_eA,True,ascending,asce/asce/asce,ascending,32,18.5,flip (sink agree),18.5,2.58,13,12.5,4,10,1.45,0.7,15.5,
+221202_J_eA,True,ascending,asce/asce/desc,ascending,32,25.5,flip (sink agree),25.5,-1.89,23,,3,15,2.25,0.7,25.5,
+221202_J_eB,True,ascending,asce/asce/asce,ascending,32,18.5,flip (crossing agree),18.5,0.77,8,16.5,6,10,1.25,0.7,10.5,
+221204_J_eB,False,ascending,desc/asce/asce,ascending,32,,none: no two estimates within 0.4 mm,,,15,,3,5,,0.7,17.5,
+221206_J_eA,True,ascending,asce/asce/desc,ascending,32,19.5,sink and crossing (flip absent or disagrees),,,15,19.2,4,14,1.55,0.7,17.5,
+221209_J_eA,True,descending,desc/desc/asce,descending,32,27.5,sink and crossing (flip absent or disagrees),,,31,28.2,32,32,0.45,0.7,28.5,
+221209_J_eB,True,ascending,asce/asce/asce,ascending,32,19.5,"flip (sink, crossing agree)",19.5,0.71,14,14.7,4,5,1.55,0.7,16.5,
+221214_J_eA,True,descending,desc/desc/asce,descending,32,22.5,sink and crossing (flip absent or disagrees),,,25,24.5,29,32,0.65,0.7,22.5,sink and crossing agree with an on-probe phase step the template missed; the alpha/beta inversion comes from contacts beyond the deep cap
+221214_J_eB,True,ascending,asce/asce/desc,ascending,32,28.5,"flip (sink, crossing agree)",28.5,0.59,23,28.3,1,24,2.75,0.7,25.5,
+211025_B_eA,True,ascending,asce/asce/asce,ascending,32,14.5,sink and crossing (flip absent or disagrees),3.5,-2.72,10,15.3,1,4,1.35,0.7,12.5,flip 0.25 mm below the top of cortex (not L4/5); sink and crossing agree 1.1 mm deeper
+221109_J_eA,True,descending,desc/desc/desc,descending,32,25.5,sink and crossing (flip absent or disagrees),2.5,1.31,27,28.7,32,32,0.65,0.7,24.5,"flip in unresponsive tissue at the deep end; sink, crossing and earliest MUA agree 2.3 mm higher"
+221206_J_eB,False,descending,desc/asce/desc,ascending,32,,none: no two estimates within 0.4 mm,,,23,16.0,32,32,,0.7,20.5,
+221215_J_eA,True,ascending,desc/asce/asce,ascending,32,15.5,flip (crossing agree),15.5,2.65,23,14.8,2,11,1.35,0.7,25.5,orientation as v2 (the audit's 'legacy' was the laminar-report call); flip + crossing + earliest MUA agree; the sink (0.75 mm below) and reversed step lie beyond the deep cap

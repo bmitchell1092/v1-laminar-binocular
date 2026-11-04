@@ -123,6 +123,16 @@ def test_top_of_cortex_and_steps_follow_orientation():
     assert phase_steps(prof, "ascending", start_contact=3, stop_contact=20) == phase_steps(prof, "ascending", 3)[:1]
 
 
+def test_anchor_depth_groups_follow_orientation():
+    from v1lb.dataset import anchor_depth
+    A = anchor_depth(np.arange(1, 33), "ascending", 15.5, top_contact=3).set_index("contact")
+    assert A.grp[2] == "" and A.grp[3] == "superficial" and A.grp[10] == "superficial"
+    assert A.grp[11] == "input" and A.grp[15] == "input" and A.rel_anchor_mm[15] == pytest.approx(-0.05)
+    assert A.grp[16] == "deep" and A.grp[22] == "deep" and A.grp[23] == ""
+    D = anchor_depth(np.arange(32, 0, -1), "descending", 32 - 15.5 + 1, top_contact=30).set_index("contact")
+    assert (D.grp[33 - np.arange(1, 33)].to_numpy() == A.grp.reindex(np.arange(1, 33)).to_numpy()).all()
+
+
 def test_mua_gap():
     from v1lb.laminar import mua_gap
     rate = np.r_[np.full(15, 20.0), [1.0, 1.2, 0.9], np.full(14, 20.0)]
