@@ -2077,6 +2077,56 @@ superficial group and fails for the deep group.**
 * **Still on the sink groups** (rerun on v3 before they enter the figures): the model by depth (K3, N), U5 in the
   hierarchical model, and the laminar latency panel planned for Fig 1.
 
+## Check Y: the remaining depth results on alignment v3 (registered internally 2026-11-11, before running; Blake: "Let's rerun the remaining depth analyses on v3. Then, let's re-evaluate.")
+
+**Why.** X moved L, V2, G4 and S to alignment v3. The model by depth (K, N, P), U5 and U6 of the hierarchical
+model, Fig 2b (onset by depth) and Fig 4b–c still use the groups above / at / below the earliest sink. **Not blind:**
+N, K and P on the sink groups are known (delay and w > a at every depth, the excess weight and the delay gain
+smallest below the sink, no depth difference in τ2, two-stage best at and below the sink). So are X's groups
+(normalization weaker in the deep group). Nothing model-based has been computed on v3.
+
+**Groups and channels.** X's channels and groups (`x_channels.parquet`: first sheet, driven by the recomputed
+`run_crf.py` rule; superficial / input / deep from the v3 anchor). Group fits need ≥ 3 channels in a group with a
+positive dominant-eye peak, as N.
+
+**Y1 (N on v3).** `v4_model_groups.py`'s group populations, models ('static', 'full', 'w=a', 'cond'), starts and
+held-out errors, on the v3 groups. N1–N3 per group with N's criterion (p < .05 one-sided on the summed held-out
+error, and both directions' medians in the predicted sign); "at every depth" only if all three groups hold.
+N4, reported two-sided: deep − input and superficial − input in τ2, w − a, δ, τ_m (conductance fits) and the
+held-out gains.
+
+**Y2 (P on v3).** The recurrent and two-stage models on the same groups; P1 (best-model counts, % less error than
+'full'), P2 (org vs cond) and P3 (2stage vs full) per group, with P's criteria; the depth differences against the
+input group (two-sided).
+
+**Y3 (K on v3, no refit).** The existing per-channel fits (`v4_K_channels.parquet`) for channels in X's set,
+grouped on v3, median per penetration and group. K1′ and K2 per group as registered; K3 deep − input and
+superficial − input (two-sided) in τ2, w − a, δ and the delay gain. Reported only: X's 92 newly included
+superficial channels have no per-channel fits, so the superficial group is smaller here than in Y1.
+
+**Y4 (U on v3).** The U model (penetration as the observation, random intercept per session, monkey sum-coded).
+* **U5′:** (A − P) deep − input > 0 (45%, 30–100 ms; `x_groups.csv`). Reported: superficial − input (two-sided).
+* **U6′:** w − a > 0 in each v3 group (Y1 conductance fits).
+* U1–U4 do not depend on depth and are not rerun.
+
+**Y5 (display, no tests).**
+* **Fig 2b on v3 depth:** 0.2 mm bins from the anchor, first sheet, ≥ 10 penetrations per bin. Onsets are X's
+  interpolated per-channel onsets at 45%. The other eye alone is added to `x_depth_v3.py`, and that script now also
+  saves the stimulus-clock arrays. X is rerun for these, and its test table must come out unchanged.
+* **Fig 4a–c on Y1's fits and groups.**
+
+**Wording allowed in the paper:**
+* "a delayed pool at every depth" only if Y1 N1 holds in all three groups;
+* "the pool weights the other eye more than the drive at every depth" only if U6′ holds in all three;
+* "the extra weight is smallest below the input/deep boundary" only if Y1 N4 (w − a, deep − input, conductance
+  fits) is < 0 at two-sided p < .05;
+* the pool delay by depth only as "no difference detected", with the medians;
+* "depth X behaves like model Y" only for a P test that holds in Y2.
+
+**Commitment.** v3 numbers replace the sink-group numbers in the figures and text whichever way Y comes out. The
+sink-group results stay here as run. Script: `scripts/y_model_v3.py`; outputs `docs/qc/y_N.csv`, `y_P.csv`,
+`y_K.csv`, `y_U.csv`.
+
 ## Competitive landscape (checked 2026-10-29)
 
 * **Risk:** Neuropixels labs in macaque V1 (20 µm spacing, hundreds of units, sublaminar resolution, e.g. the
