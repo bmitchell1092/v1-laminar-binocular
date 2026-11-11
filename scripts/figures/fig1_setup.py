@@ -1,5 +1,6 @@
-"""Figure 1: the experiment and an example (docs/09, figure set for V3; rebuilt 2026-11-02 for readers outside the
-field, docs/11).
+"""Figure 1: the experiment, an example, and response onset follows drive (docs/09; rebuilt 2026-11-02 for readers
+outside the field, docs/11; 2026-11-11: the onset-vs-drive panel of the simplified Fig 2 is Fig 1's final panel, and the
+contrast responses and ocular dominance moved to the supplement, figS_monocular.py).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetration, default 221212_J_eA]
 (a) the setup (schematics): a mirror stereoscope (top view; two mirrors per eye shift each eye's line of sight onto
@@ -13,14 +14,13 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetrati
     90%), oriented to its dominant eye and divided by its dominant-eye peak at 90%: both eyes at 45% each, each eye
     alone at 45%, and what linear summation of contrast predicts, the dominant eye's response at 45% x (1 + a) with
     the penetration's median eye weight a (v1lb.binocular.response_at); the figure names the monkey, not the session;
-(d) monocular contrast response per eye, mean MUA 40-250 ms after stimulus onset in units of each channel's
-    dominant-eye peak, penetration means (95% bootstrap CI over penetrations);
-(e) ocular dominance index at 90% for driven MUA channels and isolated single units;
-(f) response onset against response strength for all 35 conditions of the design (check H, v4_drive_latency.py):
+(d) response onset against response strength for all 35 conditions of the design (check H, v4_drive_latency.py):
     half-max onset of each condition's own peak and that peak, per channel; medians over channels per penetration,
     then over penetrations; onsets relative to each channel's dominant eye at 90% plus that onset's population median;
-    open diamonds, the sum of the two measured monocular responses (dotted lines join the equal-contrast cells);
-    grey band, the least-squares line of onset on log peak through the monocular conditions, over their range.
+    grey band, the least-squares line of onset on log peak through the monocular conditions, over their range;
+    statistics from checks H, G and U (hierarchical rank correlation per penetration, U4; binocular advance at 45%,
+    G1).
+crfs() (monocular contrast responses) and ocular_dominance() are drawn in Supplementary figS_monocular.py.
 The example flash CSD with the laminar alignment is in Supplementary Fig S1 (figS1_methods.py).
 Inputs: figure_data.py (population.npz, population_meta.parquet), run_crf.py, run_dichoptic.py.
 Writes <out_root>/figures/fig1_setup.pdf and .png; prints the statistics shown.
@@ -45,11 +45,11 @@ from v1lb.config import out_root  # noqa: E402
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
-H_MM = 104
-POS = {"stereo": (2, 60, 40, 38), "probe": (44, 60, 22, 38), "trial": (2, 45, 64, 10),       # (x, y, w, h) in mm
-       "matrix": (97, 57, 35, 35), "key": (137, 57, 37, 35),
-       "example": (14, 9, 92, 28), "crf": (134, 9, 32, 28),
-       "odi": (140, 9, 32, 28), "drive": (16, 10, 84, 34)}          # odi, drive: used by other figures' layouts
+H_MM = 116
+POS = {"stereo": (2, 72, 40, 38), "probe": (44, 72, 22, 38), "trial": (2, 57, 64, 10),       # (x, y, w, h) in mm
+       "matrix": (97, 69, 35, 35), "key": (137, 69, 37, 35),
+       "example": (14, 10, 64, 36), "drive": (108, 10, 62, 36)}
+QC = REPO / "docs" / "qc"
 SWATCH_CMAP = "gray"
 
 
@@ -323,7 +323,7 @@ def drive_latency(ax, show_added=True, notes=True):
             va="bottom")
     keys = [("o", fs.COND["dominant"], fs.COND["dominant"], "dominant eye alone (contrast, %)"),
             ("o", fs.COND["other"], fs.COND["other"], "other eye alone"),
-            ("D", fs.INK, fs.INK, "both eyes (large: the same contrast in each)")]
+            ("D", fs.INK, fs.INK, "both eyes (large: equal contrasts)")]
     if show_added:
         keys.append(("D", "white", "#b5b4af", "if the two eyes' responses simply added"))
     kx = 1.05 if notes else 0.42
@@ -359,29 +359,28 @@ def main():
     probe(pax)
     trial(tax)
     design(dax, kax)
-    bax, cax = (axes_mm(fig, *POS[n]) for n in ("example", "crf"))
+    bax, cax = (axes_mm(fig, *POS[n]) for n in ("example", "drive"))
     ex = example_raw(bax, pop, k, meta.loc[pen, "monkey"])
-    crf, ratio = crfs(cax, pop)
+    dl = drive_latency(cax, show_added=False, notes=False)
+    U = pd.read_csv(QC / "v4_U.csv").set_index("test")
+    G = pd.read_csv(QC / "v4_G.csv").set_index("test")
+    u4, g45 = U.loc["U4 rank correlation of onset and peak < 0"], G.loc["G1 both eyes earlier, 0.45"]
+    cax.text(0.97, 0.6, f"35 conditions: rank correlation {dl['rho']:.2f}\n"
+             f"per penetration {u4.estimate:.2f}, {fs.fmt_p(u4.p_one_sided)}\n"
+             f"both eyes start {abs(g45['median']):.1f} ms before\nthe dominant eye alone at 45%".replace("-", "−"),
+             transform=cax.transAxes, ha="right", va="top", fontsize=5.5, color=fs.INK2, linespacing=1.15)
     fs.panel_label(sax, "a", x=0.04)
     for ax, letter in zip((dax, bax, cax), "bcd"):
-        fs.panel_label(ax, letter, x=-0.18 if ax is dax else -0.02)
+        fs.panel_label(ax, letter, x=-0.18 if ax is dax else -0.02 if ax is bax else -0.25)
     print(fs.save(fig, "fig1_setup"))
+    print(f"(d) rank correlation over the 35 conditions {dl['rho']:.3f}; hierarchical per penetration "
+          f"{u4.estimate:.3f} (p {u4.p_one_sided:.2g}); both eyes - dominant at 45% {g45['median']:.2f} ms")
     print(f"(c) example: monkey {meta.loc[pen, 'monkey']}, {int(meta.loc[pen, 'n_channels'])} channels, "
           f"median eye weight {meta.loc[pen, 'a']:.2f}, onset {meta.loc[pen, 'onset']:.1f} ms after stimulus onset; "
           "peaks " + "; ".join(f"{lab} {v:.2f}" for lab, v in ex.items()))
-    odi = {}
-    for lab, (m, lo, hi) in crf.items():
-        print(f"(d) {lab}: " + "; ".join(f"{100 * c:g}% {mm:.3f} [{l_:.3f}, {h:.3f}]"
-                                         for c, mm, l_, h in zip(CONTRASTS[1:], m, lo, hi)))
-    print(f"    other / dominant eye at 90% per penetration: median {np.median(ratio):.2f} "
-          f"(IQR {np.percentile(ratio, 25):.2f}-{np.percentile(ratio, 75):.2f}); median eye weight a over "
-          f"penetrations {meta.a.median():.2f} (IQR {meta.a.quantile(.25):.2f}-{meta.a.quantile(.75):.2f}); "
-          f"{len(meta)} penetrations, {int(meta.n_channels.sum())} channels (B {int((meta.monkey == 'B').sum())}, "
-          f"J {int((meta.monkey == 'J').sum())})")
-    for s, v in odi.items():
-        print(f"(e) {s}: n {len(v)}, median ODI {np.median(v):+.2f}, median |ODI| {np.median(np.abs(v)):.2f}, "
-              f"|ODI| < 0.5 {np.mean(np.abs(v) < 0.5):.0%}, contralateral-dominant {np.mean(v > 0):.0%}, "
-              f"|ODI| > 0.9 {np.mean(np.abs(v) > 0.9):.0%}")
+    print(f"    median eye weight a over penetrations {meta.a.median():.2f} (IQR {meta.a.quantile(.25):.2f}-"
+          f"{meta.a.quantile(.75):.2f}); {len(meta)} penetrations, {int(meta.n_channels.sum())} channels "
+          f"(B {int((meta.monkey == 'B').sum())}, J {int((meta.monkey == 'J').sum())})")
 
 
 if __name__ == "__main__":

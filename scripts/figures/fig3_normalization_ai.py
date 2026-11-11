@@ -1,5 +1,7 @@
-"""Figure 3 (simplified set, docs/09 check V): binocular summation gives way to normalization within ~30 ms, more at
-and above the input layer, and more when the other eye's contrast is higher.
+"""Figure 3 (docs/09 checks V, X, G): the laminar profile. Summation gives way to normalization within ~30 ms, more
+in and above the input layer than below it; responses start first just below the input/deep boundary, and the second
+eye advances the onset at every depth. (2026-11-11: panels c-d, the index against the other eye's contrast, are
+superseded by Fig 2, fig2_dichoptic_time.py; the laminar onset, formerly Fig 2b of the simplified set, is panel c.)
 
 Usage: .venv\\Scripts\\python scripts\\figures\\fig3_normalization_ai.py
 Additivity index AI = both eyes / (dominant eye + other eye); the dashed reference is the index that summation of the
@@ -12,11 +14,13 @@ penetration's eye weight a). Time from each channel's response onset.
 (b) AI 30-100 ms after onset per penetration and depth group (superficial / input, 0.5 mm above the boundary /
     deep, to 0.7 mm below), data and summation reference; medians and interquartile ranges; check X2 (deep - input,
     one-sided Wilcoxon);
-(c, d) AI against the other eye's contrast with the dominant eye at 11%, 0-20 ms (c) and 130-200 ms (d) after
-    onset; penetration means and 95% bootstrap CI; check V3 (all cells with the other eye's contrast higher).
+(c) the first 50 ms at each depth: MUA for both eyes at 45% each, each depth bin scaled to its own peak (0-100 ms),
+    with the median onset at each depth for both eyes, the dominant eye alone and the other eye alone at 45%
+    (fig2_latency_drive.laminar_onset; checks G, X3, X4), stimulus clock.
 `sink` as argument: the earlier version, depth relative to the earliest sink (groups above / at / below; check V2).
 Inputs: x_depth_v3.py (spacetime_v3.npz, docs/qc/x_depth_v3.csv, x_groups.csv) or spacetime_data.py (spacetime.npz;
-docs/qc/v4_V.csv, v4_V_groups.csv); docs/qc/v4_V_cells.csv.
+docs/qc/v4_V.csv, v4_V_groups.csv); for (c) <out_root>/binocular/x_latency.parquet (v4_G_channels.parquet for
+`sink`).
 Writes <out_root>/figures/fig3_normalization_ai.pdf and .png (fig3_normalization_ai_sink for `sink`); prints the
 statistics shown.
 """
@@ -31,6 +35,8 @@ matplotlib.use("Agg")
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from fig2_latency_drive import DEPTH as ONSET_DEPTH, laminar_onset  # noqa: E402
+
 from v1lb import figstyle as fs  # noqa: E402
 from v1lb.binocular import CONTRASTS, response_at  # noqa: E402
 from v1lb.config import out_root  # noqa: E402
@@ -43,7 +49,8 @@ BIN = 2                                          # contacts (0.2 mm)
 MIN_PEN = 10
 DEPTH = {
     "v3": dict(data="spacetime_v3", rel="rel_anchor_mm", per_contact=10, edges=np.arange(-16, 9, BIN),
-               label="depth from input/deep boundary (mm)", groups=("superficial", "input", "deep"),
+               label="depth from input/deep boundary (mm; negative: above)",
+               groups=("superficial", "input", "deep"),
                names=("superficial", "input", "deep"), files=("x_groups.csv", "x_depth_v3.csv"),
                test="X2 (AI - AI_sum) deep - input > 0, 45%, 30-100 ms", contrast="deep − input"),
     "sink": dict(data="spacetime", rel="rel_sink", per_contact=1, edges=np.arange(-9, 14, BIN),
@@ -52,7 +59,7 @@ DEPTH = {
                  test="V2 (AI - AI_sum) below - at the sink > 0, 45%, 30-100 ms", contrast="below − at sink"),
 }
 CS4 = (0.11, 0.225, 0.45, 0.9)
-POS = {"a": (20, 10, 62, 86), "b": (104, 58, 40, 36), "c": (104, 10, 28, 32), "d": (138, 10, 28, 32)}
+POS = {"a": (20, 10, 62, 86), "b": (104, 58, 40, 36), "c": (104, 10, 50, 34), "ccb": (157, 10, 2, 34)}
 
 
 def axes_mm(fig, x, y, w, h):
@@ -172,8 +179,12 @@ def main():
     z, AI, AS = depth_ai(Z["onset"], meta, cfg)
     ridgeline(ax["a"], Z["rel"], z, AI, AS, cfg["label"])
     B = by_group(ax["b"], G, V, cfg)
-    O = by_other([ax["c"], ax["d"]], C, Vc)
-    for k, x in (("a", -0.2), ("b", -0.32), ("c", -0.45)):
+    oc = ONSET_DEPTH[version]
+    Zs = np.load(out_root() / "figures" / "data" / f"{oc['data']}.npz")
+    ms = pd.read_parquet(out_root() / "figures" / "data" / f"{oc['data']}_meta.parquet")
+    O = laminar_onset(ax["c"], ax["ccb"], Zs, ms, oc)
+    ax["c"].set_ylabel(cfg["label"].replace(" (mm;", "\n(mm;"))
+    for k, x in (("a", -0.2), ("b", -0.32), ("c", -0.32)):
         fs.panel_label(ax[k], k, x=x)
     print(fs.save(fig, "fig3_normalization_ai" + ("" if version == "v3" else "_sink")))
     pd.set_option("display.width", 200)
@@ -183,7 +194,8 @@ def main():
         print(f"(a) {z[k]:+.1f} mm: 0-20 ms {np.nanmean(AI[k, e]):.2f} (sum {np.nanmean(AS[k, e]):.2f}); "
               f"30-100 ms {np.nanmean(AI[k, d]):.2f} (sum {np.nanmean(AS[k, d]):.2f})")
     print(B.round(3).to_string(index=False))
-    print(O.round(3).pivot_table(index=["window", "series"], columns="c_oth", values="mean").to_string())
+    print("(c) onset per depth bin (ms after stimulus onset):")
+    print(O.round(1).to_string(index=False))
     print(V.round(4).to_string(index=False))
 
 

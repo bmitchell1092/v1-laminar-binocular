@@ -2497,3 +2497,28 @@ and what shows that normalization occurs (checks I and J above; proposal in the 
 **Manuscript (from 2026-10-30):** the text lives in `manuscript/draft_vN.docx` (Word; Blake comments, Claude revises with
 tracked changes). Blake's rule: pre-registration is internal discipline only. The paper reports every analysis on
 the same (artifact-cleaned) data without registration language; the as-run registered outcomes stay in docs/09-10.
+
+### Figure set for draft V4 (Blake, 2026-11-11)
+
+Blake agreed that the full dichoptic design over time (checks Q, R) is the strongest result and should lead as Fig 2,
+but was not satisfied with how it had been shown (`fig2_full_design.py`). Mock-ups compared: one matrix per time window;
+the measured responses cell by cell; one line per other-eye contrast. The measured traces alone make the effect look
+like nothing (the shortfall is 3–6% of the dominant-eye peak), and the difference alone is abstract. Blake chose the
+combination: one enlarged cell for scale, the window means for the statistics, the matrices for the design. Onset
+follows drive stays as Fig 1's final panel (Blake).
+
+| Figure | Claim | Panels | Script |
+|---|---|---|---|
+| 1 | The experiment; onset follows drive | (a) setup, (b) 6 × 6 design, (c) example penetration, (d) onset vs response strength, 35 conditions (H, G1, U4) | `fig1_setup.py` |
+| 2 | The eyes add at onset; afterwards both eyes fall short of summation in proportion to the other eye's contrast, and stay short when the other eye is stronger | (a) one cell (dominant 22.5%, other 90%): both eyes, "if the contrasts add", dominant eye alone; (b) window means vs the other eye's contrast with Q's slopes and the held-out R2; (c) the 3 × 4 design as a matrix per window | `fig2_dichoptic_time.py` |
+| 3 | The laminar profile: normalization in and above the input layer, fading below; onset first just below the boundary, and the second eye advances it at every depth | (a) additivity-index ridgeline by depth, 45%; (b) the index by depth group, 30–100 ms (X2); (c) onset at each depth (X3, X4; formerly simplified Fig 2b) | `fig3_normalization_ai.py` |
+| 4 | A delayed pool, weighted toward the other eye, at every depth | (a) sketch; (b) held-out gain of the delay (Y1); (c) drive vs pool weight (U6′) | `fig4_delayed_pool.py` |
+| S | Each eye alone | (a) monocular contrast responses, (b) ocular dominance (moved from Fig 1) | `figS_monocular.py` |
+
+Fig 2 is in response units (% of the dominant-eye peak), the units of checks Q and R; Fig 3 keeps the additivity
+index (check V). Fig 3c–d of the simplified set (the index against the other eye's contrast) is superseded by Fig 2.
+`fig2_latency_drive.py` stays as the module for the laminar onset panel; `fig2_full_design.py` is retired from the
+main set. Legend caveat for Fig 2: part of the 0–20 ms surplus reflects the binocular response starting ~1.5 ms
+earlier (shifting the prediction 1 ms earlier halves it), so the text says "at or above summation at onset", not
+"supra-additive". The older supplementary figures (S1–S8) still use the linearity index and alignment v2 in places
+and need rebuilding before submission.
