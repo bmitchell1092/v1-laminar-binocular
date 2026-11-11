@@ -1717,8 +1717,10 @@ Scripts: `scripts/v4_full_design.py` (Q, R), `scripts/v4_depth_robust.py` (S), `
 4. **The dynamics of the pool weighting (K, N, P; Fig 4).**
    * A delayed pool that weights the other eye more than the drive does, at every depth. This is the dynamic version
      of the 2023 ocular-dominance-weighted result.
-   * The extra weight is smallest below the sink.
-   * The pool delay does not vary with depth.
+   * *(Revised on v3, check Y, 2026-11-11.)* A two-stage form improves on it slightly at every depth, and recurrent
+     normalization does not.
+   * The extra weight is no longer reliably smallest deep (p = .076).
+   * The pool delay is similar at the input and deep (44–46 ms). The shorter superficial delay is unconfirmed.
    * The model fits neither the laminar difference nor the late return.
 5. **In supplement:**
    * single neurons normalize (T2);
