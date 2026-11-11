@@ -47,17 +47,26 @@ TAU_M_MIN = dynorm.BOUNDS["tau_m"][0]
 GAINS = {"N1 delay": ("static", "full"), "N2 pool weighting": ("w=a", "full"), "N3 conductance": ("full", "cond")}
 
 
-def populations(pen, driven, sink):
-    """Group means {grp: {split: [6, 6, T]}} and the number of channels per group."""
+def load(pen):
     d = out_root() / "datasets"
     ds = open_penetration(pen)
     P = pd.read_parquet(d / f"{pen}_presentations.parquet")
     E = pd.read_parquet(d / f"{pen}_presentation_eye.parquet")
-    keep = clean_presentations(ds, P, E)
-    t = ds.time.values
+    return ds, P, clean_presentations(ds, P, E)
+
+
+def populations(pen, driven, sink):
+    """Group means {grp: {split: [6, 6, T]}} and the number of channels per group (groups by the earliest sink)."""
+    ds, P, keep = load(pen)
     chans = [k for k, ch in enumerate(ds.channel.values) if ds.in_cortex.values[k] and (pen, str(ch)) in driven]
     rel = ds.depth_below_toc.values[chans] - sink
     grp = np.where(np.abs(rel) <= 2, "at", np.where(rel < -2, "above", "below"))
+    return group_means(ds, P, keep, chans, grp, GROUPS)
+
+
+def group_means(ds, P, keep, chans, grp, groups):
+    """Group means {grp: {split: [6, 6, T]}} over the channels `chans` (dataset indices) labelled `grp`."""
+    t = ds.time.values
     mua = ds.mua.values[:, :, chans].astype(float)
     cc, ci = P.contrast_contra.to_numpy(), P.contrast_ipsi.to_numpy()
     idx = np.arange(len(P))
@@ -79,20 +88,25 @@ def populations(pen, driven, sink):
             orient = (dom_contra, scale)
         dom_contra, scale = orient
         Mo = np.where(dom_contra[None, None, None, :], M, M.transpose(1, 0, 2, 3))
-        for g in GROUPS:
+        for g in groups:
             use = (grp == g) & (scale > 0)
             if use.sum() >= 3:
                 out.setdefault(g, {})[split] = np.nanmean(Mo[..., use] / scale[use], axis=3)[:, :, tsel]
-    n = {g: int(((grp == g) & (orient[1] > 0)).sum()) for g in GROUPS}
+    n = {g: int(((grp == g) & (orient[1] > 0)).sum()) for g in groups}
     return out, n
 
 
 def work(task):
     pen, driven, sink, extra = task
-    t0 = time.time()
     if not np.isfinite(sink):
         return []
     pops, n = populations(pen, driven, sink)
+    return fit_groups(pen, pops, n, extra)
+
+
+def fit_groups(pen, pops, n, extra):
+    """Fit the models to each group population; rows of (parameters and held-out errors, data, predictions)."""
+    t0 = time.time()
     cd, cn = CD[NONBLANK], CN[NONBLANK]
     models = EXTRA if extra else MODELS
     rows = []
@@ -126,16 +140,16 @@ def work(task):
     return rows
 
 
-def tests(N: pd.DataFrame) -> pd.DataFrame:
+def tests(N: pd.DataFrame, groups=GROUPS, ref="at", suffix=" sink") -> pd.DataFrame:
     rows = []
     for name, (worse, better) in GAINS.items():
-        for g in GROUPS:
+        for g in groups:
             G = N[N.grp == g]
             v = np.log(G[f"cv_{worse}"] / G[f"cv_{better}"]).dropna()
             dirs = {d: np.log(G[f"cv_{worse}_{d}"] / G[f"cv_{better}_{d}"]).dropna() for d in ("o>e", "e>o")}
             p = stats.wilcoxon(v, alternative="greater").pvalue
             same = all(x.median() > 0 for x in dirs.values())
-            rows.append(dict(test=f"{name}: log(CV {worse} / CV {better}) > 0, {g} sink", n=len(v),
+            rows.append(dict(test=f"{name}: log(CV {worse} / CV {better}) > 0, {g}{suffix}", n=len(v),
                              median=float(v.median()), n_in_direction=int((v > 0).sum()), p=p,
                              median_o_to_e=float(dirs["o>e"].median()), median_e_to_o=float(dirs["e>o"].median()),
                              holds=bool(p < .05 and same)))
@@ -145,44 +159,44 @@ def tests(N: pd.DataFrame) -> pd.DataFrame:
     for col in ("cond_p_tau2", "cond_p_tau_m", "cond_p_delta", "w_minus_a", "full_p_tau2", "w_minus_a_full",
                 "gain_delay", "gain_weight", "gain_cond"):
         piv = N.pivot(index="penetration", columns="grp", values=col)
-        for g in ("above", "below"):
-            d = (piv[g] - piv["at"]).dropna()
-            rows.append(dict(test=f"N4 {col}, {g} - at sink", n=len(d), median=float(d.median()),
+        for g in (x for x in groups if x != ref):
+            d = (piv[g] - piv[ref]).dropna()
+            rows.append(dict(test=f"N4 {col}, {g} - {ref}{suffix}", n=len(d), median=float(d.median()),
                              n_in_direction=int((d > 0).sum()), p=stats.wilcoxon(d).pvalue if len(d) > 5 else np.nan))
-        for g in GROUPS:
-            rows.append(dict(test=f"(reported) median {col}, {g} sink", n=int(piv[g].notna().sum()),
+        for g in groups:
+            rows.append(dict(test=f"(reported) median {col}, {g}{suffix}", n=int(piv[g].notna().sum()),
                              median=float(piv[g].median())))
     return pd.DataFrame(rows)
 
 
-def tests_p(A: pd.DataFrame) -> pd.DataFrame:
+def tests_p(A: pd.DataFrame, groups=GROUPS, ref="at", suffix=" sink") -> pd.DataFrame:
     """Check P: the best model per group, each model against 'full', org vs cond and 2stage vs full by depth."""
     rows = []
-    for g in GROUPS:
+    for g in groups:
         G = A[A.grp == g]
         best = G[[f"cv_{m}" for m in ALL_MODELS]].idxmin(axis=1).str[3:]
-        rows.append(dict(test=f"P1 best model (lowest held-out error), {g} sink", n=len(G),
+        rows.append(dict(test=f"P1 best model (lowest held-out error), {g}{suffix}", n=len(G),
                          **{f"best_{m}": int((best == m).sum()) for m in ALL_MODELS}))
         for m in ALL_MODELS:
             if m != "full":
                 v = 100 * (1 - G[f"cv_{m}"] / G.cv_full)
-                rows.append(dict(test=f"(reported) % less error than full, {m}, {g} sink", n=len(v),
+                rows.append(dict(test=f"(reported) % less error than full, {m}, {g}{suffix}", n=len(v),
                                  median=float(v.median()), n_in_direction=int((v > 0).sum())))
     for name, (worse, better) in {"P2 org vs cond": ("cond", "org"), "P3 2stage vs full": ("full", "2stage")}.items():
-        for g in GROUPS:
+        for g in groups:
             G = A[A.grp == g]
             v = np.log(G[f"cv_{worse}"] / G[f"cv_{better}"]).dropna()
             dirs = {d: np.log(G[f"cv_{worse}_{d}"] / G[f"cv_{better}_{d}"]).dropna() for d in ("o>e", "e>o")}
             p = stats.wilcoxon(v, alternative="greater").pvalue
-            rows.append(dict(test=f"{name}: log(CV {worse} / CV {better}) > 0, {g} sink", n=len(v),
+            rows.append(dict(test=f"{name}: log(CV {worse} / CV {better}) > 0, {g}{suffix}", n=len(v),
                              median=float(v.median()), n_in_direction=int((v > 0).sum()), p=p,
                              median_o_to_e=float(dirs["o>e"].median()), median_e_to_o=float(dirs["e>o"].median()),
                              holds=bool(p < .05 and all(x.median() > 0 for x in dirs.values()))))
         piv = A.assign(v=np.log(A[f"cv_{worse}"] / A[f"cv_{better}"])).pivot(index="penetration", columns="grp",
                                                                             values="v")
-        for g in ("above", "below"):
-            d = (piv[g] - piv["at"]).dropna()
-            rows.append(dict(test=f"{name}, {g} - at sink (two-sided)", n=len(d), median=float(d.median()),
+        for g in (x for x in groups if x != ref):
+            d = (piv[g] - piv[ref]).dropna()
+            rows.append(dict(test=f"{name}, {g} - {ref}{suffix} (two-sided)", n=len(d), median=float(d.median()),
                              n_in_direction=int((d > 0).sum()), p=stats.wilcoxon(d).pvalue if len(d) > 5 else np.nan))
     return pd.DataFrame(rows)
 

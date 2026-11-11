@@ -12,7 +12,7 @@ X1 (A - P) deep - input > 0 (45%, 30-100 ms); X2 (AI - AI_sum) deep - input > 0;
 superficial - input > 0 and deep - input > 0; X4 binocular advance at 45% < 0 per group; X5 shortfall ~ depth from
 the anchor, slope > 0. Sensitivity of X1, X2: deep cap 0.5 mm; the sink anchor; the 15 flip-anchored penetrations.
 Writes <out_root>/binocular/x_channels.parquet, x_latency.parquet, <out_root>/figures/data/spacetime_v3.npz and
-spacetime_v3_meta.parquet, docs/qc/x_depth_v3.csv (tests) and docs/qc/x_groups.csv.
+spacetime_v3_meta.parquet (onset and stimulus clocks), docs/qc/x_depth_v3.csv (tests) and docs/qc/x_groups.csv.
 """
 
 import sys
@@ -42,6 +42,7 @@ DIOPTIC = (0.11, 0.225, 0.45)
 GROUPS = ("superficial", "input", "deep")
 FLOOR = 0.12                                   # V: D + O must exceed this fraction of the dominant-eye peak
 REL = np.arange(-30, 251)                      # onset clock of the space-time arrays (spacetime_data.py)
+T_STIM = np.arange(-20, 251)                   # stimulus clock of the space-time arrays (spacetime_data.py)
 CS4 = (0.11, 0.225, 0.45, 0.9)
 
 
@@ -92,7 +93,7 @@ def penetration(task):
         M[split] = gaussian_filter1d(m - m[0, 0], 2, axis=2)
     w = (t >= 40) & (t < 250)
     ii = [list(CONTRASTS).index(c) for c in CS4]
-    rows, lat, st = [], [], dict(onset=[], meta=[])
+    rows, lat, st = [], [], dict(onset=[], stim=[], meta=[])
     for q, k in enumerate(cand):
         m = M["all"][..., q]
         dom_contra = m[-1, 0][w].mean() >= m[0, -1][w].mean()
@@ -111,12 +112,14 @@ def penetration(task):
                     rel_sink_mm=float(sink.rel_anchor_mm[k]), grp_sink=sink.grp[k], a=a, onset=on)
         X = np.concatenate([mo[:, 0], mo[0, ii], mo[ii, ii]])
         st["onset"].append(np.stack([np.interp(on + REL, t, x) for x in X]))
+        st["stim"].append(np.stack([np.interp(T_STIM, t, x) for x in X]))
         st["meta"].append(site)
         for s in SPLITS:
             x = M[s][..., q]
             x = (x if dom_contra else x.transpose(1, 0, 2)) / pk
             i45, i90 = list(CONTRASTS).index(0.45), list(CONTRASTS).index(0.9)
             lat.append(site | dict(split=s, dom_90=interp_onset(x[i90, 0], t), dom_45=interp_onset(x[i45, 0], t),
+                                   oth_45=interp_onset(x[0, i45], t),
                                    bin_45=interp_onset(x[i45, i45], t)))
             for c in DIOPTIC:
                 i = list(CONTRASTS).index(c)
@@ -227,7 +230,7 @@ def main():
     st = [s for _, _, s in done if s]
     fd = out_root() / "figures" / "data"
     np.savez_compressed(fd / "spacetime_v3.npz", onset=np.concatenate([np.stack(s["onset"]) for s in st]).astype(np.float32),
-                        rel=REL)
+                        stim=np.concatenate([np.stack(s["stim"]) for s in st]).astype(np.float32), rel=REL, t=T_STIM)
     pd.DataFrame([m for s in st for m in s["meta"]]).to_parquet(fd / "spacetime_v3_meta.parquet")
 
     T = tests(C, L, A)

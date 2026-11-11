@@ -116,13 +116,13 @@ def group_medians(K: pd.DataFrame) -> pd.DataFrame:
     return K.groupby(["penetration", "grp"])[cols].median().reset_index()
 
 
-def tests(G: pd.DataFrame) -> pd.DataFrame:
+def tests(G: pd.DataFrame, groups=GROUPS, ref="at", suffix=" sink") -> pd.DataFrame:
     rows = []
-    for g in GROUPS:
+    for g in groups:
         for col, name in (("gain", "K1 log(CV static / CV full) > 0"), ("w_minus_a", "K2 w - a > 0")):
             v = G[G.grp == g][col].dropna()
             p = stats.wilcoxon(v, alternative="greater").pvalue
-            row = dict(test=f"{name}, {g} sink", n=len(v), median=float(v.median()),
+            row = dict(test=f"{name}, {g}{suffix}", n=len(v), median=float(v.median()),
                        n_in_direction=int((v > 0).sum()), p=p, holds=bool(p < .05))
             if col == "gain":                                      # K1': each cross-validation direction kept
                 d = {k: G[G.grp == g][k].dropna().median() for k in ("gain_oe", "gain_eo")}
@@ -131,12 +131,12 @@ def tests(G: pd.DataFrame) -> pd.DataFrame:
             rows.append(row)
     for col in ("full_tau2", "w_minus_a", "full_delta", "gain"):
         piv = G.pivot(index="penetration", columns="grp", values=col)
-        for g in ("above", "below"):
-            d = (piv[g] - piv["at"]).dropna()
-            rows.append(dict(test=f"K3 {col}, {g} - at sink", n=len(d), median=float(d.median()),
+        for g in (x for x in groups if x != ref):
+            d = (piv[g] - piv[ref]).dropna()
+            rows.append(dict(test=f"K3 {col}, {g} - {ref}{suffix}", n=len(d), median=float(d.median()),
                              n_in_direction=int((d > 0).sum()), p=stats.wilcoxon(d).pvalue, holds=np.nan))
-    for g in GROUPS:
-        rows.append(dict(test=f"(reported) median tau2, {g} sink", n=int(G[G.grp == g].full_tau2.notna().sum()),
+    for g in groups:
+        rows.append(dict(test=f"(reported) median tau2, {g}{suffix}", n=int(G[G.grp == g].full_tau2.notna().sum()),
                          median=float(G[G.grp == g].full_tau2.median())))
     return pd.DataFrame(rows)
 

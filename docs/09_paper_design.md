@@ -2075,7 +2075,7 @@ superficial group and fails for the deep group.**
   three alternative depth references. Responses began 5 ms later in the superficial layers than in the input
   layer; deep sites began no later than the input layer. Adding the other eye advanced the onset at every depth."
 * **Still on the sink groups** (rerun on v3 before they enter the figures): the model by depth (K3, N), U5 in the
-  hierarchical model, and the laminar latency panel planned for Fig 1.
+  hierarchical model, and the laminar latency panel planned for Fig 1. *(Done 2026-11-11: check Y below.)*
 
 ## Check Y: the remaining depth results on alignment v3 (registered internally 2026-11-11, before running; Blake: "Let's rerun the remaining depth analyses on v3. Then, let's re-evaluate.")
 
@@ -2126,6 +2126,83 @@ superficial channels have no per-channel fits, so the superficial group is small
 **Commitment.** v3 numbers replace the sink-group numbers in the figures and text whichever way Y comes out. The
 sink-group results stay here as run. Script: `scripts/y_model_v3.py`; outputs `docs/qc/y_N.csv`, `y_P.csv`,
 `y_K.csv`, `y_U.csv`.
+
+**Y results (2026-11-11). Y1 N1–N3, U5′, U6′ and P3 hold in every group. The depth difference in the extra pool
+weight no longer reaches significance on v3, and a shorter superficial pool delay appears (reported, not registered
+as a claim).**
+* **Data:**
+  * Y1/Y2: 21 penetrations, 57 groups (superficial 16, input 20, deep 21). 211008_B has too few presentations per
+    cell in a half, as in N.
+  * Y3: 20 penetrations, 293 channels with per-channel fits (superficial 69, input 95, deep 129).
+  * X's rerun with the added outputs reproduced `x_depth_v3.csv` and `x_groups.csv` byte for byte.
+  * The refactored test functions reproduce `v4_N.csv`, `v4_P.csv` and `v4_K.csv` exactly from the saved fits.
+* **Y1 (N on v3):** N1, N2 and N3 hold in all three groups, in both cross-validation directions.
+  * **N1, the delay:** log(CV static / CV full) 0.69 superficial (16/16), 1.27 input (19/20), 0.97 deep (20/21);
+    all p < 10⁻⁴.
+  * **N2, pool weighting:** 0.070 (14/16), 0.037 (18/20), 0.010 (18/21); p ≤ .0003.
+  * **N3, conductance:** 0.021 (14/16), 0.005 (14/20), 0.0002 (13/21, p = .018). In the deep group the gain is
+    negligible: both directions' medians are ≤ 0.0001.
+  * **N4, reported (two-sided, against the input group):**
+    * **Excess pool weight:** w − a is 0.23 / 0.28 / 0.13 (superficial / input / deep). Deep − input is −0.127
+      (6/20), p = .076, so it does not reach p < .05 (on the sink groups it was p = .003).
+    * **Pool delay:** τ2 is 27 / 46 / 44 ms. Superficial − input is −20.5 ms (2/16 longer, p = .004); deep − input
+      is +0.3 ms (p = .96). The fixed-delay fits agree (16 / 36 / 37 ms, p = .002). The conductance time constant
+      τ_m is longer superficially (18 vs 7.5 ms, p = .006).
+    * **Delay gain:** smaller superficially (0.69 vs 1.27, p = .0006) and slightly smaller deep (p = .040).
+    * **Input delay δ:** no depth difference (19.4 / 20.4 / 18.0 ms).
+* **Y2 (P on v3):**
+  * **P3 holds in every group:** two-stage beats the fixed delay superficially (+0.046, 12/16, p = .009), at the
+    input (+0.034, 16/20, p = .002) and deep (+0.015, 17/21, p = .0004), in both directions. On the sink groups it
+    failed above the sink.
+  * **P2 fails in every group:** recurrent normalization never beats the conductance form (superficial +0.019,
+    p = .30; input −0.089; deep −0.065). It is relatively less bad superficially than at the input (p = .001).
+  * **P1, best model (counts):**
+    * superficial: recurrent 7, two-stage 7, conductance 2;
+    * input: two-stage 14, conductance 4, fixed delay 1, w = a 1;
+    * deep: two-stage 12, conductance 6, recurrent 2, static 1.
+  * **% less error than the fixed delay:** two-stage 4.5 / 3.4 / 1.5; conductance 2.0 / 0.5 / 0.0; recurrent
+    2.5 / −8.9 / −5.2.
+* **Y3 (K on v3, no refit):**
+  * **K1′ and K2 hold in every group:** delay gain 0.71 / 0.88 / 0.59, both directions; w − a 0.29 / 0.30 / 0.15;
+    all p ≤ .0001.
+  * **K3:**
+    * w − a deep − input −0.09 (p = .13);
+    * the delay gain is smaller deep (−0.29, 1/20, p < 10⁻⁴);
+    * τ2 superficial − input −4.8 ms (3/16, p = .013; medians 22 / 37 / 35 ms);
+    * δ deep − input −0.9 ms (p = .044).
+* **Y4 (U on v3):**
+  * **U5′ holds:** deep − input +0.048 (22 penetrations, 19 sessions, p = .0004; monkey B effect −0.009, p = .52).
+    Superficial − input −0.011 (p = .52, two-sided).
+  * **U6′ holds in every group:** w − a 0.18 superficial, 0.27 input, 0.19 deep (p ≤ .0001). Monkey B is lower
+    superficially (−0.11, p = .009), not at the input (p = .16) or deep (p = .38).
+* **Y5 (display):**
+  * **Fig 2b on v3:** the earliest onsets are 0.1–0.5 mm below the boundary (29–30 ms after the flash for both
+    eyes at 45%). Onsets rise to 37–39 ms 0.9–1.3 mm above it. Both eyes lead the dominant eye alone in nearly
+    every bin.
+  * **Fig 4 on Y1:** the delayed pool reduces held-out error by 50 / 72 / 63% (median). The other eye's weight is
+    0.77 / 0.86 / 0.86 in the drive and 1.01 / 1.06 / 1.05 in the pool.
+  * The sink versions are kept as `fig2_latency_drive_sink` and `fig4_delayed_pool_sink`.
+* **Reading the new superficial pool delay (not tested).**
+  * The group fits run on the stimulus clock, over channel means. Superficial onsets are later and more spread
+    out (X3), so averaging smears the superficial transient. That alone would shorten the fitted delay and lower
+    the delay gain.
+  * The per-channel fits, which have no such smearing, show a much smaller difference (−4.8 ms).
+  * Treat the shorter superficial delay as unconfirmed. It needs a response-clock test before any claim.
+* **For the paper (wording allowed by the registration):**
+  * "At every depth, a delayed normalization pool predicted held-out responses better than no delay (50–72% less
+    error), and weighted the other eye more than the drive did (w − a 0.18–0.27). A two-stage form, in which each
+    eye is first gain-controlled by the other, improved the fit slightly further at every depth (1.5–4.5%).
+    Recurrent normalization did not improve on the conductance form at any depth."
+  * Dropped: "the extra weight is smallest below the input layer" (p = .076 on v3; the medians still point that
+    way, 0.13 vs 0.28).
+  * Dropped: "the pool delay did not differ with depth". Superficially it is shorter in the group fits, but see the
+    reading above. The text says the delay was similar at the input and deep (44–46 ms), and states the superficial
+    estimate with its caveat or leaves it to the supplement.
+  * Unchanged: the fitted model does not reproduce the laminar difference of X1. That comparison (N, "what the
+    model misses") is still on the sink groups. On v3 the pool weights show no reliable depth difference, so the
+    gap stands. The paper's laminar claim rests on the data (X1, U5′), not on the model.
+
+All depth results are now on alignment v3.
 
 ## Competitive landscape (checked 2026-10-29)
 

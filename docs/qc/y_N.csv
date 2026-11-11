@@ -1,0 +1,55 @@
+test,n,median,n_in_direction,p,median_o_to_e,median_e_to_o,holds
+"N1 delay: log(CV static / CV full) > 0, superficial",16,0.6885804952038428,16.0,1.52587890625e-05,0.7381597328766921,0.6819965539265203,True
+"N1 delay: log(CV static / CV full) > 0, input",20,1.2702911442847973,19.0,1.9073486328125e-06,1.2513994014857077,1.2639032290124987,True
+"N1 delay: log(CV static / CV full) > 0, deep",21,0.998465516903335,20.0,9.5367431640625e-07,0.8929722779318654,1.1025101678134142,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, superficial",16,0.06999931426498543,14.0,0.0002899169921875,0.06895711190578876,0.06908206557590171,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, input",20,0.03700094576519686,18.0,9.5367431640625e-06,0.040941672218891584,0.03756384792626678,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, deep",21,0.010386845825974515,18.0,5.245208740234375e-05,0.01008202971379557,0.010666716040233639,True
+"N3 conductance: log(CV full / CV cond) > 0, superficial",16,0.020689507087556704,14.0,0.0003814697265625,0.02139427510061951,0.01996545466051286,True
+"N3 conductance: log(CV full / CV cond) > 0, input",20,0.004642329513412149,14.0,0.0036478042602539062,0.005335594112036857,0.00042095934097529644,True
+"N3 conductance: log(CV full / CV cond) > 0, deep",21,0.00015467559356358086,13.0,0.017528057098388672,7.656078209395263e-07,6.051520077269198e-05,True
+"N4 cond_p_tau2, superficial - input",16,-20.526296121289732,2.0,0.004180908203125,,,
+"N4 cond_p_tau2, deep - input",20,0.34385884090387364,10.0,0.956329345703125,,,
+"(reported) median cond_p_tau2, superficial",16,27.00017995579021,,,,,
+"(reported) median cond_p_tau2, input",20,45.66061880532787,,,,,
+"(reported) median cond_p_tau2, deep",21,43.65924250315736,,,,,
+"N4 cond_p_tau_m, superficial - input",16,8.716688218768958,14.0,0.00628662109375,,,
+"N4 cond_p_tau_m, deep - input",20,-1.2709808614097668,9.0,0.3117942810058594,,,
+"(reported) median cond_p_tau_m, superficial",16,18.00101173354888,,,,,
+"(reported) median cond_p_tau_m, input",20,7.524120635406938,,,,,
+"(reported) median cond_p_tau_m, deep",21,7.87002010301725,,,,,
+"N4 cond_p_delta, superficial - input",16,0.4281103368438597,8.0,0.860260009765625,,,
+"N4 cond_p_delta, deep - input",20,-1.344586785040061,7.0,0.082550048828125,,,
+"(reported) median cond_p_delta, superficial",16,19.405197110673843,,,,,
+"(reported) median cond_p_delta, input",20,20.400490342795045,,,,,
+"(reported) median cond_p_delta, deep",21,18.00712098408445,,,,,
+"N4 w_minus_a, superficial - input",16,0.00018791806797274768,8.0,0.2978515625,,,
+"N4 w_minus_a, deep - input",20,-0.12674647206904782,6.0,0.0758514404296875,,,
+"(reported) median w_minus_a, superficial",16,0.2267722348471516,,,,,
+"(reported) median w_minus_a, input",20,0.27759734300386185,,,,,
+"(reported) median w_minus_a, deep",21,0.13416979191363076,,,,,
+"N4 full_p_tau2, superficial - input",16,-17.564553845295098,2.0,0.001678466796875,,,
+"N4 full_p_tau2, deep - input",20,0.34259606251267627,11.0,1.0,,,
+"(reported) median full_p_tau2, superficial",16,16.083319175398422,,,,,
+"(reported) median full_p_tau2, input",20,36.42890030487453,,,,,
+"(reported) median full_p_tau2, deep",21,37.21680986155706,,,,,
+"N4 w_minus_a_full, superficial - input",16,-0.014849237379985225,8.0,0.21142578125,,,
+"N4 w_minus_a_full, deep - input",20,-0.13140565572419843,6.0,0.069580078125,,,
+"(reported) median w_minus_a_full, superficial",16,0.24076155500490437,,,,,
+"(reported) median w_minus_a_full, input",20,0.2895305052110612,,,,,
+"(reported) median w_minus_a_full, deep",21,0.1198533508266375,,,,,
+"N4 gain_delay, superficial - input",16,-0.407276626163304,1.0,0.000579833984375,,,
+"N4 gain_delay, deep - input",20,-0.0764784539082849,7.0,0.039989471435546875,,,
+"(reported) median gain_delay, superficial",16,0.6885804952038428,,,,,
+"(reported) median gain_delay, input",20,1.2702911442847973,,,,,
+"(reported) median gain_delay, deep",21,0.998465516903335,,,,,
+"N4 gain_weight, superficial - input",16,-0.003459047673598656,6.0,0.860260009765625,,,
+"N4 gain_weight, deep - input",20,-0.02623742533045252,7.0,0.021484375,,,
+"(reported) median gain_weight, superficial",16,0.06999931426498543,,,,,
+"(reported) median gain_weight, input",20,0.03700094576519686,,,,,
+"(reported) median gain_weight, deep",21,0.010386845825974515,,,,,
+"N4 gain_cond, superficial - input",16,0.012295981342289819,12.0,0.05767822265625,,,
+"N4 gain_cond, deep - input",20,-0.0005831602766825345,8.0,0.2942523956298828,,,
+"(reported) median gain_cond, superficial",16,0.020689507087556704,,,,,
+"(reported) median gain_cond, input",20,0.004642329513412149,,,,,
+"(reported) median gain_cond, deep",21,0.00015467559356358086,,,,,

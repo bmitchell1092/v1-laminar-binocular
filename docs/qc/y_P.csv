@@ -1,0 +1,29 @@
+test,n,best_static,best_full,best_w=a,best_cond,best_org,best_2stage,median,n_in_direction,p,median_o_to_e,median_e_to_o,holds
+"P1 best model (lowest held-out error), superficial",16,0.0,0.0,0.0,2.0,7.0,7.0,,,,,,
+"(reported) % less error than full, static, superficial",16,,,,,,,-99.14909127322566,0.0,,,,
+"(reported) % less error than full, w=a, superficial",16,,,,,,,-7.255274388730848,2.0,,,,
+"(reported) % less error than full, cond, superficial",16,,,,,,,2.0475449188460724,14.0,,,,
+"(reported) % less error than full, org, superficial",16,,,,,,,2.5163197033649554,12.0,,,,
+"(reported) % less error than full, 2stage, superficial",16,,,,,,,4.499425565149712,12.0,,,,
+"P1 best model (lowest held-out error), input",20,0.0,1.0,1.0,4.0,0.0,14.0,,,,,,
+"(reported) % less error than full, static, input",20,,,,,,,-256.1960873246835,1.0,,,,
+"(reported) % less error than full, w=a, input",20,,,,,,,-3.769494691852493,2.0,,,,
+"(reported) % less error than full, cond, input",20,,,,,,,0.4625555534631953,14.0,,,,
+"(reported) % less error than full, org, input",20,,,,,,,-8.889804727469375,3.0,,,,
+"(reported) % less error than full, 2stage, input",20,,,,,,,3.351654739666748,16.0,,,,
+"P1 best model (lowest held-out error), deep",21,1.0,0.0,0.0,6.0,2.0,12.0,,,,,,
+"(reported) % less error than full, static, deep",21,,,,,,,-171.4113869590355,1.0,,,,
+"(reported) % less error than full, w=a, deep",21,,,,,,,-1.0440976361924648,3.0,,,,
+"(reported) % less error than full, cond, deep",21,,,,,,,0.015466363191063426,13.0,,,,
+"(reported) % less error than full, org, deep",21,,,,,,,-5.23461881065459,5.0,,,,
+"(reported) % less error than full, 2stage, deep",21,,,,,,,1.48075215925072,17.0,,,,
+"P2 org vs cond: log(CV cond / CV org) > 0, superficial",16,,,,,,,0.019012250258108078,10.0,0.2982940673828125,0.005464887977982053,0.009329929636018947,False
+"P2 org vs cond: log(CV cond / CV org) > 0, input",20,,,,,,,-0.0889838855963056,2.0,0.9999589920043945,-0.09234180147479017,-0.08853160999879167,False
+"P2 org vs cond: log(CV cond / CV org) > 0, deep",21,,,,,,,-0.06504428309373421,4.0,0.9998230934143066,-0.04692025650234977,-0.07828466698785953,False
+"P2 org vs cond, superficial - input (two-sided)",16,,,,,,,0.10280478450322597,13.0,0.001312255859375,,,
+"P2 org vs cond, deep - input (two-sided)",20,,,,,,,0.023218416473478172,13.0,0.08969497680664062,,,
+"P3 2stage vs full: log(CV full / CV 2stage) > 0, superficial",16,,,,,,,0.04603792955195766,12.0,0.009124755859375,0.02693301181441147,0.04922652322396834,True
+"P3 2stage vs full: log(CV full / CV 2stage) > 0, input",20,,,,,,,0.03409111876635623,16.0,0.0015764236450195312,0.03792786354148034,0.028181965263801255,True
+"P3 2stage vs full: log(CV full / CV 2stage) > 0, deep",21,,,,,,,0.014918247349253505,17.0,0.0004258155822753906,0.009063939807381549,0.020618428012521575,True
+"P3 2stage vs full, superficial - input (two-sided)",16,,,,,,,0.012919194214345259,10.0,0.528167724609375,,,
+"P3 2stage vs full, deep - input (two-sided)",20,,,,,,,-0.011741226378405946,7.0,0.06372261047363281,,,
