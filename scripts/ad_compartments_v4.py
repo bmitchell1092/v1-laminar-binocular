@@ -2,7 +2,10 @@
 
 Usage: .venv\\Scripts\\python scripts\\ad_compartments_v4.py
 Relabels check X's channels (x_channels.parquet, x_latency.parquet) with metadata/laminar_alignment_v4.csv: height
-above the v3 anchor h = -rel_anchor_mm, scaled by the penetration's squish factor s (tier 1; 1 otherwise).
+above the v4 anchor from contact numbers and the probe's spacing, h = -sign (contact - anchor) * spacing, scaled by the
+penetration's squish factor s (tier 1; 1 otherwise); first-sheet contacts only (at or below the top of cortex).
+Probes with 50 um spacing (docs/05 C18) reach contacts X never measured, so their channels are recomputed with X's
+per-channel code (x_depth_v3.penetration, spacing-aware) and cached in <out_root>/binocular/ad_spacing_*.parquet.
 Coarse: supragranular h > 0.59 s, granular 0 < h <= 0.59 s, infragranular -0.49 s <= h < 0.
 Fine: L2/3 > 0.59 s; L4A/B (0.28 s, 0.59 s]; L4C (0, 0.28 s]; L5 [-0.22 s, 0); L6 [-0.49 s, -0.22 s).
 Tests AD1-AD5 on tier 1 (primary), tiers 1 + 2 and all 22. Writes docs/qc/ad_tests.csv and docs/qc/ad_groups.csv.
@@ -15,7 +18,7 @@ import pandas as pd
 import statsmodels.formula.api as smf
 
 from v1lb.config import metadata_dir, out_root
-from x_depth_v3 import SPLITS, ai_groups, shortfall_groups, wil
+from x_depth_v3 import SPLITS, ai_groups, penetration, shortfall_groups, wil
 
 REPO = Path(__file__).resolve().parents[1]
 QC = REPO / "docs" / "qc"
@@ -31,11 +34,36 @@ def label(h, s):
 
 
 def relabel(df, V):
-    df = df[df.grp != ""].merge(V[["penetration", "tier", "s"]], on="penetration")
-    h = -df.rel_anchor_mm.to_numpy()
+    df = df.merge(V[["penetration", "tier", "s", "orientation", "anchor_contact", "top_contact", "spacing_mm"]],
+                  on="penetration")
+    sign = np.where(df.orientation == "ascending", 1, -1)
+    df = df[sign * (df.contact - df.top_contact) >= 0].copy()
+    sign = np.where(df.orientation == "ascending", 1, -1)
+    h = -sign * (df.contact - df.anchor_contact).to_numpy() * df.spacing_mm.to_numpy()
     df["coarse"], df["fine"] = label(h, df.s.to_numpy())
     df["h_scaled"] = h / df.s
-    return df
+    return df.drop(columns=["orientation", "anchor_contact", "top_contact"])
+
+
+def load_channels(V):
+    """X's channel rows, with those of non-100-um probes recomputed (cached)."""
+    B = out_root() / "binocular"
+    C, L = pd.read_parquet(B / "x_channels.parquet"), pd.read_parquet(B / "x_latency.parquet")
+    odd = V[V.anchor_contact.notna() & ~np.isclose(V.spacing_mm, 0.1)].penetration.tolist()
+    fc, fl = B / "ad_spacing_channels.parquet", B / "ad_spacing_latency.parquet"
+    if odd:
+        if fc.exists() and set(pd.read_parquet(fc).penetration) == set(odd):
+            Cx, Lx = pd.read_parquet(fc), pd.read_parquet(fl)
+        else:
+            A3 = pd.read_csv(metadata_dir() / "laminar_alignment_v3.csv").set_index("penetration")
+            done = [penetration((p, A3.loc[p].to_dict())) for p in odd]
+            Cx = pd.DataFrame([r for rows, _, _ in done for r in rows])
+            Lx = pd.DataFrame([r for _, lat, _ in done for r in lat]).assign(adv_45=lambda x: x.bin_45 - x.dom_45)
+            Cx.to_parquet(fc)
+            Lx.to_parquet(fl)
+        C = pd.concat([C[~C.penetration.isin(odd)], Cx], ignore_index=True)
+        L = pd.concat([L[~L.penetration.isin(odd)], Lx], ignore_index=True)
+    return C, L
 
 
 def diff(tab, a, b):
@@ -104,9 +132,8 @@ def groups(C, L):
 def main():
     V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
     V = V[V.s.notna()]
-    B = out_root() / "binocular"
-    C = relabel(pd.read_parquet(B / "x_channels.parquet"), V)
-    L = relabel(pd.read_parquet(B / "x_latency.parquet"), V)
+    C0, L0 = load_channels(V)
+    C, L = relabel(C0, V), relabel(L0, V)
     sets = {"tier 1": (1,), "tiers 1+2": (1, 2), "all 22": (0, 1, 2)}
     R = []
     for name, tiers in sets.items():

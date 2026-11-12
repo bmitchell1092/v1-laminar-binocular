@@ -31,7 +31,7 @@ from v4_latency import onset as interp_onset
 from v1lb import crf
 from v1lb.binocular import CONTRASTS, eye_weight, response_at
 from v1lb.config import metadata_dir, out_root
-from v1lb.dataset import ALIGNMENT_V3, anchor_depth, clean_presentations, open_penetration
+from v1lb.dataset import ALIGNMENT_V3, anchor_depth, clean_presentations, contact_spacing_mm, open_penetration
 
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[1]
@@ -72,8 +72,9 @@ def penetration(task):
     keep = clean_presentations(ds, P, E)
     t = ds.time.values
     contacts = ds.contact.values
-    main = anchor_depth(contacts, al["orientation"], al["anchor_contact"], al["top_contact"])
-    sink = anchor_depth(contacts, al["orientation"], al["sink_anchor_contact"], al["top_contact"])
+    h = contact_spacing_mm(pen)                    # 50 um for the early-October B probes (docs/05 C18; added 2026-11-12)
+    main = anchor_depth(contacts, al["orientation"], al["anchor_contact"], al["top_contact"], spacing_mm=h)
+    sink = anchor_depth(contacts, al["orientation"], al["sink_anchor_contact"], al["top_contact"], spacing_mm=h)
     cand = np.flatnonzero((main.grp != "") | (sink.grp != ""))
     if not cand.size:
         return [], [], None

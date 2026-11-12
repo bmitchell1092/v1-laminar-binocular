@@ -20,7 +20,7 @@ from scipy import stats
 
 import v4_model_groups as N_
 from aa_model_misses_v3 import MODELS, deficit
-from ad_compartments_v4 import relabel
+from ad_compartments_v4 import load_channels, relabel
 
 from v1lb import dynorm
 from v1lb.config import metadata_dir, out_root
@@ -35,7 +35,7 @@ REF, SUFFIX = "granular", " (v4)"
 def channel_groups():
     V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
     V = V[V.tier.isin((1, 2))]
-    C = pd.read_parquet(out_root() / "binocular" / "x_channels.parquet")
+    C, _ = load_channels(V)
     C = relabel(C[(C.split == "all") & np.isclose(C.c, 0.45) & (C.window == "dip")], V)
     C = C[C.coarse != ""]
     return C[["penetration", "site_id", "coarse"]].drop_duplicates(["penetration", "site_id"])

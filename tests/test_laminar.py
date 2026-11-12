@@ -131,6 +131,16 @@ def test_anchor_depth_groups_follow_orientation():
     assert A.grp[16] == "deep" and A.grp[22] == "deep" and A.grp[23] == ""
     D = anchor_depth(np.arange(32, 0, -1), "descending", 32 - 15.5 + 1, top_contact=30).set_index("contact")
     assert (D.grp[33 - np.arange(1, 33)].to_numpy() == A.grp.reindex(np.arange(1, 33)).to_numpy()).all()
+    # 50 um probes: the same mm bands span twice as many contacts
+    H = anchor_depth(np.arange(1, 33), "ascending", 15.5, top_contact=3, spacing_mm=0.05).set_index("contact")
+    assert H.rel_anchor_mm[15] == pytest.approx(-0.025) and H.grp[6] == "input" and H.grp[5] == "superficial"
+    assert H.grp[29] == "deep" and H.grp[30] == ""
+
+
+def test_contact_spacing_metadata():
+    from v1lb.dataset import contact_spacing_mm
+    assert contact_spacing_mm("211008_B_eA") == pytest.approx(0.05)
+    assert contact_spacing_mm("221212_J_eA") == pytest.approx(0.1)
 
 
 def test_mua_gap():

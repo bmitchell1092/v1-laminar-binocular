@@ -62,15 +62,22 @@ ALIGNMENT_V3 = "laminar_alignment_v3.csv"  # cross-checked input/deep anchor (do
 INPUT_MM = 0.5                               # the input group: INPUT_MM above the anchor to the anchor
 
 
+def contact_spacing_mm(penetration: str) -> float:
+    """Contact pitch of the penetration's probe (mm), from metadata/penetrations.csv (`contact_spacing_um`).
+    211008/211009/211012_B are 50 um, tentatively (docs/05 C18)."""
+    P = pd.read_csv(metadata_dir() / "penetrations.csv").set_index("penetration")
+    return float(P.contact_spacing_um[penetration]) / 1000
+
+
 def anchor_depth(contacts, orientation: str, anchor_contact: float, top_contact: int,
-                 deep_cap_mm: float = 0.7) -> pd.DataFrame:
+                 deep_cap_mm: float = 0.7, spacing_mm: float = 0.1) -> pd.DataFrame:
     """Depth of each contact relative to the v3 input/deep anchor (mm, + = deeper) and its group: 'superficial'
     (above the input group, at or below the top of cortex), 'input' (INPUT_MM above the anchor to it), 'deep' (the
     anchor to deep_cap_mm below), '' outside the first sheet. Works on contact numbers, so the dataset's channel order
     does not matter."""
     c = np.asarray(contacts, float)
     sign = 1 if orientation == "ascending" else -1
-    rel = sign * (c - anchor_contact) / 10
+    rel = sign * (c - anchor_contact) * spacing_mm
     in_cortex = sign * (c - top_contact) >= 0
     grp = np.where(~in_cortex | (rel > deep_cap_mm + 1e-9), "",
                    np.where(rel > 0, "deep", np.where(rel >= -INPUT_MM - 1e-9, "input", "superficial")))

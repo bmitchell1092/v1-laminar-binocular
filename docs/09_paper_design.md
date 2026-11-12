@@ -2861,6 +2861,41 @@ penetrations; tier 1 = 8 (all J), tiers 1 + 2 = 11 (3 B), all = 22.
   analyses, with coarse labels in the main figures and fine labels in the supplement. Tier 1 and all 22 are
   sensitivity sets.
 
+**Amendment to v4 and AD (2026-11-12, after AD and before AE): contact spacing.** Blake: some early B recordings may
+have used 50 µm NeuroNexus probes. Three things are consistent with 50 µm for 211008, 211009 and 211012_B (docs/05
+C18):
+* their rig channel maps differ from every later session;
+* within B they have the smoothest LFP per contact and the highest CSD neighbour correlation;
+* at 50 µm their responsive spans (1.5–1.6 mm) fit one V1 sheet.
+
+They are set to 50 µm **tentatively**, pending the lab notebooks (`metadata/penetrations.csv`, `contact_spacing_um`).
+Every mm conversion now uses the probe's spacing (`dataset.contact_spacing_mm`, `anchor_depth(spacing_mm=)`). v4
+recomputes the anchors from v3's contact-numbered markers with v3's rule and mm offsets; the 100 µm anchors equal v3's
+(asserted). AD relabels channels from contact numbers. Channels of 50 µm probes are recomputed with X's per-channel
+code, because the bands reach contacts X never measured.
+* **211008_B becomes tier 1:** anchor contact 22.5 (v3 20.5); sink and crossing agree within 0.08 mm; span 0.98 mm,
+  s = 0.79. 211012_B stays in tier 0 (top off the probe).
+* **Main set (tiers 1 + 2): 12 penetrations** (tier 1: 211008_B + 8 J; tier 2: 211208_B, 211217_B, 221128_J).
+* **AD on the amended sets** (the earlier table is superseded; [qc/ad_tests.csv](qc/ad_tests.csv)):
+
+  | Test | Tier 1 (9) | Tiers 1 + 2 (12, main) | All 22 |
+  |---|---|---|---|
+  | AD1 shortfall infra − granular > 0 | +0.042, 7/9, p = .020 ✓ | **+0.029, 9/12, p = .017, halves ✓** | +0.043, 19/22 ✓ |
+  | AD1 (AI − AI_sum) infra − granular > 0 | +0.107, p = .010 | **+0.105, 9/12, p = .006** | +0.103, p < .001 |
+  | AD1 supra − granular | −0.022 (ns) | −0.015, p = .13 | −0.008 |
+  | AD2 L6 − L4C / L5 − L4C | +0.025 (p = .065) / +0.009 | +0.024 (p = .065) / +0.023 (p = .12) | +0.042 (p = .013) / +0.008 |
+  | AD3 onset supra − granular | +8.1 ms, 9/9 ✓ | **+7.8 ms, 12/12 ✓** | +7.0 ✓ |
+  | AD3 onset infra − granular (two-sided) | −2.1 ms, 8/9, p = .13 | **−1.9 ms, 8/12, p = .42** | −1.9, p = .18 |
+  | AD3 L6 − L4C (two-sided) | −3.4, p = .13 | −1.7, p = .20 | −2.1, p = .020 |
+  | AD4 advance supra / granular / infra | ✓ / ✓ / −0.2 ✗ | ✓ / ✓ / −0.25 ✗ (p = .10) | all ✓ |
+  | AD5 slope < 0 | ✓ | ✓ (−0.035 per mm) | ✓ |
+
+* **Reading on the main set:**
+  * Normalization is weaker in the infragranular compartment than in the granular one.
+  * Infragranular onsets do not differ from granular ones (consistent with dropping the deep-onset claim).
+  * The fine labels lean toward layer 6 for the weaker normalization (p = .065), which is not separable from layer 5
+    at this n.
+
 ## Check AE: the model by depth on the v4 coarse compartments, tiers 1 + 2 (registered internally 2026-11-12, before running)
 
 **Why.** Blake chose tiers 1 + 2 with coarse labels as the main laminar set. Fig 4d (weights by depth) and 4e (what
