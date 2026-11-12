@@ -2857,3 +2857,27 @@ penetrations; tier 1 = 8 (all J), tiers 1 + 2 = 11 (3 B), all = 22.
   Tier 1 is one monkey; the deep-onset claim stays out of the paper (Blake, AC).
 * **AD4:** adding the other eye advances onset in the supragranular and granular compartments, but not reliably in
   the infragranular compartment of the confident penetrations (−0.1 ms, 5/8). Across all 22 it holds (−0.8 ms).
+* **Decision (Blake, 2026-11-12):** tiers 1 + 2 (11 penetrations, both monkeys) are the main set for the laminar
+  analyses, with coarse labels in the main figures and fine labels in the supplement. Tier 1 and all 22 are
+  sensitivity sets.
+
+## Check AE: the model by depth on the v4 coarse compartments, tiers 1 + 2 (registered internally 2026-11-12, before running)
+
+**Why.** Blake chose tiers 1 + 2 with coarse labels as the main laminar set. Fig 4d (weights by depth) and 4e (what
+the model misses by depth) use Y1/AA on the v3 groups of all penetrations. **Not blind:** Y1 and AA on v3 are known
+(delay and w > a at every depth; single-stage pools miss the deep difference; the two-stage fit reproduces it
+better).
+* **Groups:** AD's coarse compartments (supragranular, granular, infragranular; scaled by s), over AD's channels in
+  the 11 tier-1 and tier-2 penetrations, with ≥ 3 channels per group as before.
+* **AE1 (Y1's N1–N3):** each feature helps in each compartment: the delay (static vs fixed delay), the other eye's
+  pool weight (w = a vs fixed delay) and the conductance form. Same criterion as Y1. N4 differences vs granular are
+  reported two-sided.
+* **AE2 (Y2's P):** best model per compartment; 2stage vs full.
+* **AE3 (AA):** the 30–100 ms shortfall at 45% per compartment for the data and for the conductance, fixed-delay and
+  two-stage fits. Tests: model (infragranular − granular) > 0, and data (infra − granular) − model (infra − granular)
+  > 0.
+* **Prediction from AA:** the single-stage pools miss most of the difference; the two-stage fit reproduces more of
+  it.
+
+Script `scripts/ae_model_v4.py`; outputs `<out_root>/binocular/ae_N_groups.parquet`, `ae_N_pred.npz`,
+`ae_P_groups.parquet`; `docs/qc/ae_N.csv`, `ae_P.csv`, `ae_model_misses.csv`, `ae_groups.csv`.
