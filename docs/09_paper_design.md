@@ -2666,3 +2666,26 @@ reproduces F1 (−0.039, 23/26), the Q slopes (−0.0126, −0.0111), Q3 (−0.0
   larger with larger pupils (by 1.5% of the dominant-eye peak, p = 0.038)". The Methods describe the split.
 * Both statements are in `manuscript/draft_v5_clean.docx` (Results model paragraph, Discussion laminar and
   alternatives paragraphs, Methods eye position).
+
+## Fig 4 rebuilt (2026-11-12, descriptive; Blake's comment on the V5 clean copy)
+
+The held-out-error panel is replaced by panels that show what each model feature does, all from Y1's stored fits
+(`y_N_pred.npz`; the two-stage values from AA). Each array (data or fit) is taken on its own onset, eye weight and
+contrast-summation prediction; per penetration the mean over its depth groups (`scripts/figures/fig4_delayed_pool.py`).
+
+* **(b) Delay**, 45% in each eye, both eyes − contrast summation (% of dominant-eye peak), medians over 21 penetrations:
+
+  | | 0–20 ms | 30–100 ms | 130–180 ms |
+  |---|---|---|---|
+  | data | +4.8 | −5.5 | −3.1 |
+  | conductance | +1.2 | −2.7 | −2.2 |
+  | fixed delay | +1.0 | −2.7 | −2.3 |
+  | static pool | −2.2 | −2.8 | −2.8 |
+  | w = a | −0.7 | +0.1 | +0.1 |
+
+* **(c) Weight**, 30–100 ms, mean over c_D = 11, 22.5, 45% (where summation is predictable), by c_O = 11 / 22.5 / 45 /
+  90%: data −1.9 / −3.0 / −4.7 / −7.0; conductance −0.5 / −1.2 / −2.6 / −5.8; w = a +0.1 at every c_O.
+* **(e) Depth**: AA's values (data, conductance, two-stage).
+* **Reading:** the delayed, other-eye-weighted pool reproduces the sign, timing and contrast dependence of the sequence,
+  at about half its size; a pool without a delay never exceeds contrast summation; equal weights never fall short of it.
+
