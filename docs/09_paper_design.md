@@ -2557,3 +2557,112 @@ z_onset_profile.csv).** Onsets of check X (first sheet, v3), relative to the ear
   ~0.7 mm below the boundary and are later above the sink. The "earliest 0.1–0.5 mm below the boundary" of V4 was a
   1–2 ms dip in population medians that the within-penetration comparison does not support. The text now reports
   the plateau, with deep channels responding as early as (not earlier than) the input layers.
+
+## Checks AA and AB: the model's laminar difference and the pupil control on the current measures (registered internally 2026-11-12, before running; Blake: "Go ahead and re-run the depth-by-depth model comparison and the pupil-size control on the new measures")
+
+**Why.** Two statements in the paper still rest on earlier analyses. (1) "Fitted at each depth, the model did not
+reproduce the weaker normalization of the deep group": N's descriptive comparison, on the sink groups. (2) The pupil
+control (#23) was run on the linearity index (S1, `fig2_robustness.py`), not on the shortfall from contrast summation.
+**Not blind:**
+* AA: on the sink groups, the conductance fits normalized about equally at every depth (−0.039 / −0.020 / −0.017 against
+  data −0.056 / −0.061 / −0.020). On v3, the excess pool weight w − a is 0.23 / 0.28 / 0.13, deep − input p = .076.
+* AB: on the old index, every claim held for pupils within the penetration's IQR. Nothing is computed on the new
+  measures.
+
+**AA. Measure.** Y1's group populations and fits on v3 (`y_N_pred.npz`; two-stage predictions from the
+`y_P_groups.parquet` parameters). Per penetration and group, the shortfall at 45% in 30–100 ms after the group's onset:
+both eyes minus the dominant eye at c(1 + a), with a, onset and the prediction computed from the same array, for the data and for each fit
+(conductance, the Fig 4 model; fixed delay; two-stage), as N's `group_deficit`.
+* **AA1 (reported):** medians per group, data and each model.
+* **AA2, the model's own depth difference:** model (deep − input) > 0, one-sided Wilcoxon over penetrations, per model.
+* **AA3, the gap:** data (deep − input) − model (deep − input) > 0, one-sided Wilcoxon, per model.
+* **Wording:**
+  * "the model did not reproduce the weaker deep normalization" only if, for the conductance model, AA3 holds and
+    AA2 fails;
+  * "reproduced it only in part" if both hold;
+  * "reproduced it" if AA2 holds and AA3 fails.
+  * The same wording applies to the two-stage model, reported alongside.
+
+**AB. Subsets.** Clean presentations, split per penetration at the median of the pre-stimulus pupil signal (median
+over −200…0 ms; the median is robust to blinks). The analog pupil signal has a per-monkey offset (negative in monkey
+B), so only the within-penetration split is used. Subsets: "lower" and "higher" halves; "IQR" (as #23), reported.
+Dominant eye, scale, onset and eye weight come from all clean presentations, as for the odd/even halves; conditions
+need ≥ 2 presentations in a subset.
+
+**AB tests, per subset:**
+* **AB1 (F1):** at 45% in each eye, the shortfall A − P < 0 in 30–100 ms. Population channel mean per penetration,
+  as `v4_dip_recovery.py`; one-sided Wilcoxon.
+* **AB2 (Q1, Q3):** the x_O slope of the shortfall < 0 in 30–100 and in 130–200 ms, and the 130–200 ms shortfall
+  where c_O > c_D < 0. Mixed model as `v4_full_design.py`; one-sided.
+* **AB3 (X1):** (A − P) deep − input > 0 at 45%, 30–100 ms. X's channels and v3 groups; one-sided Wilcoxon.
+* **AB4 (X4):** the binocular onset at 45% minus the dominant eye's at 45% < 0. Penetration median over X's
+  channels; one-sided Wilcoxon.
+
+**AB criteria.**
+* **The control passes** if AB1–AB4 hold (p < .05, predicted sign) in both the lower and the higher half.
+* **Reported:** the IQR subset; higher − lower for AB1, AB3 and AB4 (two-sided Wilcoxon); for AB2, the
+  window:x_O:half interaction in one mixed model over both halves (two-sided).
+* **Wording:**
+  * If the control passes: "the results held for presentations with smaller and with larger pupils".
+  * If a test fails in one half: say which, and give the higher − lower difference.
+
+**Scripts:** `scripts/aa_model_misses_v3.py` → `docs/qc/aa_model_misses.csv`, `aa_groups.csv`;
+`scripts/ab_pupil.py` → `docs/qc/ab_pupil.csv`.
+
+**AA results (2026-11-12; 21 penetrations, 57 groups: superficial 16, input 20, deep 21; 20 penetrations with both
+input and deep). The conductance and fixed-delay pools do not reproduce the weaker deep normalization; the two-stage
+model does.**
+* **AA1, shortfall at 45%, 30–100 ms after the group's onset (medians; data / conductance / fixed delay / two-stage):**
+
+  | Group | Data | Conductance | Fixed delay | Two-stage |
+  |---|---|---|---|---|
+  | superficial | −0.059 | −0.046 | −0.046 | −0.045 |
+  | input | −0.060 | −0.028 | −0.029 | −0.031 |
+  | deep | −0.026 | −0.018 | −0.018 | +0.002 |
+
+  Data deep − input: +0.045 (15/20, p = .0002).
+* **Conductance (the Fig 4 model):**
+  * AA2 fails: the model's own deep − input is +0.008 (13/20, p = .083).
+  * AA3 holds: the data exceed it by +0.019 (14/20, p = .002).
+  * Wording allowed: "did not reproduce the weaker deep normalization".
+* **Fixed delay:** the same pattern. AA2 +0.009 (p = .072); AA3 +0.020 (p = .002).
+* **Two-stage:**
+  * AA2 holds: +0.034 (15/20, p = .002).
+  * AA3 fails narrowly: the remaining gap is +0.005 (14/20, p = .053).
+  * Wording allowed: "reproduced it".
+* **Reading.**
+  * The single-stage pools underestimate the shortfall at the input, about half the data's value, so they flatten
+    the laminar profile.
+  * The two-stage form, in which each eye is first gain-controlled by the other, leaves the deep group at contrast
+    summation and so recovers most of the difference. It is also the best-fitting model at every depth (Y2, P3).
+  * The remaining gap is borderline (p = .053), so "reproduced most of it" is the safe phrasing.
+  * Not a mechanism claim: the two-stage model's extra stage is also its extra flexibility.
+* **For the paper (Results, model paragraph):** "Fitted at each depth, the single-stage pools did not reproduce the
+  weaker normalization of the deep group (data, deep − input +0.045; conductance fits +0.008, p = 0.08), whereas the
+  two-stage form reproduced most of it (+0.034, p = 0.002; remaining gap p = 0.053)." The sentence "the laminar
+  difference of Fig 3 therefore rests on the data, not on the model" is replaced.
+
+**AB results (2026-11-12; 26 penetrations for AB1 and AB2, 22 for AB3 and AB4; a median of 545 presentations per
+half). The control passes: AB1–AB4 hold in the lower and in the higher half, and in the IQR subset.** The "all" subset
+reproduces F1 (−0.039, 23/26), the Q slopes (−0.0126, −0.0111), Q3 (−0.026) and X1 (+0.052, 18/22) exactly.
+
+| Test | Lower half | Higher half | IQR |
+|---|---|---|---|
+| AB1 A − P, 45%, 30–100 ms | −0.040 (20/26, p = .0004) | −0.051 (23/26, p = .0001) | −0.045 (23/26) |
+| AB2 x_O slope, 30–100 ms | −0.0138 (p = .0007) | −0.0139 (p = .0002) | −0.0129 |
+| AB2 x_O slope, 130–200 ms | −0.0104 (p = .009) | −0.0119 (p = .001) | −0.0093 (p = .011) |
+| AB2 Q3, c_O > c_D, 130–200 ms | −0.023 (p = .0008) | −0.026 (p < .0001) | −0.031 |
+| AB3 deep − input | +0.055 (17/22, p = .0003) | +0.047 (17/22, p = .0003) | +0.038 (15/22, p = .002) |
+| AB4 binocular advance, 45% | −1.8 ms (19/22) | −1.3 ms (17/22, p = .0008) | −1.1 ms (18/22) |
+
+* **Higher − lower (reported, two-sided):**
+  * AB1: −0.015 (18/26, p = .038). The matched-contrast shortfall is slightly larger with a larger pupil signal.
+  * Nothing else differs: AB3 +0.003 (p = .82); AB4 +0.4 ms (p = .28); AB2 slope interactions +0.0008 and −0.0010
+    (p ≥ .87); AB2 shortfall at x = 0 −0.0075 and +0.0027 (p ≥ .25).
+* **Caveat:** "larger" is the higher analog pupil signal within a penetration. The signal's polarity was not
+  calibrated (monkey B's is offset negative).
+* **For the paper (Alternative explanations):** "every result held separately for presentations with smaller and with
+  larger pupils before stimulus onset; only the shortfall at matched 45% contrasts differed between them, slightly
+  larger with larger pupils (by 1.5% of the dominant-eye peak, p = 0.038)". The Methods describe the split.
+* Both statements are in `manuscript/draft_v5_clean.docx` (Results model paragraph, Discussion laminar and
+  alternatives paragraphs, Methods eye position).
