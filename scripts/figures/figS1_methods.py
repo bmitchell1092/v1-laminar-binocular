@@ -7,9 +7,9 @@ Usage: .venv\\Scripts\\python scripts\\figures\\figS1_methods.py [example penetr
     off as the dominant-eye contrast that gives the same response; the triangle marks what linear summation of
     contrast predicts, 45% x (1 + median eye weight). The linearity index is (equivalent contrast / 45% - 1) / eye
     weight: 1 when the contrasts add, 0 for the dominant eye alone;
-(b) example penetration (the one in Fig 1c): flash-evoked CSD (bad contacts interpolated, Hamming-smoothed),
-    registered to the grating recording by the alignment's depth shift, with the top of cortex and the L4/5
-    boundary below the flash sink (laminar alignment v2). The figure names the monkey, not the session.
+(b) the laminar alignment (v4; 2026-11-12): monocular grating CSD averaged over monkey J's tier-1 penetrations,
+    each aligned to its layer 4C/5 anchor and scaled by its squish factor (tier1_csd); the single-session flash CSD
+    with the v2 landmarks (flash_csd) is kept for reference but no longer drawn.
 Inputs: figure_data.py (population.npz, population_meta.parquet); <out_root>/flash_csd/*.npz,
 docs/qc/flash_landmarks_v2.csv, metadata/laminar_alignment_v2.csv.
 Writes <out_root>/figures/figS1_methods.pdf and .png; prints the readout and the landmarks shown.
@@ -96,6 +96,44 @@ def flash_csd(ax, cax, pen, al):
                 depth_range=(float(depth[ok].min()), float(depth[ok].max())))
 
 
+def tier1_csd(ax, cax, monkey="J"):
+    """Average monocular grating CSD (one eye at >= 45%, eyes pooled; the laminar audit's cache) over the tier-1
+    penetrations of one monkey (laminar alignment v4), each aligned to its 4C/5 anchor, scaled by its squish factor s
+    and divided by its own peak |CSD| (20-120 ms) before averaging (Blake, 2026-11-12: examples from a clean J session
+    or the tier-1 average of one monkey)."""
+    V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
+    V = V[(V.tier == 1) & (V.monkey == monkey)]
+    grid = np.round(np.arange(-0.6, 1.45, 0.05), 3)
+    stack = []
+    for r in V.itertuples():
+        M = np.load(out_root() / "laminar_audit" / f"{r.penetration}_mono.npz")
+        t = M["t"]
+        c = (M["csd_contra"] + M["csd_ipsi"]) / 2
+        c = c - np.nanmean(c[t < 0], axis=0)
+        sign = 1 if r.orientation == "ascending" else -1
+        h = -sign * (M["contact"] - r.anchor_contact) * r.spacing_mm / r.s
+        ok = np.isfinite(c).all(axis=0)
+        o = np.argsort(h[ok])
+        C = np.stack([np.interp(grid, h[ok][o], c[k, ok][o], left=np.nan, right=np.nan) for k in range(t.size)])
+        stack.append(C / np.nanmax(np.abs(C[(t >= 20) & (t < 120)])))
+    A = np.nanmean(np.stack(stack), axis=0).T                       # [height, time]
+    lim = np.nanpercentile(np.abs(A[:, (t > 20) & (t < 120)]), 98)
+    im = ax.pcolormesh(t, grid, A, cmap=fs.CSD_CMAP, vmin=-lim, vmax=lim, shading="nearest", rasterized=True)
+    ax.set_xlim(-10, 120)
+    ax.set_ylim(grid[0], grid[-1])
+    for y, lab in ((1.24, "top of cortex"), (0.59, "top of layer 4"), (0.0, "layer 4C/5")):
+        ax.axhline(y, color=fs.INK, lw=0.7, ls=(0, (3, 2)))
+        ax.text(117, y + 0.03, lab, ha="right", va="bottom", fontsize=6, color=fs.INK,
+                bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85))
+    ax.set_xlabel("time from stimulus onset (ms)")
+    ax.set_ylabel("height above the layer 4C/5\nboundary (mm, scaled)")
+    cb = ax.figure.colorbar(im, cax=cax, ticks=[-lim, 0, lim])
+    cb.ax.set_yticklabels(["sink", "0", "source"])
+    cb.ax.tick_params(length=0, labelsize=5.5)
+    cb.outline.set_visible(False)
+    return dict(n=len(V), penetrations=list(V.penetration))
+
+
 def main():
     pen = sys.argv[1] if len(sys.argv) > 1 else "221212_J_eA"
     fs.apply()
@@ -115,16 +153,15 @@ def main():
         ax_a1.plot([0.07], [y], marker=mk, color=col, ms=2.8, transform=ax_a1.transAxes, clip_on=False)
         ax_a1.text(0.12, y, lab, transform=ax_a1.transAxes, va="center", fontsize=5.5, color=fs.INK)
     cax_ = sb.subplots(1, 2, gridspec_kw=dict(width_ratios=[1, 0.06]))
-    info = flash_csd(cax_[0], cax_[1], pen, al)
-    cax_[0].set_title(f"example penetration, monkey {pen.split('_')[1]}", loc="right", fontsize=6, color=fs.INK2)
+    info = tier1_csd(cax_[0], cax_[1], "J")
+    cax_[0].set_title(f"monkey J, mean of {info['n']} tier-1 penetrations; one eye at 45 or 90%", loc="right",
+                      fontsize=6, color=fs.INK2)
     for ax, letter in zip((ax_a1, cax_[0]), "ab"):
         fs.panel_label(ax, letter)
     print(fs.save(fig, "figS1_methods"))
     print(f"(a) illustration: equivalent contrast / 45%: early {k_early:.2f}, late {k_late:.2f}; median eye weight "
           f"{a_med:.2f}; {len(meta)} penetrations")
-    print(f"(b) L4/5 boundary {info['l45_mm']:.2f} mm below the top of cortex; flash recording shifted by "
-          f"{info['shift_contacts']:+.0f} contacts; {info['bad_contacts']} bad contacts interpolated; depths "
-          f"{info['depth_range'][0]:.2f} to {info['depth_range'][1]:.2f} mm")
+    print(f"(b) tier-1 average grating CSD, monkey J: {info['n']} penetrations {info['penetrations']}")
 
 
 if __name__ == "__main__":

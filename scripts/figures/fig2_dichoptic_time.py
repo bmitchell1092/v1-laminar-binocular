@@ -14,8 +14,9 @@ penetration means of channel means. Cells with both contrasts >= 11% and c_D + a
     penetration, then mean over penetrations with 95% bootstrap CI; the slope on the other eye's contrast from the
     hierarchical model (check Q1, Q2) per window, and the held-out confirmation (check R2);
 (c) the design as a matrix in each window: rows the dominant eye's contrast, columns the other eye's; mean over
-    penetrations (v4_Q_cells.csv), in % of the dominant-eye peak; outlined, matched contrasts; hatched, cells where
-    summation can be predicted in fewer than 10 penetrations.
+    penetrations (v4_Q_cells.csv), in % of the dominant-eye peak; outlined, matched contrasts; "> 90%", cells where
+    summation can be predicted in fewer than 10 penetrations, because c_D + a c_O exceeds the highest contrast tested
+    (Blake's V6 comment: hatching read as missing data; colour-bar label simplified; panel label moved in).
 Statistics: checks Q (all 26 penetrations, hierarchical) and R (eight held-out cross-recordings).
 Inputs: <out_root>/figures/data/population.npz, population_meta.parquet; docs/qc/v4_Q_cells.csv, v4_Q.csv, v4_R.csv.
 Writes <out_root>/figures/fig2_dichoptic_time.pdf and .png; prints the statistics shown.
@@ -153,8 +154,8 @@ def matrices(axs, cax, Q):
         for i, cd in enumerate(CD):
             for j, co in enumerate(CO):
                 if np.isnan(M[i, j]):
-                    ax.add_patch(plt.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False, hatch="//////", ec=fs.RULE,
-                                               lw=0))
+                    ax.add_patch(plt.Rectangle((j - 0.5, i - 0.5), 1, 1, fc="white", ec="none"))
+                    ax.text(j, i, "> 90%", ha="center", va="center", fontsize=5, color=fs.MUTED)
                     continue
                 ax.text(j, i, f"{M[i, j]:+.1f}".replace("-", "−"), ha="center", va="center", fontsize=5,
                         color="white" if abs(M[i, j]) > 0.62 * LIM else fs.INK)
@@ -174,8 +175,9 @@ def matrices(axs, cax, Q):
     cb.outline.set_visible(False)
     cb.ax.tick_params(labelsize=5.5, length=0)
     cb.ax.set_yticklabels([f"{t:+g}".replace("-", "−") if t else "0" for t in cb.get_ticks()])
-    cb.set_label("both eyes − contrast summation\n(% of dominant-eye peak)", fontsize=6)
-    cax.text(14, 1.0, "outlined: matched\ncontrasts\n\nhatched: contrast\nsummation predictable\nin fewer than 10\npenetrations",
+    cb.set_label("difference from\ncontrast summation (%)", fontsize=6)
+    cax.text(14, 1.0, "outlined: matched\ncontrasts\n\n> 90%: the summed\ncontrast exceeds the\nhighest contrast tested\n"
+             "(as for every cell with\nthe dominant eye at 90%)",
              fontsize=5.2, color=fs.INK2, transform=cax.transAxes, va="top", ha="left", linespacing=1.1)
     return pd.DataFrame(rows)
 
@@ -196,7 +198,7 @@ def main():
     C = matrices([ax["c0"], ax["c1"], ax["c2"]], ax["cb"], Q)
     fs.panel_label(ax["a"], "a", x=-0.13, y=1.12)
     fs.panel_label(ax["b"], "b", x=-0.42, y=1.12)
-    fs.panel_label(ax["c0"], "c", x=-0.55, y=1.15)
+    fs.panel_label(ax["c0"], "c", x=-0.13, y=1.15)                   # same column as a
     print(fs.save(fig, "fig2_dichoptic_time"))
     pd.set_option("display.width", 220)
     print(f"(a) dominant {EXAMPLE[0]}, other {EXAMPLE[1]}: {ex}")

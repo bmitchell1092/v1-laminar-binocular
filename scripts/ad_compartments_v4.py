@@ -45,26 +45,52 @@ def relabel(df, V):
     return df.drop(columns=["orientation", "anchor_contact", "top_contact"])
 
 
+def spacing_cache(V):
+    """Per-channel rows, onsets and space-time arrays of the non-100-um probes, recomputed with X's per-channel code
+    (x_depth_v3.penetration, spacing-aware) and cached in <out_root>/binocular/ad_spacing_*."""
+    B = out_root() / "binocular"
+    odd = sorted(V[V.anchor_contact.notna() & ~np.isclose(V.spacing_mm, 0.1)].penetration)
+    f = {k: B / f"ad_spacing_{k}" for k in ("channels.parquet", "latency.parquet", "meta.parquet", "spacetime.npz")}
+    if not odd:
+        return odd, None
+    if not (all(x.exists() for x in f.values()) and sorted(set(pd.read_parquet(f["channels.parquet"]).penetration)) == odd):
+        A3 = pd.read_csv(metadata_dir() / "laminar_alignment_v3.csv").set_index("penetration")
+        done = [penetration((p, A3.loc[p].to_dict())) for p in odd]
+        pd.DataFrame([r for rows, _, _ in done for r in rows]).to_parquet(f["channels.parquet"])
+        pd.DataFrame([r for _, lat, _ in done for r in lat]).assign(
+            adv_45=lambda x: x.bin_45 - x.dom_45).to_parquet(f["latency.parquet"])
+        st = [x for _, _, x in done if x]
+        pd.DataFrame([m for x in st for m in x["meta"]]).to_parquet(f["meta.parquet"])
+        np.savez_compressed(f["spacetime.npz"], onset=np.concatenate([np.stack(x["onset"]) for x in st]).astype(np.float32),
+                            stim=np.concatenate([np.stack(x["stim"]) for x in st]).astype(np.float32))
+    return odd, f
+
+
 def load_channels(V):
-    """X's channel rows, with those of non-100-um probes recomputed (cached)."""
+    """X's channel rows and onsets, with those of non-100-um probes replaced by the recomputed ones."""
     B = out_root() / "binocular"
     C, L = pd.read_parquet(B / "x_channels.parquet"), pd.read_parquet(B / "x_latency.parquet")
-    odd = V[V.anchor_contact.notna() & ~np.isclose(V.spacing_mm, 0.1)].penetration.tolist()
-    fc, fl = B / "ad_spacing_channels.parquet", B / "ad_spacing_latency.parquet"
+    odd, f = spacing_cache(V)
     if odd:
-        if fc.exists() and set(pd.read_parquet(fc).penetration) == set(odd):
-            Cx, Lx = pd.read_parquet(fc), pd.read_parquet(fl)
-        else:
-            A3 = pd.read_csv(metadata_dir() / "laminar_alignment_v3.csv").set_index("penetration")
-            done = [penetration((p, A3.loc[p].to_dict())) for p in odd]
-            Cx = pd.DataFrame([r for rows, _, _ in done for r in rows])
-            Lx = pd.DataFrame([r for _, lat, _ in done for r in lat]).assign(adv_45=lambda x: x.bin_45 - x.dom_45)
-            Cx.to_parquet(fc)
-            Lx.to_parquet(fl)
-        C = pd.concat([C[~C.penetration.isin(odd)], Cx], ignore_index=True)
-        L = pd.concat([L[~L.penetration.isin(odd)], Lx], ignore_index=True)
+        C = pd.concat([C[~C.penetration.isin(odd)], pd.read_parquet(f["channels.parquet"])], ignore_index=True)
+        L = pd.concat([L[~L.penetration.isin(odd)], pd.read_parquet(f["latency.parquet"])], ignore_index=True)
     return C, L
 
+
+def load_spacetime(V):
+    """X's space-time arrays (onset and stimulus clocks) and their channel table, with the non-100-um probes
+    replaced. Returns onset [ch, 14, REL], stim [ch, 14, T_STIM], meta, rel, t."""
+    d = out_root() / "figures" / "data"
+    Z = np.load(d / "spacetime_v3.npz")
+    M = pd.read_parquet(d / "spacetime_v3_meta.parquet")
+    keep = ~M.penetration.isin(sorted(V[~np.isclose(V.spacing_mm.fillna(0.1), 0.1)].penetration)).to_numpy()
+    on, stim, M = Z["onset"][keep], Z["stim"][keep], M[keep]
+    odd, f = spacing_cache(V)
+    if odd:
+        S = np.load(f["spacetime.npz"])
+        on, stim = np.concatenate([on, S["onset"]]), np.concatenate([stim, S["stim"]])
+        M = pd.concat([M, pd.read_parquet(f["meta.parquet"])], ignore_index=True)
+    return on, stim, M.reset_index(drop=True), Z["rel"], Z["t"]
 
 def diff(tab, a, b):
     return tab[a] - tab[b] if a in tab and b in tab else pd.Series(dtype=float)
