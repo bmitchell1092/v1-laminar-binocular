@@ -271,11 +271,11 @@ def main():
     if Ab is not None:
         print("(a) bands:")
         print(Ab.round(3).to_string(index=False))
-        return
-    for k in range(len(z)):
-        e, d = (rel >= 0) & (rel < 20), (rel >= 30) & (rel < 100)
-        print(f"(a) {z[k]:+.1f} mm: 0-20 ms {np.nanmean(AI[k, e]):.2f} (sum {np.nanmean(AS[k, e]):.2f}); "
-              f"30-100 ms {np.nanmean(AI[k, d]):.2f} (sum {np.nanmean(AS[k, d]):.2f})")
+    else:
+        for k in range(len(z)):
+            e, d = (rel >= 0) & (rel < 20), (rel >= 30) & (rel < 100)
+            print(f"(a) {z[k]:+.1f} mm: 0-20 ms {np.nanmean(AI[k, e]):.2f} (sum {np.nanmean(AS[k, e]):.2f}); "
+                  f"30-100 ms {np.nanmean(AI[k, d]):.2f} (sum {np.nanmean(AS[k, d]):.2f})")
     print(B.round(3).to_string(index=False))
     print("(c) onset per depth bin (ms after stimulus onset):")
     print(O.round(1).to_string(index=False))
