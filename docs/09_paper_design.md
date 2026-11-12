@@ -3069,3 +3069,19 @@ over penetrations. Table [qc/ag_sink_onsets_v5.csv](qc/ag_sink_onsets_v5.csv).
   the sinks there begin 8–15 ms after layer 4's. The deep MUA onset reflects the earliest spikes in those layers. The
   deep sinks reflect synaptic currents that build later, as the supragranular-to-infragranular sequence expects.
   This is not tested.
+
+## Check AH: guard bands at the compartment boundaries (registered internally 2026-11-13, before running; Blake: "let's go with your idea")
+
+**Why.** On v5 the coarse compartments look alike in Fig 3a. Boundary uncertainty (about one contact) mixes
+neighbouring layers at each boundary. **Not blind:** AD5 and the fine labels are known (the weaker deep normalization
+sits in layer 6). Both margins are reported whatever they show. Neither replaces AD5.
+* **Rule:** on v5's coarse compartments (scaled heights), drop channels within g of a compartment boundary (0 and
+  0.59 mm), for g = 0.1 mm (one contact on each side) and g = 0.2 mm. 0.5 mm is not possible: layer 4 is 0.59 mm
+  thick and layer 5 about 0.2 mm.
+* **Tests (as AD1):** infragranular − granular > 0 in the shortfall (A − P, 45%, 30–100 ms) and in AI − AI_sum, one
+  sided. Supragranular − granular is reported two-sided. Sets: main (tiers 1 + 2), tier 1, all anchored.
+* **Prediction:** infragranular − granular > 0 at both margins, with an effect no smaller than AD5's.
+* **Display (not a test):** Fig 3a becomes the depth profile of AI − AI_sum, 30–100 ms. Per penetration and 0.1 mm bin
+  of scaled height: ratio of channel means; median over penetrations with a bootstrap 95% CI; bins with ≥ 8
+  penetrations; the fine layer boundaries drawn. Fig 3b shows layers 2/3, 4, 5 and 6.
+* **Outputs:** `scripts/ah_guard_bands.py`, `docs/qc/ah_tests.csv`.
