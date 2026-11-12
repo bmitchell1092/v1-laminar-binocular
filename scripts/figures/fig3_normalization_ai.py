@@ -125,7 +125,8 @@ def band_ai(X, meta, lo, hi, c=0.45):
 
 
 def bands(axs, X, meta, rel):
-    """(a) one trace per band: measured index (solid), contrast-summation reference (dashed), grey where below."""
+    """(a) one trace per band: measured index (solid), contrast-summation reference (dashed); orange where above,
+    grey where below (as Fig 2)."""
     t_sel = (rel >= 0) & (rel <= 150)
     t = rel[t_sel]
     d = (rel >= 30) & (rel < 100)
@@ -133,7 +134,8 @@ def bands(axs, X, meta, rel):
     for ax, (name, (lo, hi, where)) in zip(axs, BANDS.items()):
         AI, AS, n, n_ch = band_ai(X, meta, lo, hi)
         a, p = AI[t_sel], AS[t_sel]
-        ax.fill_between(t, a, p, where=a < p, color=fs.INK2, alpha=0.35, lw=0)
+        ax.fill_between(t, a, p, where=a >= p, color=fs.ORANGE, alpha=0.55, lw=0, interpolate=True)
+        ax.fill_between(t, a, p, where=a < p, color=fs.MUTED, alpha=0.55, lw=0, interpolate=True)
         ax.plot(t, p, color=fs.MUTED, lw=0.9, ls=fs.SUM_LS)
         ax.plot(t, a, color=fs.INK, lw=1.1)
         gap = np.nanmean(AI[d]) - np.nanmean(AS[d])
@@ -162,7 +164,8 @@ def ridgeline(ax, rel, z, AI, AS, label, gap=0.5):
     for k in range(len(z))[::-1]:
         y0 = -k * gap
         a, p = AI[k, sel] + y0, AS[k, sel] + y0
-        ax.fill_between(t, a, p, where=a < p, color=fs.INK2, alpha=0.35, lw=0, zorder=2 + 3 * k)
+        ax.fill_between(t, a, p, where=a >= p, color=fs.ORANGE, alpha=0.55, lw=0, interpolate=True, zorder=2 + 3 * k)
+        ax.fill_between(t, a, p, where=a < p, color=fs.MUTED, alpha=0.55, lw=0, interpolate=True, zorder=2 + 3 * k)
         ax.plot(t, p, color=fs.MUTED, lw=0.7, ls=fs.SUM_LS, zorder=3 + 3 * k)
         ax.plot(t, a, color=fs.INK, lw=0.9, zorder=3 + 3 * k)
         ax.plot(t, np.full(t.size, y0 + 0.5), color=fs.RULE, lw=0.4, zorder=0)

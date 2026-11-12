@@ -197,3 +197,9 @@ Statistics: hierarchical, with penetration (and monkey) as random effects.
   * AA, the model by depth on v3: the single-stage pools (conductance, fixed delay) do not reproduce the weaker deep normalization (model deep − input +0.008, p = .08; gap to the data p = .002). The two-stage form reproduces most of it (+0.034, p = .002; remaining gap p = .053).
   * AB, pupil control on the current measures: F1, Q1/Q3, X1 and X4 hold in both pupil halves and in the IQR subset. The only difference between halves is the matched-45% shortfall, larger with a larger pupil (−0.015, p = .038).
   * Clean draft text updated in the Results, Discussion and Methods.
+* 2026-11-12: Blake's seven comments on the V5 clean copy → draft V6 (`manuscript/draft_v6.docx`, tracked changes on the commented clean copy, each comment answered in its thread):
+  * Abstract: the methods sentence split in two; "replicated in held-out recordings" and the deep-onset clause removed.
+  * Introduction: the two-stage gain control of cat V1 (Truchard, Ohzawa & Freeman 2000) introduced before normalization, then related to it. Its first stage is monocular, unlike the psychophysical two-stage model (Meese et al. 2006) that we fit.
+  * Fig 1a: the trial timeline removed (timing stays in Methods); a top-aligned with b.
+  * Fig 3a and Supplementary Fig S2: orange where the index exceeds contrast summation, as in Fig 2.
+  * Fig 4: open. Blake finds panel b (held-out error) unhelpful. A redesign is proposed in the thread (data vs static / delayed fits in the index format; the shortfall vs the other eye's contrast with equal / free pool weight; the deep − input difference for data, single-stage and two-stage).

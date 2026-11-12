@@ -5,8 +5,7 @@ contrast responses and ocular dominance moved to the supplement, figS_monocular.
 Usage: .venv\\Scripts\\python scripts\\figures\\fig1_setup.py [example penetration, default 221212_J_eA]
 (a) the setup (schematics): a mirror stereoscope (top view; two mirrors per eye shift each eye's line of sight onto
     its own half of one monitor, divided by a black septum), so each eye sees its own grating at its own contrast; a
-    32-contact laminar probe (0.1 mm spacing) spans the depth of V1; each trial is fixation and three conditions in
-    random order (~317 ms on, ~317 ms off);
+    32-contact laminar probe (0.1 mm spacing) spans the depth of V1 (the trial timing is in Methods only, 2026-11-12);
 (b) the 6 x 6 dichoptic contrast design (each eye 0, 5.5, 11, 22.5, 45 or 90%), with a grating drawn at each
     contrast (Michelson contrast on mid grey) so the contrasts can be seen; each channel's axes are later reoriented
     to its dominant and other eye;
@@ -46,7 +45,7 @@ from v1lb.config import out_root  # noqa: E402
 warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
 H_MM = 116
-POS = {"stereo": (2, 72, 40, 38), "probe": (44, 72, 22, 38), "trial": (2, 57, 64, 10),       # (x, y, w, h) in mm
+POS = {"stereo": (2, 66, 40, 38), "probe": (44, 66, 22, 38),          # (x, y, w, h) in mm; a top-aligned with b
        "matrix": (97, 69, 35, 35), "key": (137, 69, 37, 35),
        "example": (14, 10, 64, 36), "drive": (108, 10, 62, 36)}
 QC = REPO / "docs" / "qc"
@@ -112,20 +111,6 @@ def probe(ax):
     ax.scatter(np.full(32, x0), z, s=1.2, color="white", zorder=3, lw=0)
     ax.annotate("32 contacts,\n0.1 mm apart", xy=(x0 + 0.04, 1.6), xytext=(0.42, 1.95), fontsize=5.2, color=fs.INK,
                 va="top", linespacing=1.0, arrowprops=dict(arrowstyle="-", lw=0.4, color=fs.INK2))
-
-
-def trial(ax):
-    ax.set_xlim(-450, 1950)
-    ax.set_ylim(-0.6, 1.25)
-    ax.axis("off")
-    ax.plot([-400, 1900], [0.3, 0.3], color=fs.MUTED, lw=0.6)
-    ax.text(-400, 0.45, "fixate", fontsize=5.5, color=fs.INK2, va="bottom")
-    for k in range(3):
-        x0 = k * 634
-        ax.add_patch(mpatches.Rectangle((x0, 0.3), 317, 0.42, fc=fs.INK, ec="none"))
-        ax.text(x0 + 158, 0.8, f"condition {k + 1}", ha="center", va="bottom", fontsize=5.5, color=fs.INK2)
-    ax.plot([1583, 1900], [0.05, 0.05], color=fs.INK, lw=0.8)
-    ax.text(1741, -0.08, "317 ms", ha="center", va="top", fontsize=5.5, color=fs.INK2)
 
 
 def design(ax, kax):
@@ -354,10 +339,9 @@ def main():
 
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")                     # axes placed in mm: the in-panel keys stay inside their panels
-    sax, pax, tax, dax, kax = (axes_mm(fig, *POS[n]) for n in ("stereo", "probe", "trial", "matrix", "key"))
+    sax, pax, dax, kax = (axes_mm(fig, *POS[n]) for n in ("stereo", "probe", "matrix", "key"))
     stereoscope(sax)
     probe(pax)
-    trial(tax)
     design(dax, kax)
     bax, cax = (axes_mm(fig, *POS[n]) for n in ("example", "drive"))
     ex = example_raw(bax, pop, k, meta.loc[pen, "monkey"])

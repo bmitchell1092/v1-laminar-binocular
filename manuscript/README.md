@@ -15,3 +15,5 @@ Clean copies for co-authors (`draft_vN_clean.docx`; the `.pdf` beside it is giti
 leave out the "About this draft" notes, the open-items list and inline work notes. The V5 clean copy also fills in the Methods facts (animals, surgery, display, fixation, mapping, recording), taken
 from Mitchell et al. 2023 and checked against the recordings' MonkeyLogic configuration and the task code. It is the
 base for V6.
+
+V6 starts from Blake's comments on the V5 clean copy (`draft_v5_clean.docx` as he commented it), with the changes tracked on that copy.
