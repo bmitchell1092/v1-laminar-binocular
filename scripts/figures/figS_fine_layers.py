@@ -10,7 +10,9 @@ L6 [-0.49 s, -0.22 s) (Zhu et al. 2026 thicknesses; at 100 um, two or three cont
     coarse compartment boundaries;
 (b) additivity index 30-100 ms after onset at 45% in each eye, measured and contrast summation, per penetration
     (docs/qc/ad_groups.csv), medians and interquartile ranges;
-(c) the dominant eye's onset at 90% relative to L4C, per penetration (grey) and median; AD3.
+(c) the dominant eye's onset at 90% relative to L4C, per penetration (grey) and median; AD3;
+(d) the earliest current-sink onset in each compartment relative to layer 4's (check AG,
+    docs/qc/ag_sink_onsets_v5.csv: monocular CSD, contacts whose sink reaches 25% of the strongest).
 Writes <out_root>/figures/figS_fine_layers.pdf and .png; prints the values shown.
 """
 
@@ -48,10 +50,10 @@ def main():
     T = pd.read_csv(QC / f"{AD_PFX[ALIGN]}tests.csv").set_index("test")
     fig = fs.figure("double", 62)
     fig.set_layout_engine("none")
-    c0, ccb = axes_mm(fig, 20, 10, 40, 44), axes_mm(fig, 62, 10, 2, 44)
+    c0, ccb = axes_mm(fig, 18, 10, 34, 44), axes_mm(fig, 54, 10, 2, 44)
     info = tier1_csd(c0, ccb, "J")
     c0.set_title(f"monkey J, mean of {info['n']} tier-1 penetrations", fontsize=6, loc="left")
-    a, b = axes_mm(fig, 90, 10, 34, 44), axes_mm(fig, 138, 10, 34, 44)
+    a, b, d = axes_mm(fig, 76, 10, 28, 44), axes_mm(fig, 112, 10, 26, 44), axes_mm(fig, 148, 10, 24, 44)
     rows = []
     for k, comp in enumerate(FINE):
         x = G[G.compartment == comp]
@@ -66,7 +68,7 @@ def main():
     a.set_xlim(0.3, 0.95)
     a.tick_params(axis="y", length=0)
     a.set_xlabel("additivity index, 30–100 ms")
-    a.set_title("measured (filled); summation (open)", fontsize=6, loc="left")
+    # filled = measured, open = contrast summation: stated in the caption (no room for a title)
     on = G.pivot(index="penetration", columns="compartment", values="dom_90")
     rel = on.sub(on["L4C"], axis=0)
     for k, comp in enumerate(FINE):
@@ -82,7 +84,23 @@ def main():
     b.set_xlabel("onset relative to L4C (ms)\ndominant eye, 90%")
     t6 = T.loc["AD2 shortfall L6 - L4C [tiers 1+2]"]                      # stated in the caption
     print(f"AD2 L6 - L4C: {int(t6.n_in_direction)}/{int(t6.n)}, p = {t6.p:.3f}")
-    for ax, letter in ((c0, "a"), (a, "b"), (b, "c")):
+    S = pd.read_csv(QC / "ag_sink_onsets_v5.csv")
+    S = S[(S.min_rel == 0.25) & S.tier.isin((1, 2))]
+    E = S.groupby(["pen", "fine"]).onset.min().unstack()
+    L4 = E[["L4A/B", "L4C"]].min(axis=1)
+    SINK_ROWS = (("L2/3", "L2/3"), ("layer 4", None), ("L5", "L5"), ("L6", "L6"))
+    for k, (lab, col) in enumerate(SINK_ROWS):
+        v = (E[col] - L4).dropna() if col else pd.Series(0.0, index=L4.index)
+        d.scatter(v, np.full(len(v), k) + np.linspace(-0.15, 0.15, len(v)), s=5, color=fs.MUTED, lw=0)
+        d.plot([v.median()], [k], marker="|", ms=9, mew=1.6, color=fs.INK)
+        rows.append(dict(compartment=lab, series="sink onset - layer 4", n=len(v), median=v.median()))
+    d.axvline(0, color=fs.RULE, lw=0.6)
+    d.set_yticks(range(len(SINK_ROWS)), [r[0] for r in SINK_ROWS])
+    d.set_ylim(len(SINK_ROWS) - 0.4, -0.6)
+    d.tick_params(axis="y", length=0)
+    d.set_xlim(-10, 30)
+    d.set_xlabel("sink onset relative to\nlayer 4 (ms)")
+    for ax, letter in ((c0, "a"), (a, "b"), (b, "c"), (d, "d")):
         fs.panel_label(ax, letter, x=-0.2)
     print(fs.save(fig, "figS_fine_layers"))
     print(pd.DataFrame(rows).round(3).to_string(index=False))
