@@ -47,8 +47,11 @@ SET_NAME = {"main": "tiers 1+2", "tier1": "tier 1", "all": "all anchored"}
 CS4 = (0.11, 0.225, 0.45, 0.9)
 MIN_CH, MIN_PEN, BIN_MM = 2, 8, 0.1
 ROWS = {"both": 12, "dominant": list(CONTRASTS).index(0.45), "other": 8}      # space-time rows at 45%
-POS = {"a0": (20, 68, 62, 24), "a1": (20, 39, 62, 24), "a2": (20, 10, 62, 24),
+POS = {"a": (22, 10, 58, 84),
        "b": (104, 60, 40, 34), "c": (104, 10, 50, 36), "ccb": (157, 10, 2, 36)}
+FINE_BOUNDS = ((0.59, "-"), (0.28, ":"), (0.0, "-"), (-0.22, ":"))      # layer boundaries (scaled mm), check AD
+FINE_LABELS = ((0.9, "L2/3"), (0.435, "L4A/B"), (0.14, "L4C"), (-0.11, "L5"), (-0.355, "L6"))
+LAYERS4 = (("L2/3", ("L2/3",)), ("L4", ("L4A/B", "L4C")), ("L5", ("L5",)), ("L6", ("L6",)))
 
 
 def axes_mm(fig, x, y, w, h):
@@ -101,7 +104,81 @@ def panel_a(axs, X, meta, rel):
     return pd.DataFrame(rows)
 
 
-def panel_b(ax, G, T, set_name):
+PROFILE_BIN = 0.2                                   # mm (scaled) for the depth profile of panel a
+CI = (16, 84)                                       # bootstrap 68% interval (about +-1 s.e.), stated in the caption
+
+
+def gap_profile(C, window):
+    """AI - AI_sum at 45% in a window, per penetration and 0.1 mm bin of scaled height (ratio of channel means, as
+    x_depth_v3.ai_groups); median over penetrations and bootstrap 95% CI, bins with >= MIN_PEN penetrations."""
+    X = C[(C.split == "all") & np.isclose(C.c, 0.45) & (C.window == window) & (C.coarse != "")].copy()
+    X["bin"] = np.round(np.floor(X.h_scaled / PROFILE_BIN + 1e-9) * PROFILE_BIN + PROFILE_BIN / 2, 2)
+    g = X.assign(DO=X.D + X.O).groupby(["penetration", "bin"])[["B", "P_sum", "DO"]].mean()
+    g = g[g.DO > 0.12]
+    per = ((g.B - g.P_sum) / g.DO).unstack()
+    per = per.loc[:, per.notna().sum() >= MIN_PEN]
+    rng = np.random.default_rng(3)
+    boot = np.array([np.nanmedian(per.to_numpy()[rng.integers(0, len(per), len(per))], axis=0) for _ in range(2000)])
+    lo, hi = np.nanpercentile(boot, CI, axis=0)
+    return pd.DataFrame(dict(height=per.columns.to_numpy(), median=per.median().to_numpy(), lo=lo, hi=hi,
+                             n=per.notna().sum().to_numpy()))
+
+
+def panel_a(ax, C):
+    """Depth profile of the gap to contrast summation: 0-20 ms (orange) and 30-100 ms (black)."""
+    out = []
+    for window, col, lab in (("early", fs.ORANGE, "0–20 ms after onset"), ("dip", fs.INK, "30–100 ms")):
+        P = gap_profile(C, window)
+        ax.fill_betweenx(P.height, P.lo, P.hi, color=col, alpha=0.18, lw=0)
+        ax.plot(P["median"], P.height, color=col, lw=1.3, marker="o", ms=2.2)
+        out.append(P.assign(window=window))
+    ax.axvline(0, color=fs.MUTED, lw=0.8, ls=fs.SUM_LS)
+    ax.text(0.005, 1.32, fs.SUM, fontsize=5.5, color=fs.INK2, ha="left", va="center")
+    z = pd.concat(out).height
+    for yb, ls in FINE_BOUNDS:
+        ax.axhline(yb, color=fs.INK2 if ls == "-" else fs.RULE, lw=0.6, ls=ls, zorder=0)
+    for y, lab in FINE_LABELS:
+        if z.min() - 0.05 <= y <= z.max() + 0.05:
+            ax.text(0.97, y, lab, transform=ax.get_yaxis_transform(), fontsize=5.5, ha="right", va="center",
+                    color=fs.INK2)
+    ax.set_ylim(z.min() - 0.08, z.max() + 0.12)
+    ax.set_xlim(-0.25, 0.18)
+    ax.set_xlabel("additivity index − contrast summation\n(both eyes at 45%)")
+    ax.set_ylabel("height above the layer 4C/5 boundary (mm, scaled)")
+    ax.set_title("where the eyes add and where they normalize", fontsize=6.5, loc="left")
+    fs.line_key(ax, [("0–20 ms after onset", fs.ORANGE, "-"), ("30–100 ms", fs.INK, "-")], x=0.03, y=0.10, dy=0.04,
+                length=0.08)
+    return pd.concat(out)
+
+
+def panel_b(ax, C, T, set_name):
+    """The index 30-100 ms in layers 2/3, 4, 5 and 6 (fine labels, layer 4 pooled)."""
+    from x_depth_v3 import ai_groups
+    X = C.copy()
+    X["layer"] = X.fine.map({f: lab for lab, fs_ in LAYERS4 for f in fs_}).fillna("")
+    G = ai_groups(X, grp="layer").reset_index()
+    rows = []
+    for k, (lab, _) in enumerate(LAYERS4):
+        x = G[G.layer == lab]
+        for col, colr, dy, mfc in (("AI", fs.INK, -0.12, fs.INK), ("AI_sum", fs.MUTED, 0.12, "white")):
+            v = x[col].dropna()
+            q1, md, q3 = v.quantile([0.25, 0.5, 0.75])
+            ax.plot([q1, q3], [k + dy] * 2, color=colr, lw=0.9)
+            ax.plot([md], [k + dy], marker="o", ms=3.6, mfc=mfc, mec=colr, mew=0.9, zorder=3)
+            rows.append(dict(layer=lab, series=col, n=len(v), median=md))
+    ax.set_yticks(range(len(LAYERS4)), ["layers 2/3", "layer 4", "layer 5", "layer 6"])
+    ax.tick_params(axis="y", length=0)
+    ax.set_ylim(len(LAYERS4) - 0.4, -0.6)
+    ax.set_xlim(0.3, 0.9)
+    ax.set_xlabel("additivity index, 30–100 ms")
+    r = T.set_index("test").loc[f"AD1 (AI - AI_sum) infragranular - granular > 0 [{set_name}]"]
+    ax.text(1.03, 0.98, f"measured\n{fs.SUM} (open)\n\nlayers 5–6 − layer 4:\n{int(r.n_in_direction)}/{int(r.n)} "
+            f"penetrations,\n{fs.fmt_p(r.p)}", transform=ax.transAxes, ha="left", va="top", fontsize=5.5,
+            color=fs.INK2, linespacing=1.1)
+    return pd.DataFrame(rows)
+
+
+def panel_b_coarse(ax, G, T, set_name):
     rows = []
     for k, (comp, _) in enumerate(COARSE):
         x = G[G.compartment == comp]
@@ -153,10 +230,11 @@ def panel_c(ax, cax, S, t, meta, L):
         ax.plot(on[name], z, color=col, lw=1.1, marker="o", ms=1.8, zorder=4, label=lab)
     ax.set_ylim(z[0] - BIN_MM / 2, z[-1] + BIN_MM / 2)
     ax.set_xlim(0, 50)
-    for yb in (0.0, 0.59):
-        ax.axhline(yb, color=fs.INK2, lw=0.5, ls=(0, (2, 2)))
-    for y, lab in (((0.59 + z[-1]) / 2, "L2/3"), (0.295, "L4"), ((z[0] + 0) / 2, "L5–6")):
-        ax.text(1.0, y, lab, fontsize=5.5, va="center", ha="left", color=fs.INK2)
+    for yb, ls in FINE_BOUNDS:
+        ax.axhline(yb, color=fs.INK2 if ls == "-" else fs.MUTED, lw=0.5, ls=(0, (2, 2)) if ls == "-" else ":")
+    for y, lab in FINE_LABELS:
+        if z[0] <= y <= z[-1] + 0.05:
+            ax.text(1.0, y, lab, fontsize=5.2, va="center", ha="left", color=fs.INK2)
     ax.set_xlabel("time from stimulus onset (ms)")
     ax.set_ylabel("height above the layer 4C/5\nboundary (mm, scaled)")
     ax.set_title("onset at each depth, 45% in each eye", fontsize=6.5)
@@ -186,13 +264,15 @@ def main():
     G = pd.read_csv(QC / f"{AD_PFX[ALIGN]}groups.csv")
     G = G[(G.scheme == "coarse") & G.tier.isin(tiers)]
     T = pd.read_csv(QC / f"{AD_PFX[ALIGN]}tests.csv")
+    C0, _ = load_channels(V)
+    C = relabel(C0[C0.penetration.isin(V[V.tier.isin(tiers)].penetration)], V)
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")
     ax = {k: axes_mm(fig, *v) for k, v in POS.items()}
-    A = panel_a([ax["a0"], ax["a1"], ax["a2"]], on, meta, rel)
-    B = panel_b(ax["b"], G, T, SET_NAME[which])
+    A = panel_a(ax["a"], C)
+    B = panel_b(ax["b"], C, T, SET_NAME[which])
     O = panel_c(ax["c"], ax["ccb"], stim, t, meta, L)
-    for k, lab, x in (("a0", "a", -0.2), ("b", "b", -0.32), ("c", "c", -0.32)):
+    for k, lab, x in (("a", "a", -0.2), ("b", "b", -0.32), ("c", "c", -0.32)):
         fs.panel_label(ax[k], lab, x=x)
     print(fs.save(fig, "fig3_laminar_v4" + ("" if which == "main" else f"_{which}")))
     pd.set_option("display.width", 200)

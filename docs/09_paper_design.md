@@ -3085,3 +3085,24 @@ sits in layer 6). Both margins are reported whatever they show. Neither replaces
   of scaled height: ratio of channel means; median over penetrations with a bootstrap 95% CI; bins with ≥ 8
   penetrations; the fine layer boundaries drawn. Fig 3b shows layers 2/3, 4, 5 and 6.
 * **Outputs:** `scripts/ah_guard_bands.py`, `docs/qc/ah_tests.csv`.
+
+**AH results (2026-11-13; [qc/ah_tests.csv](qc/ah_tests.csv)).** The prediction holds for the index; the shortfall
+in the main set stays a trend.
+
+| Guard band | Main (10): index | Main: shortfall | Tier 1 (7): index / shortfall | All anchored (21): index / shortfall |
+|---|---|---|---|---|
+| 0 | +0.047, 8/9, p = .020 | +0.023, p = .080 | p = .008 / .039 | p < .001 / .002 |
+| 0.1 mm | +0.056, 8/9, p = .020 | +0.032, p = .097 | p = .008 / .039 | p < .001 / .001 |
+| 0.2 mm | +0.059, 7/9, p = .037 | +0.017, p = .12 | p = .016 / .039 | p < .001 / .002 |
+
+* **Fig 3 redesigned** (`fig3_laminar_v4.py`):
+  * (a) the depth profile of AI − AI_sum, 0–20 and 30–100 ms, in 0.2 mm bins, with bootstrap 68% intervals;
+  * (b) layers 2/3, 4, 5 and 6.
+* **Profile (main set, 30–100 ms):** −0.11 to −0.13 in layers 2/3, −0.16 at 0.5 mm (upper layer 4), −0.07 to −0.13
+  around the boundary and in layer 5, −0.03 at the bottom of layer 6.
+* **0–20 ms (descriptive, not tested):** at summation in and above layer 4 (−0.02 to +0.03); above it in layers 5 and
+  6 (+0.07, +0.09, +0.12; the deepest bin's 68% interval +0.07 to +0.14).
+* **Reading:** normalization weakens below layer 4 and is weakest in layer 6, where the early phase also exceeds
+  contrast summation.
+* **Not merged into V7 yet:** `manuscript/draft_v7.docx` was open in Word. The rebuild is held in the scratchpad until
+  Blake's V7 comments are in.

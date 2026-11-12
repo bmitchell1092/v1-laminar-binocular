@@ -1,0 +1,28 @@
+test,n,median,n_in_direction,p,median_odd,median_even,holds,n_channels
+"AH shortfall infragranular - granular > 0 [tiers 1+2, guard 0.0 mm]",10,0.0230924854744278,6,0.080078125,0.035261380829018966,0.015778598912798675,False,
+"AH (reported) shortfall supragranular - granular [tiers 1+2, guard 0.0 mm]",10,-0.013496546800823694,6,0.6953125,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [tiers 1+2, guard 0.0 mm]",9,0.04707734470458713,8,0.01953125,,,True,163.0
+"AH shortfall infragranular - granular > 0 [tier 1, guard 0.0 mm]",7,0.023824021628636602,5,0.0390625,0.04371066167490083,0.020697307606710694,True,
+"AH (reported) shortfall supragranular - granular [tier 1, guard 0.0 mm]",7,-0.012522834460298138,4,1.0,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [tier 1, guard 0.0 mm]",7,0.05550856476730176,7,0.0078125,,,True,119.0
+"AH shortfall infragranular - granular > 0 [all anchored, guard 0.0 mm]",21,0.03191561954424742,15,0.0018763542175292969,0.043305700712612916,0.03563149040383694,True,
+"AH (reported) shortfall supragranular - granular [all anchored, guard 0.0 mm]",16,0.005472662158767332,9,0.49542236328125,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [all anchored, guard 0.0 mm]",20,0.09197682323893125,18,4.100799560546875e-05,,,True,335.0
+"AH shortfall infragranular - granular > 0 [tiers 1+2, guard 0.1 mm]",10,0.03163879612037247,6,0.0966796875,0.027239923746483496,0.017267121072204066,False,
+"AH (reported) shortfall supragranular - granular [tiers 1+2, guard 0.1 mm]",10,-0.014384247844499619,6,0.76953125,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [tiers 1+2, guard 0.1 mm]",9,0.05598543873576867,8,0.01953125,,,True,126.0
+"AH shortfall infragranular - granular > 0 [tier 1, guard 0.1 mm]",7,0.04395799447117693,5,0.0390625,0.04952385821774312,0.03081049608647722,True,
+"AH (reported) shortfall supragranular - granular [tier 1, guard 0.1 mm]",7,-0.013940656608128946,4,1.0,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [tier 1, guard 0.1 mm]",7,0.06882115254845123,7,0.0078125,,,True,92.0
+"AH shortfall infragranular - granular > 0 [all anchored, guard 0.1 mm]",21,0.04395799447117693,15,0.0014286041259765625,0.04952385821774312,0.03367669831933239,True,
+"AH (reported) shortfall supragranular - granular [all anchored, guard 0.1 mm]",15,0.003638312137005424,8,0.638671875,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [all anchored, guard 0.1 mm]",20,0.08561083942456094,18,4.100799560546875e-05,,,True,257.0
+"AH shortfall infragranular - granular > 0 [tiers 1+2, guard 0.2 mm]",10,0.017390376565237866,6,0.1162109375,0.03199690708777289,0.01824144284481812,False,
+"AH (reported) shortfall supragranular - granular [tiers 1+2, guard 0.2 mm]",10,-0.0141050856153156,6,0.921875,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [tiers 1+2, guard 0.2 mm]",9,0.0591950618033511,7,0.037109375,,,True,87.0
+"AH shortfall infragranular - granular > 0 [tier 1, guard 0.2 mm]",7,0.02358173641977987,5,0.0390625,0.04637489829769117,0.024236877283804414,True,
+"AH (reported) shortfall supragranular - granular [tier 1, guard 0.2 mm]",7,-0.013714322477259955,4,1.0,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [tier 1, guard 0.2 mm]",7,0.08006867783573995,6,0.015625,,,True,64.0
+"AH shortfall infragranular - granular > 0 [all anchored, guard 0.2 mm]",21,0.030207939305490927,16,0.0016393661499023438,0.05126700835251751,0.031270413676354636,True,
+"AH (reported) shortfall supragranular - granular [all anchored, guard 0.2 mm]",14,-0.004943366878176092,7,0.7608642578125,,,,
+"AH (AI - AI_sum) infragranular - granular > 0 [all anchored, guard 0.2 mm]",20,0.101797546739023,17,6.67572021484375e-05,,,True,178.0
