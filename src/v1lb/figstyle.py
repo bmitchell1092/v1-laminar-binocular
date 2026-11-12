@@ -33,7 +33,8 @@ CONTRAST = {0.055: "#86b6ef", 0.11: "#3987e5", 0.225: "#256abf", 0.45: "#184f95"
 COND = {"dominant": BLUE, "other": ORANGE, "both": INK, "linear": MUTED}
 MODEL = {"data": INK, "static": INK2, "fixed-delay": AQUA, "conductance": VIOLET, "recurrent": MAGENTA}
 MONKEY_MARKER = {"B": "o", "J": "s"}
-CSD_CMAP = LinearSegmentedColormap.from_list("csd", ["#0d366b", "#3987e5", "#f0efec", "#e34948", "#8f1f1e"])
+# CSD (sinks negative): red = sink, blue = source, as in the Maier lab's papers (Blake, 2026-11-13)
+CSD_CMAP = LinearSegmentedColormap.from_list("csd", ["#8f1f1e", "#e34948", "#f0efec", "#3987e5", "#0d366b"])
 # depth x time maps of what the other eye adds, or of both eyes minus the summation prediction (docs/11): white = 0,
 # orange (the other eye's colour) = it adds / more than summation, grey = less (normalized)
 ADDED_CMAP = LinearSegmentedColormap.from_list("added", ["#2b2a28", "#8a8985", "#ffffff", ORANGE, "#8a3210"])

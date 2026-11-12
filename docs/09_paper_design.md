@@ -2943,3 +2943,27 @@ penetrations (211008_B has 217 ms stimuli and too few even-half presentations to
   layers 5–6. Which model form underlies the laminar difference is left open in the paper: a single-stage pool with
   a weaker other-eye pool weight, or a two-stage form. Fig 4d–e now use AE; Fig 4a–c stay on Y1 (all penetrations,
   depth groups averaged), which do not depend on depth.
+
+## Check AF: is the 4C/5 boundary the bottom of the initial sink? (2026-11-13, descriptive; Blake's comment on V7)
+
+**Why.** In S3a (monkey J's tier-1 mean CSD), Blake read the earliest sink as 4C, with later sinks above it (2/3)
+and below it (5). On that reading the 4C/5 boundary is the bottom of the initial sink (the Maier-lab convention), and
+the v4 anchor (the phase flip) lies too deep. **Not registered;** run after Blake's reading.
+
+* **Sink bottom.** The initial monocular sink at its peak time was walked down from the earliest-sink contact to the
+  first source contact ([qc/af_sink_bottom.csv](qc/af_sink_bottom.csv)). The bottom lies a median 0.25 mm above the
+  v4 anchor in tier 1 (IQR 0.20–0.30), 0.275 in tiers 1 + 2 (0.20–0.30) and 0.20 in all 22 (0.125–0.30). The outliers
+  are the penetrations where the sink had already failed (221215, 221202_J_eB, 221119). The offset is systematic: the
+  phase flip lies about 0.25 mm below the bottom of the initial sink.
+* **Onsets relative to the sink bottom** (dominant eye at 90%; each penetration's median channel onset per 0.1 mm bin,
+  relative to its overall median; tiers 1 + 2, all 22 in brackets):
+  * 0–0.3 mm above: earliest (−0.9 to −1.9 ms);
+  * 0–0.3 mm below: 2.3 ms later than the band above (9/12, p = .092) [2.0 ms, 16/22, p = .085];
+  * 0.4–0.8 mm below: early again (down to −3.5 ms);
+  * above 0.4 mm: progressively later (to +8 ms).
+* **Reading:** with the boundary at the bottom of the initial sink, the onset sequence is canonical: 4C first, then
+  layer 5, layer 6 early (geniculate input), and the supragranular layers last. Under v4 the "L4A/B" band fired before
+  "L4C"; that band is 4C on this reading. The layer 5 delay is a trend only.
+* **CSD colours:** red = sink, blue = source from now on, as in the Maier lab's papers (`figstyle.CSD_CMAP`).
+* **Proposed (for Blake):** alignment v5 anchored on the bottom of the initial sink, cross-checked against the flip
+  (−0.25 mm) and the crossing. Then rerun the thickness tiers and AD, AE, Fig 3, S2, S3 and the V7 text.
