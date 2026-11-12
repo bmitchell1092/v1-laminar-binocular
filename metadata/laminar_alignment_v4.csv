@@ -1,0 +1,27 @@
+penetration,monkey,anchor_contact,orientation,top_contact,tier,s,top_observed,span_mm,s_top,probe_below_anchor_mm,est_flip_mm,est_sink_mm,est_crossing_mm,anchor_basis,reason
+221212_J_eA,J,17.5,ascending,2,1,1.25,True,1.55,1.25,1.5,0.0,-0.15,-0.26,"flip (sink, crossing agree)",
+211008_B_eA,B,20.5,ascending,3,0,1.0,True,1.75,1.411,1.2,-1.1,-0.15,0.22,sink and crossing (flip absent or disagrees),estimates disagree by > 0.3 mm; span 1.75 mm (s = 1.41)
+211012_B_eA,B,26.5,descending,32,0,1.0,False,0.55,0.444,2.6,-0.0,0.05,-0.05,"flip (sink, crossing agree)",top off the probe (span >= 0.55 mm); lower-bound span too short to check
+211027_B_eA,B,26.5,descending,32,0,1.0,False,0.55,0.444,2.6,-0.0,0.05,0.2,"flip (sink, crossing agree)",top off the probe (span >= 0.55 mm); lower-bound span too short to check
+211103_B_eA,B,12.5,ascending,5,0,1.0,True,0.75,0.605,2.0,0.0,0.25,0.38,"flip (sink, crossing agree)",span 0.75 mm (s = 0.60)
+211208_B_eA,B,12.5,ascending,1,2,1.0,False,1.15,0.927,2.0,0.0,0.05,0.24,"flip (sink, crossing agree)",top off the probe (span >= 1.15 mm)
+211210_B_eA,B,,ascending,1,0,,,,,,,,,,no v3 anchor
+211217_B_eA,B,19.5,descending,32,2,1.0,False,1.25,1.008,1.9,-0.0,-0.15,-1.04,flip (sink agree),top off the probe (span >= 1.25 mm)
+221118_J_eA,J,,ascending,8,0,,,,,,,,,,no v3 anchor
+221119_J_eA,J,15.5,ascending,1,0,1.0,False,1.45,1.169,1.7,0.0,-0.65,-0.36,flip (crossing agree),estimates disagree by > 0.3 mm; top off the probe (span >= 1.45 mm)
+221121_J_eA,J,18.5,ascending,6,1,1.008,True,1.25,1.008,1.4,0.0,-0.25,0.09,"flip (sink, crossing agree)",
+221123_J_eA,J,18.5,ascending,7,1,0.927,True,1.15,0.927,1.4,,-0.15,0.15,sink and crossing (flip absent or disagrees),
+221128_J_eA,J,22.5,descending,32,2,1.0,False,0.95,0.766,2.2,-0.0,-0.05,,flip (sink agree),top off the probe (span >= 0.95 mm)
+221130_J_eA,J,18.5,ascending,4,1,1.169,True,1.45,1.169,1.4,0.0,-0.25,-0.5,flip (sink agree),
+221202_J_eA,J,25.5,ascending,3,0,1.0,True,2.25,1.815,0.7,0.0,0.05,,flip (sink agree),only 0.70 mm of probe below the anchor; span 2.25 mm (s = 1.81)
+221202_J_eB,J,18.5,ascending,6,1,1.008,True,1.25,1.008,1.4,0.0,-0.75,-0.1,flip (crossing agree),
+221204_J_eB,J,,ascending,3,0,,,,,,,,,,no v3 anchor
+221206_J_eA,J,19.5,ascending,4,1,1.25,True,1.55,1.25,1.3,,-0.15,0.07,sink and crossing (flip absent or disagrees),
+221209_J_eA,J,27.5,descending,32,0,1.0,False,0.45,0.363,2.7,,-0.05,0.03,sink and crossing (flip absent or disagrees),top off the probe (span >= 0.45 mm); lower-bound span too short to check
+221209_J_eB,J,19.5,ascending,4,1,1.25,True,1.55,1.25,1.3,0.0,-0.25,-0.38,"flip (sink, crossing agree)",
+221214_J_eA,J,22.5,descending,29,0,1.0,False,0.65,0.524,2.2,,0.05,-0.1,sink and crossing (flip absent or disagrees),top off the probe (span >= 0.65 mm); lower-bound span too short to check
+221214_J_eB,J,28.5,ascending,1,0,1.0,False,2.75,2.218,0.4,0.0,-0.25,0.08,"flip (sink, crossing agree)",only 0.40 mm of probe below the anchor; top off the probe (span >= 2.75 mm)
+211025_B_eA,B,14.5,ascending,1,0,1.0,False,1.35,1.089,1.8,-1.1,-0.15,0.18,sink and crossing (flip absent or disagrees),estimates disagree by > 0.3 mm; top off the probe (span >= 1.35 mm)
+221109_J_eA,J,25.5,descending,32,0,1.0,False,0.65,0.524,2.5,2.3,0.15,-0.22,sink and crossing (flip absent or disagrees),estimates disagree by > 0.3 mm; top off the probe (span >= 0.65 mm); lower-bound span too short to check
+221206_J_eB,J,,descending,32,0,,,,,,,,,,no v3 anchor
+221215_J_eA,J,15.5,ascending,2,1,1.089,True,1.35,1.089,1.7,0.0,1.05,0.03,flip (crossing agree),

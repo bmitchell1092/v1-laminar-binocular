@@ -2770,3 +2770,59 @@ layer budget: about 1.1–1.4 mm of cortex above the 4C/5 border (4C ≈ 0.28 mm
   the input band as 4C plus 4B. Add the thickness gates as flags. Add sensitivity analyses: rigid anchor shifts of
   ±0.1 and ±0.2 mm; input 0–0.3 mm; deep 0–0.5 mm, split into L5 (0 to −0.25) and L6 (−0.25 to −0.5); a guard band;
   and the gate-passing subset.
+
+## Laminar alignment v4 and check AD: confident penetrations, coarse and fine compartments (registered internally 2026-11-12, before running; Blake: "limiting the laminar analyses to subset of penetrations that we are absolutely confident about … use the top of cortex and thickness as a check … a coarse labeling of compartment (three way split) versus a finer, but more error-prone labeling"; and "each day the cortical thickness could be stretched or squished")
+
+**Not blind:** X, AA and AC (per-penetration deep − input onset and shortfall on v3) are known. The selection and the
+labels below use laminar markers and monocular MUA only, and were frozen before anything binocular was computed on
+them.
+
+**Alignment v4** (`scripts/freeze_laminar_alignment_v4.py` → `metadata/laminar_alignment_v4.csv`). The v3 anchors are
+unchanged. None of the excluded penetrations can be rescued by switching to another marker without contradicting the
+others or the span. The layer budget comes from the literature review: about 1.24 mm from the evoked-MUA top (top of
+layer 2) to the 4C/5 border, and 0.49 mm of layers 5–6 below it. The penetration's squish factor is
+s = (top to anchor) / 1.24 mm.
+* **Tier 1 (confident)** must pass all four checks:
+  * T1: the top of cortex is on the probe;
+  * T2: s lies within 0.75–1.35 (daily compression or stretch, plus a contact of rounding);
+  * T3: two independent boundary estimates agree within 0.3 mm (v3 allowed 0.4);
+  * T4: at least 0.49·s mm of probe lies below the anchor.
+* **Tier 2 (consistent):** the top is off the probe, T3 and T4 pass, and the lower-bound span does not contradict T2.
+* **Bottom of grey matter:** not used. Automated MUA/CSD calls were anatomically impossible in three probes, and MUA
+  continues 1.3–1.7 mm below the anchor in several J probes.
+* **Result:**
+  * Tier 1: 8 penetrations, all monkey J (221121, 221123, 221130, 221202_J_eB, 221206_J_eA, 221209_J_eB, 221212,
+    221215; s = 0.93–1.25).
+  * Tier 2: 3 (211208_B, 211217_B, 221128_J).
+  * Tier 0: 11, of which B has 5 (211008 span 1.75 mm, flip 1.1 mm off; 211103 span 0.75 mm; 211012 and 211027 with
+    the top off the probe and the span unverifiable; 211025 with its estimates 1.1 mm apart).
+  * **Monkey B has no tier-1 penetration.**
+
+**Labels** (h = height above the anchor in mm; s as above in tier 1, 1 otherwise; contacts by their centres; contacts
+deeper than −0.49·s are excluded as the grey/white transition). Thicknesses from Zhu et al. 2026; layer 5 is about
+0.45 of layers 5–6.
+* **Coarse:** supragranular h > 0.59·s (layers 2/3); granular 0 < h ≤ 0.59·s (layer 4, 4A–4C); infragranular
+  −0.49·s ≤ h < 0 (layers 5–6).
+* **Fine:** L2/3 h > 0.59·s; L4A/B 0.28·s < h ≤ 0.59·s; L4C 0 < h ≤ 0.28·s; L5 −0.22·s ≤ h < 0;
+  L6 −0.49·s ≤ h < −0.22·s.
+* **Channels and measures:** check X's (`x_channels.parquet`, `x_latency.parquet`: first-sheet driven MUA, 45%,
+  30–100 ms after each channel's onset; half-max onsets), relabelled. No new per-channel computation.
+
+**Tests.** Penetration sets: tier 1 (primary), tiers 1 + 2, and all 22 (reference). One-sided Wilcoxon over
+penetrations where a direction is predicted; both halves' medians in that direction where halves exist.
+* **AD1 (coarse normalization):** shortfall (A − P) infragranular − granular > 0; AI − AI_sum infragranular −
+  granular > 0. Reported: supragranular − granular (two-sided), and each compartment's shortfall < 0.
+* **AD2 (fine normalization, descriptive):** each compartment's shortfall minus L4C's. Predicted from v3: L5 > 0 and
+  L6 > 0; L2/3 and L4A/B about 0.
+* **AD3 (onset, dominant eye at 90%):**
+  * coarse: supragranular − granular > 0; infragranular − granular reported two-sided;
+  * fine, relative to L4C: L2/3 and L4A/B later (> 0); L5 later (> 0); L6 two-sided, since layer 6 receives
+    geniculate input and the literature puts it with 4Cα among the earliest.
+* **AD4:** binocular advance at 45% < 0 in each coarse compartment.
+* **AD5:** shortfall ~ h/s (scaled depth, mm), mixed model with a penetration intercept; slope < 0 (normalization
+  weaker deeper).
+
+**Commitment.** The paper's laminar results come from tier 1 with the coarse labels. Tiers 1 + 2 and the fine labels
+are reported alongside, and all 22 as the reference. Because tier 1 is one monkey, Blake decides after seeing AD
+whether the paper uses tier 1 alone or tiers 1 + 2; the registered predictions hold either way. Script:
+`scripts/ad_compartments_v4.py`; outputs `docs/qc/ad_tests.csv`, `ad_groups.csv`.
