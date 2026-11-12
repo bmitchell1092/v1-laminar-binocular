@@ -10,3 +10,6 @@ Revision loop:
 3. Figures come from `scripts/figures/` (`output/figures/*.png`); when a figure changes, its image is replaced in the next draft.
 
 Line numbers are continuous, so comments can also say "line 123".
+
+Clean copies for co-authors (`draft_vN_clean.docx`; the `.pdf` beside it is gitignored) have every change accepted and no comments. They also
+leave out the "About this draft" notes, the open-items list and inline work notes. The bracketed Methods facts stay in.
