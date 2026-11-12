@@ -2748,3 +2748,6 @@ v3 boundary).
 * **For the paper (proposed):** drop "deep channels respond as early" from the Fig 3 title, the Results and the
   Discussion. Report the superficial delay (5 ms), and that deep onsets did not differ consistently from input onsets
   (earlier in monkey J, not in B). Add the markers-agree subset as a sensitivity line for X1/X2.
+* **Decision (Blake, 2026-11-12):** drop "deep channels respond as early as the input layer" from the paper. A
+  literature review of where the initial sink, the phase flip and the spectral crossing lie relative to the anatomy
+  (`reports/Macaque V1 laminar markers anatomy.md`) comes first, because it may change the anchor and the compartments.
