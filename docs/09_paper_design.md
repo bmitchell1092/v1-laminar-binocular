@@ -2751,3 +2751,22 @@ v3 boundary).
 * **Decision (Blake, 2026-11-12):** drop "deep channels respond as early as the input layer" from the paper. A
   literature review of where the initial sink, the phase flip and the spectral crossing lie relative to the anatomy
   (`reports/Macaque V1 laminar markers anatomy.md`) comes first, because it may change the anchor and the compartments.
+
+**Laminar literature review (2026-11-12; `reports/Macaque V1 laminar markers anatomy.md`, notes in
+`research_notes/Macaque V1 laminar markers anatomy/`).** No study has measured, against histology, how far the 4C/5
+border lies below the initial sink in macaque V1. The offsets in use are conventions. The usable constraint is the
+layer budget: about 1.1–1.4 mm of cortex above the 4C/5 border (4C ≈ 0.28 mm) and about 0.5 mm below it (layers 5–6
+≈ 0.49 mm). 4Cα and layer 6 both spike earliest, so early spiking 0.3–0.7 mm below a correct border is expected.
+* **First gate applied (evoked-MUA top to anchor, expected 1.1–1.4 mm; `top_to_anchor_mm` in alignment v3):**
+  * The 7 J penetrations where the markers disagree: 1.25–1.55 mm (221214_J_eB 2.75). The flip passes. Their sinks
+    (0.55–1.05 mm above the flip) lie 0.2–0.9 mm below the top of cortex, too high for layer 4C, so in these
+    penetrations the sink is the marker that failed. The early deep contacts lie where layer 6 should be.
+  * Short (< 0.9 mm): 221209_J_eA, 211012, 211027, 221109 and 221214_J_eA have the top of cortex at or near the end of
+    a descending probe (top censored, so the distance is a lower bound); 211103_B_eA (0.75 mm, top contact 5) is a
+    real flag.
+  * Long (> 1.5 mm): 221202_J_eA 2.25, 221214_J_eB 2.75, 211008_B_eA 1.75, 221209_J_eB, 221206_J_eA and 221212_J_eA
+    1.55 (oblique probe, a high top, or a deep anchor).
+* **Recommendations for Blake (not yet adopted):** keep the 4C/5 border as the target and the v3 anchor, and describe
+  the input band as 4C plus 4B. Add the thickness gates as flags. Add sensitivity analyses: rigid anchor shifts of
+  ±0.1 and ±0.2 mm; input 0–0.3 mm; deep 0–0.5 mm, split into L5 (0 to −0.25) and L6 (−0.25 to −0.5); a guard band;
+  and the gate-passing subset.
