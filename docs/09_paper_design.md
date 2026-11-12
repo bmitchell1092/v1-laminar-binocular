@@ -3045,3 +3045,27 @@ the v4 anchor (the phase flip) lies too deep. **Not registered;** run after Blak
   smaller excess pool weight in layers 5–6.
 * **Draft V7 rebuilt on v5** (`manuscript/draft_v7.docx`; replaces the v4-based V7 of a6815ee). Zhu et al. 2026 added
   to the references.
+
+## Check AG: the order of current-sink onsets by compartment on v5 (2026-11-13, descriptive; Blake: "It should be layer 4, then layer 2/3, then layer 5, right?")
+
+**Method.** Monocular CSD (one eye at ≥ 45%; the laminar audit's cache), sink onset per contact by the audit's rule
+(`laminar_audit.sink_onsets`: walking back from the sink's peak in 20–100 ms to 25% of it). Contacts count if their
+sink reaches 25% (or 40%) of the strongest in the first sheet. Fine compartments on v5, unscaled heights. Per
+penetration, the earliest sink onset in each compartment; layer 4 = the earlier of 4A/B and 4C. Two-sided Wilcoxon
+over penetrations. Table [qc/ag_sink_onsets_v5.csv](qc/ag_sink_onsets_v5.csv).
+
+* **The sequence is layer 4, then layers 2/3, then layer 5,** at both thresholds and in both sets.
+
+  | 25% threshold | Main set (10) | All anchored (21) |
+  |---|---|---|
+  | Layer 4 (earliest sink, median) | 33 ms | 33 ms |
+  | 2/3 − layer 4 | +10.5 ms, 9/9, p = .004 | +10.2 ms, 11/12, p = .005 |
+  | Layer 5 − layer 4 | +14.5 ms, 7/7, p = .016 | +14.5 ms, 11/11, p = .001 |
+  | Layer 5 − 2/3 | +3.2 ms, 7/7, p = .016 | +4.0 ms, 8/8, p = .008 |
+  | Layer 6 − layer 4 | +9.6 ms, 4/6, p = .22 | +8.2 ms, 11/13, p = .010 |
+
+  At the 40% threshold: 2/3 − 4 +9.8 ms; 5 − 2/3 +3.8 to +4.4 ms (6/6, 7/7); 6 − 4 +5.5 ms (10/11, all anchored).
+* **Sinks and spikes differ below layer 4.** Spiking in layers 5 and 6 begins within 1–2 ms of layer 4C (AD5), but
+  the sinks there begin 8–15 ms after layer 4's. The deep MUA onset reflects the earliest spikes in those layers. The
+  deep sinks reflect synaptic currents that build later, as the supragranular-to-infragranular sequence expects.
+  This is not tested.
