@@ -2826,3 +2826,34 @@ penetrations where a direction is predicted; both halves' medians in that direct
 are reported alongside, and all 22 as the reference. Because tier 1 is one monkey, Blake decides after seeing AD
 whether the paper uses tier 1 alone or tiers 1 + 2; the registered predictions hold either way. Script:
 `scripts/ad_compartments_v4.py`; outputs `docs/qc/ad_tests.csv`, `ad_groups.csv`.
+
+**AD results (2026-11-12; [qc/ad_tests.csv](qc/ad_tests.csv), [qc/ad_groups.csv](qc/ad_groups.csv)).** Medians over
+penetrations; tier 1 = 8 (all J), tiers 1 + 2 = 11 (3 B), all = 22.
+
+| Test | Tier 1 | Tiers 1 + 2 | All 22 |
+|---|---|---|---|
+| AD1 shortfall infra − granular > 0 | **+0.043, 6/8, p = .027, halves ✓** | +0.042, 8/11, p = .021 ✓ | +0.043, 19/22, p < .001 ✓ |
+| AD1 (AI − AI_sum) infra − granular > 0 | **+0.105, 6/8, p = .020** | +0.103, 8/11, p = .012 | +0.103, 18/21, p < .001 |
+| AD1 supra − granular (two-sided) | −0.023, p = .20 | −0.022, p = .08 | −0.008, p = .74 |
+| Shortfall < 0: supra / granular / infra | −0.075 (p = .004) / −0.061 (p = .012) / −0.025 (p = .074) | −0.077 / −0.059 / −0.031 (p = .12) | −0.073 / −0.078 / −0.037 (p = .029) |
+| AD2 L6 − L4C > 0 | +0.046, 6/8, p = .074 ✗ | +0.025, p = .074 ✗ | +0.045, 15/21, p = .010 ✓ |
+| AD2 L5 − L4C > 0 | +0.002, 4/8 ✗ | +0.009 ✗ | +0.006 ✗ |
+| AD2 L2/3, L4A/B − L4C | −0.027, −0.014 (ns) | −0.024, −0.020 | −0.021, −0.018 (p = .025) |
+| AD3 onset supra − granular > 0 | **+8.6 ms, 8/8, p = .004 ✓** | +7.9, 11/11 ✓ | +7.0, 17/19 ✓ |
+| AD3 onset infra − granular (two-sided) | **−2.2 ms, 8/8 earlier, p = .008** | −2.1, 8/11, p = .15 | −1.9, 14/22, p = .17 |
+| AD3 fine vs L4C: L2/3 / L4A/B / L5 / L6 | +7.9 ✓ / −1.3 ✗ / −2.7 ✗ (0/8 later) / −3.5 (8/8 earlier) | +6.9 / −0.9 / −0.5 / −2.1 (p = .042) | +6.8 / −0.4 / −0.5 / −1.4 (p = .096) |
+| AD4 binocular advance < 0: supra / granular / infra | −1.9 ✓ / −1.1 ✓ / −0.1 ✗ (p = .23) | −2.6 ✓ / −0.8 ✓ / −0.2 ✗ | all ✓ (infra −0.8, p = .001) |
+| AD5 slope of shortfall per scaled mm above the anchor < 0 | −0.033, p < .001 ✓ | −0.042 ✓ | −0.026 ✓ |
+
+* **The normalization result holds in the confident penetrations (AD1, AD5),** with the same size as in all 22.
+  Supragranular and granular normalize alike; the infragranular compartment normalizes less.
+* **Fine labels: the weaker deep normalization sits in layer 6, not layer 5** (L6 − L4C +0.046; L5 ≈ L4C). This
+  holds in all 22 (p = .010) and reaches only p = .074 in tier 1 (n = 8, two to three channels per fine
+  compartment). L5 has a median of 2–2.5 channels.
+* **Onsets in the confident penetrations follow the anatomy of the geniculate input.** Supragranular is 8.6 ms later
+  than granular (8/8). Layer 6 is earliest (−3.5 ms vs L4C, 8/8), and L4C, two of whose three contacts lie in the
+  lower (4Cβ, parvocellular) half, is later than its neighbours. The registered fine predictions for L4A/B and L5
+  fail: both are earlier than L4C. At 100 µm, L5's two contacts sit within one contact of the anchor and of layer 6.
+  Tier 1 is one monkey; the deep-onset claim stays out of the paper (Blake, AC).
+* **AD4:** adding the other eye advances onset in the supragranular and granular compartments, but not reliably in
+  the infragranular compartment of the confident penetrations (−0.1 ms, 5/8). Across all 22 it holds (−0.8 ms).
