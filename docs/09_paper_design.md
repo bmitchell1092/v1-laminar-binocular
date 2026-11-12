@@ -2916,3 +2916,30 @@ better).
 
 Script `scripts/ae_model_v4.py`; outputs `<out_root>/binocular/ae_N_groups.parquet`, `ae_N_pred.npz`,
 `ae_P_groups.parquet`; `docs/qc/ae_N.csv`, `ae_P.csv`, `ae_model_misses.csv`, `ae_groups.csv`.
+
+**AE results (2026-11-13; [qc/ae_N.csv](qc/ae_N.csv), [qc/ae_P.csv](qc/ae_P.csv),
+[qc/ae_model_misses.csv](qc/ae_model_misses.csv), [qc/ae_groups.csv](qc/ae_groups.csv)).** 11 of the 12 main-set
+penetrations (211008_B has 217 ms stimuli and too few even-half presentations to fit, as in Y1), 33 compartments.
+* **AE1 holds in every compartment** (supragranular / granular / infragranular):
+  * the delay: held-out error 48 / 75 / 67% lower than the static pool (11/11 each, p < .001);
+  * the pool weighting: 10, 10 and 9 of 11 (p ≤ .003);
+  * the conductance form helps in layers 2/3 and 4 (p = .003, .012) but not in layers 5–6.
+* **Weights (conductance):** drive a 0.76 / 0.69 / 0.82, pool w 0.94 / 1.09 / 0.98; w − a 0.22 / 0.43 / 0.11 (10, 10
+  and 11 of 11, p ≤ .002). Infragranular − granular −0.21 (p = .054).
+* **τ2:** 16 / 50 / 41 ms (supragranular shorter, p = .001; not interpreted).
+* **AE2:** 2stage beats the fixed-delay model by 5.0 / 2.5 / 1.3% (p = .074, .009, .034); org does not beat cond in any
+  compartment.
+* **AE3: the registered prediction fails.** On the main set the single-stage pools reproduce the infragranular −
+  granular difference:
+  * data +2.6% (9/11, p = .021);
+  * conductance +2.5% (8/11, p = .021; gap +0.4%, p = .16);
+  * fixed delay +2.5% (p = .027);
+  * two-stage +4.3% (7/11, p = .10).
+
+  With AA's v3 groups over 21 penetrations, conductance gave +0.8% (p = .08) against +4.5% in the data, and two-stage
+  +3.3%.
+* **Reading:** with groups whose depth reference passed the thickness checks, the conductance pool fitted per
+  compartment reproduces the weaker deep normalization, through a smaller excess pool weight for the other eye in
+  layers 5–6. Which model form underlies the laminar difference is left open in the paper: a single-stage pool with
+  a weaker other-eye pool weight, or a two-stage form. Fig 4d–e now use AE; Fig 4a–c stay on Y1 (all penetrations,
+  depth groups averaged), which do not depend on depth.

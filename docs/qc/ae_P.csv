@@ -1,0 +1,29 @@
+test,n,best_static,best_full,best_w=a,best_cond,best_org,best_2stage,median,n_in_direction,p,median_o_to_e,median_e_to_o,holds
+"P1 best model (lowest held-out error), supragranular (v4)",11,0.0,1.0,0.0,2.0,4.0,4.0,,,,,,
+"(reported) % less error than full, static, supragranular (v4)",11,,,,,,,-91.33942522340404,0.0,,,,
+"(reported) % less error than full, w=a, supragranular (v4)",11,,,,,,,-7.859188026879149,1.0,,,,
+"(reported) % less error than full, cond, supragranular (v4)",11,,,,,,,3.834736432510666,10.0,,,,
+"(reported) % less error than full, org, supragranular (v4)",11,,,,,,,3.248414061298366,9.0,,,,
+"(reported) % less error than full, 2stage, supragranular (v4)",11,,,,,,,4.970202692498448,8.0,,,,
+"P1 best model (lowest held-out error), granular (v4)",11,0.0,0.0,0.0,2.0,0.0,9.0,,,,,,
+"(reported) % less error than full, static, granular (v4)",11,,,,,,,-292.14839479009447,0.0,,,,
+"(reported) % less error than full, w=a, granular (v4)",11,,,,,,,-8.009345564940729,1.0,,,,
+"(reported) % less error than full, cond, granular (v4)",11,,,,,,,1.455693051901663,9.0,,,,
+"(reported) % less error than full, org, granular (v4)",11,,,,,,,-8.60592349846765,1.0,,,,
+"(reported) % less error than full, 2stage, granular (v4)",11,,,,,,,2.546037347332042,10.0,,,,
+"P1 best model (lowest held-out error), infragranular (v4)",11,0.0,1.0,1.0,1.0,1.0,7.0,,,,,,
+"(reported) % less error than full, static, infragranular (v4)",11,,,,,,,-203.65928275957984,0.0,,,,
+"(reported) % less error than full, w=a, infragranular (v4)",11,,,,,,,-0.9664528286264851,2.0,,,,
+"(reported) % less error than full, cond, infragranular (v4)",11,,,,,,,-6.465624668994252e-05,5.0,,,,
+"(reported) % less error than full, org, infragranular (v4)",11,,,,,,,-10.872703364599957,1.0,,,,
+"(reported) % less error than full, 2stage, infragranular (v4)",11,,,,,,,1.3441598565102852,8.0,,,,
+"P2 org vs cond: log(CV cond / CV org) > 0, supragranular (v4)",11,,,,,,,0.02338419422622923,7.0,0.1826171875,0.012363364896371791,0.021085661607948277,False
+"P2 org vs cond: log(CV cond / CV org) > 0, granular (v4)",11,,,,,,,-0.12796272445279194,1.0,0.9990234375,-0.10524758589490994,-0.14339419617078997,False
+"P2 org vs cond: log(CV cond / CV org) > 0, infragranular (v4)",11,,,,,,,-0.10321189412957389,1.0,0.99951171875,-0.10412512427186352,-0.118975536183957,False
+"P2 org vs cond, supragranular - granular (v4) (two-sided)",11,,,,,,,0.14304854480095086,11.0,0.0009765625,,,
+"P2 org vs cond, infragranular - granular (v4) (two-sided)",11,,,,,,,0.0010782570750079157,6.0,0.51953125,,,
+"P3 2stage vs full: log(CV full / CV 2stage) > 0, supragranular (v4)",11,,,,,,,0.05097968769883167,8.0,0.07373046875,0.05267925308457736,0.04431076468571724,False
+"P3 2stage vs full: log(CV full / CV 2stage) > 0, granular (v4)",11,,,,,,,0.02579009741674244,10.0,0.00927734375,0.032015664120924776,0.017348238408438566,True
+"P3 2stage vs full: log(CV full / CV 2stage) > 0, infragranular (v4)",11,,,,,,,0.013532754628170367,8.0,0.03369140625,0.007955956371612432,0.018464942617075493,True
+"P3 2stage vs full, supragranular - granular (v4) (two-sided)",11,,,,,,,-0.00028149443471950884,5.0,0.8310546875,,,
+"P3 2stage vs full, infragranular - granular (v4) (two-sided)",11,,,,,,,-0.015277024970404918,3.0,0.123046875,,,

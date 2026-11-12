@@ -1,13 +1,16 @@
-"""Supplementary Figure S3: the laminar results with the finer, more error-prone labels (check AD; Blake, 2026-11-12:
+"""Supplementary Figure S3: the compartments, and the laminar results with the finer, more error-prone labels (check AD; Blake, 2026-11-12:
 coarse labels in the main figure, fine labels here).
 
 Usage: .venv\\Scripts\\python scripts\\figures\\figS_fine_layers.py
 Main laminar set (tiers 1 + 2 of laminar alignment v4). Fine compartments, by height h above the layer 4C/5 anchor
 scaled by the squish factor s: L2/3 h > 0.59 s; L4A/B (0.28 s, 0.59 s]; L4C (0, 0.28 s]; L5 [-0.22 s, 0);
 L6 [-0.49 s, -0.22 s) (Zhu et al. 2026 thicknesses; at 100 um, two or three contacts per compartment below L2/3).
-(a) additivity index 30-100 ms after onset at 45% in each eye, measured and contrast summation, per penetration
+(a) monocular grating CSD averaged over monkey J's tier-1 penetrations, aligned to the 4C/5 anchor and scaled
+    (figS1_methods.tier1_csd; Blake: examples from a clean J session or the tier-1 average of one monkey), with the
+    coarse compartment boundaries;
+(b) additivity index 30-100 ms after onset at 45% in each eye, measured and contrast summation, per penetration
     (docs/qc/ad_groups.csv), medians and interquartile ranges;
-(b) the dominant eye's onset at 90% relative to L4C, per penetration (grey) and median; AD3.
+(c) the dominant eye's onset at 90% relative to L4C, per penetration (grey) and median; AD3.
 Writes <out_root>/figures/figS_fine_layers.pdf and .png; prints the values shown.
 """
 
@@ -19,6 +22,8 @@ import matplotlib
 matplotlib.use("Agg")
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
+
+from figS1_methods import tier1_csd  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
 
@@ -37,9 +42,12 @@ def main():
     G = pd.read_csv(QC / "ad_groups.csv")
     G = G[(G.scheme == "fine") & G.tier.isin((1, 2))]
     T = pd.read_csv(QC / "ad_tests.csv").set_index("test")
-    fig = fs.figure("onehalf", 62)
+    fig = fs.figure("double", 62)
     fig.set_layout_engine("none")
-    a, b = axes_mm(fig, 18, 10, 38, 44), axes_mm(fig, 72, 10, 38, 44)
+    c0, ccb = axes_mm(fig, 20, 10, 40, 44), axes_mm(fig, 62, 10, 2, 44)
+    info = tier1_csd(c0, ccb, "J")
+    c0.set_title(f"monkey J, mean of {info['n']} tier-1 penetrations", fontsize=6, loc="left")
+    a, b = axes_mm(fig, 90, 10, 34, 44), axes_mm(fig, 138, 10, 34, 44)
     rows = []
     for k, comp in enumerate(FINE):
         x = G[G.compartment == comp]
@@ -54,7 +62,7 @@ def main():
     a.set_xlim(0.3, 0.95)
     a.tick_params(axis="y", length=0)
     a.set_xlabel("additivity index, 30–100 ms")
-    a.set_title("measured (filled), contrast summation (open)", fontsize=6, loc="left")
+    a.set_title("measured (filled); summation (open)", fontsize=6, loc="left")
     on = G.pivot(index="penetration", columns="compartment", values="dom_90")
     rel = on.sub(on["L4C"], axis=0)
     for k, comp in enumerate(FINE):
@@ -70,7 +78,7 @@ def main():
     b.set_xlabel("onset relative to L4C (ms)\ndominant eye, 90%")
     t6 = T.loc["AD2 shortfall L6 - L4C [tiers 1+2]"]                      # stated in the caption
     print(f"AD2 L6 - L4C: {int(t6.n_in_direction)}/{int(t6.n)}, p = {t6.p:.3f}")
-    for ax, letter in ((a, "a"), (b, "b")):
+    for ax, letter in ((c0, "a"), (a, "b"), (b, "c")):
         fs.panel_label(ax, letter, x=-0.2)
     print(fs.save(fig, "figS_fine_layers"))
     print(pd.DataFrame(rows).round(3).to_string(index=False))

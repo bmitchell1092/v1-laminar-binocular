@@ -1,0 +1,11 @@
+test,n,data,conductance,fixed delay,two-stage,median,n_in_direction,p,holds
+"AE3 (reported) shortfall at 45%, 30-100 ms, supragranular",11,-0.0715861037963461,-0.056003276552513886,-0.04984307635222713,-0.046928531759690265,,,,
+"AE3 (reported) shortfall at 45%, 30-100 ms, granular",11,-0.05896319541961817,-0.04721754838663028,-0.0472192768413184,-0.03521127896392529,,,,
+"AE3 (reported) shortfall at 45%, 30-100 ms, infragranular",11,-0.030186443516501172,-0.01563118620477875,-0.015630704436161574,0.003216418846155124,,,,
+(reported) data infragranular - granular,11,,,,,0.025823010525750034,9.0,0.02099609375,
+AE3 conductance: model infragranular - granular > 0,11,,,,,0.025484670330272054,8.0,0.02099609375,1.0
+AE3 conductance: data (infra - granular) - model (infra - granular) > 0,11,,,,,0.004116745429820183,6.0,0.16015625,0.0
+AE3 fixed delay: model infragranular - granular > 0,11,,,,,0.024694855170695033,8.0,0.02685546875,1.0
+AE3 fixed delay: data (infra - granular) - model (infra - granular) > 0,11,,,,,0.0031102714372495815,6.0,0.16015625,0.0
+AE3 two-stage: model infragranular - granular > 0,11,,,,,0.042616196339318145,7.0,0.10302734375,0.0
+AE3 two-stage: data (infra - granular) - model (infra - granular) > 0,11,,,,,0.010147373903512058,7.0,0.20654296875,0.0

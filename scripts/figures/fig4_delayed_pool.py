@@ -13,13 +13,15 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig4_delayed_pool.py
 (c) why the pool weights the other eye more: the same difference 30-100 ms after onset against the other eye's
     contrast (mean over dominant-eye contrasts 11, 22.5 and 45% where contrast summation can be predicted, as Fig 2b),
     for the data, the conductance fit and the fit with equal weights in drive and pool (w = a);
-(d) the other eye's weight in the drive (a) and in the pool (w), conductance fits, per penetration and depth group;
-    check Y4 (U6', w - a > 0, hierarchical);
-(e) the shortfall at 45%, 30-100 ms, per depth group: data, the conductance fit and the two-stage fit (check AA,
-    docs/qc/aa_groups.csv), with the deep - input tests (aa_model_misses.csv).
+(d) the other eye's weight in the drive (a) and in the pool (w), conductance fits, per penetration and compartment
+    of the main laminar set (check AE: laminar alignment v4, tiers 1 + 2, coarse compartments; 2026-11-12);
+(e) the shortfall at 45%, 30-100 ms, per compartment: data, the conductance fit and the two-stage fit (check AE,
+    docs/qc/ae_groups.csv), with the infragranular - granular tests (ae_model_misses.csv).
+(a)-(c) use check Y's fits (all penetrations, three depth groups each, averaged), which do not depend on depth.
 The static and w = a fits are the fixed-delay model without its delay or with w = a; at this scale the fixed-delay and
 conductance fits are indistinguishable (printed).
-Inputs: <out_root>/binocular/y_N_pred.npz, y_N_groups.parquet; docs/qc/aa_groups.csv, aa_model_misses.csv.
+Inputs: <out_root>/binocular/y_N_pred.npz, y_N_groups.parquet (a-c); ae_N_groups.parquet, docs/qc/ae_groups.csv,
+ae_model_misses.csv (d, e).
 Writes <out_root>/figures/fig4_delayed_pool.pdf and .png; prints the statistics shown.
 """
 
@@ -43,7 +45,9 @@ warnings.filterwarnings("ignore")
 REPO = Path(__file__).resolve().parents[2]
 QC = REPO / "docs" / "qc"
 H_MM = 118
-GROUPS = ("superficial", "input", "deep")
+GROUPS = ("superficial", "input", "deep")                   # check Y's groups (a-c)
+COMP = ("supragranular", "granular", "infragranular")       # check AE's compartments (d, e)
+COMP_LABEL = ("layers 2/3", "layer 4", "layers 5–6")
 CD = (0.11, 0.225, 0.45)
 CO = (0.11, 0.225, 0.45, 0.9)
 REL = np.arange(-20, 181)                                   # ms from each array's own response onset
@@ -144,7 +148,7 @@ def by_other(ax, Cells):
     return pd.DataFrame(rows)
 
 
-def rows_panel(ax, series, groups, xlim, ref=None, ylim=(3.5, -1.4)):
+def rows_panel(ax, series, groups, xlim, ref=None, ylim=(3.5, -1.4), labels=None):
     rng = np.random.default_rng(8)
     out = []
     for k, g in enumerate(groups):
@@ -157,7 +161,7 @@ def rows_panel(ax, series, groups, xlim, ref=None, ylim=(3.5, -1.4)):
             out.append(dict(series=lab, grp=g, n=len(v), median=md))
     if ref is not None:
         ax.axvline(ref, color=fs.MUTED, lw=0.6)
-    ax.set_yticks(range(len(groups)), groups)
+    ax.set_yticks(range(len(groups)), labels or groups)
     ax.tick_params(axis="y", length=0)
     ax.set_ylim(*ylim)
     ax.set_xlim(*xlim)
@@ -167,8 +171,9 @@ def rows_panel(ax, series, groups, xlim, ref=None, ylim=(3.5, -1.4)):
 def main():
     fs.apply()
     N = pd.read_parquet(out_root() / "binocular" / "y_N_groups.parquet")
-    G = pd.read_csv(QC / "aa_groups.csv")
-    A = pd.read_csv(QC / "aa_model_misses.csv").set_index("test")
+    Ne = pd.read_parquet(out_root() / "binocular" / "ae_N_groups.parquet")
+    G = pd.read_csv(QC / "ae_groups.csv")
+    A = pd.read_csv(QC / "ae_model_misses.csv").set_index("test")
     curves, Cells = collect()
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")
@@ -179,8 +184,9 @@ def main():
     Co = by_other(ax["c"], Cells)
 
     by = lambda D, col: D.pivot(index="penetration", columns="grp", values=col)         # noqa: E731
-    Dw = rows_panel(ax["d"], {"drive (a)": (by(N, "cond_p_a"), fs.MUTED, 0.13, "white", "o"),
-                              "pool (w)": (by(N, "cond_p_w"), fs.INK, -0.13, fs.INK, "o")}, GROUPS, (0, 2.0), ref=1.0)
+    Dw = rows_panel(ax["d"], {"drive (a)": (by(Ne, "cond_p_a"), fs.MUTED, 0.13, "white", "o"),
+                              "pool (w)": (by(Ne, "cond_p_w"), fs.INK, -0.13, fs.INK, "o")}, COMP, (0, 2.0), ref=1.0,
+                    labels=COMP_LABEL, ylim=(4.4, -1.4))
     ax["d"].set_xlabel("the other eye's weight\n(dominant eye = 1)")
     ax["d"].set_title("the other eye's weights", fontsize=6.5, loc="left")
     ax["d"].text(0.97, 0.03, "filled: pool\nopen: drive", transform=ax["d"].transAxes, ha="right", va="bottom",
@@ -189,14 +195,15 @@ def main():
     G[["data", "conductance", "two-stage"]] *= 100
     De = rows_panel(ax["e"], {"data": (by(G, "data"), fs.INK, -0.2, fs.INK, "o"),
                               "conductance": (by(G, "conductance"), fs.VIOLET, 0.0, "white", "o"),
-                              "two-stage": (by(G, "two-stage"), TWO_STAGE, 0.2, "white", "D")}, GROUPS, (-16, 8), ref=0)
+                              "two-stage": (by(G, "two-stage"), TWO_STAGE, 0.2, "white", "D")}, COMP, (-16, 8), ref=0,
+                    labels=COMP_LABEL, ylim=(4.4, -1.4))
     ax["e"].tick_params(labelleft=False)
     ax["e"].set_xlabel("both eyes − contrast summation,\n45%, 30–100 ms (% of peak)")
-    ax["e"].set_title("what a single-stage pool misses", fontsize=6.5, loc="left")
-    d0 = A.loc["(reported) data deep - input"]
-    d1 = A.loc["AA2 conductance: model deep - input > 0"]
-    d2 = A.loc["AA2 two-stage: model deep - input > 0"]
-    ax["e"].text(0.98, 0.03, (f"deep − input\ndata {100 * d0['median']:+.1f}, {fs.fmt_p(d0.p)}\n"
+    ax["e"].set_title("by compartment", fontsize=6.5, loc="left")
+    d0 = A.loc["(reported) data infragranular - granular"]
+    d1 = A.loc["AE3 conductance: model infragranular - granular > 0"]
+    d2 = A.loc["AE3 two-stage: model infragranular - granular > 0"]
+    ax["e"].text(0.98, 0.03, (f"layers 5–6 − layer 4\ndata {100 * d0['median']:+.1f}, {fs.fmt_p(d0.p)}\n"
                               f"conductance {100 * d1['median']:+.1f}, {fs.fmt_p(d1.p)}\n"
                               f"two-stage {100 * d2['median']:+.1f}, {fs.fmt_p(d2.p)}").replace("-", "−"),
                  transform=ax["e"].transAxes, ha="right", va="bottom", fontsize=5.2, color=fs.INK2, linespacing=1.1)

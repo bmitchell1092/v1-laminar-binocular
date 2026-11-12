@@ -1,0 +1,55 @@
+test,n,median,n_in_direction,p,median_o_to_e,median_e_to_o,holds
+"N1 delay: log(CV static / CV full) > 0, supragranular (v4)",11,0.6488787603032214,11.0,0.00048828125,0.6662005331290629,0.6298898081557464,True
+"N1 delay: log(CV static / CV full) > 0, granular (v4)",11,1.3664701403053134,11.0,0.00048828125,1.3567725346775708,1.3130285693360741,True
+"N1 delay: log(CV static / CV full) > 0, infragranular (v4)",11,1.1107361064779795,11.0,0.00048828125,1.1781503606709853,1.0903047152673484,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, supragranular (v4)",11,0.07565637586446126,10.0,0.00146484375,0.07330660678046372,0.07817980986704082,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, granular (v4)",11,0.07704757040107395,10.0,0.0009765625,0.06939526323853741,0.08567122823439471,True
+"N2 pool weighting: log(CV w=a / CV full) > 0, infragranular (v4)",11,0.009618125467449853,9.0,0.00244140625,0.006965791364542849,0.012611643729624183,True
+"N3 conductance: log(CV full / CV cond) > 0, supragranular (v4)",11,0.039101979100558897,10.0,0.00341796875,0.03468600766480908,0.038174670955602355,True
+"N3 conductance: log(CV full / CV cond) > 0, granular (v4)",11,0.014663922215303788,9.0,0.01220703125,0.014590122591647263,0.01475305132559058,True
+"N3 conductance: log(CV full / CV cond) > 0, infragranular (v4)",11,-6.46562257921788e-07,5.0,0.44921875,-3.170538995474022e-07,-5.469213538866579e-07,False
+"N4 cond_p_tau2, supragranular - granular (v4)",11,-32.352709244151626,0.0,0.0009765625,,,
+"N4 cond_p_tau2, infragranular - granular (v4)",11,-10.431592228281126,2.0,0.1748046875,,,
+"(reported) median cond_p_tau2, supragranular (v4)",11,15.83329288812117,,,,,
+"(reported) median cond_p_tau2, granular (v4)",11,49.84384321531198,,,,,
+"(reported) median cond_p_tau2, infragranular (v4)",11,40.89764110318838,,,,,
+"N4 cond_p_tau_m, supragranular - granular (v4)",11,10.516989500255825,9.0,0.0830078125,,,
+"N4 cond_p_tau_m, infragranular - granular (v4)",11,-6.044512263832404,4.0,0.0673828125,,,
+"(reported) median cond_p_tau_m, supragranular (v4)",11,27.196791010725118,,,,,
+"(reported) median cond_p_tau_m, granular (v4)",11,6.260083442219694,,,,,
+"(reported) median cond_p_tau_m, infragranular (v4)",11,0.0500000001293208,,,,,
+"N4 cond_p_delta, supragranular - granular (v4)",11,1.8501432957517885,6.0,0.6376953125,,,
+"N4 cond_p_delta, infragranular - granular (v4)",11,-0.9480741315273207,3.0,0.51953125,,,
+"(reported) median cond_p_delta, supragranular (v4)",11,21.70435230204052,,,,,
+"(reported) median cond_p_delta, granular (v4)",11,20.32914449229592,,,,,
+"(reported) median cond_p_delta, infragranular (v4)",11,18.50688037005723,,,,,
+"N4 w_minus_a, supragranular - granular (v4)",11,-0.07401482821909833,4.0,0.1474609375,,,
+"N4 w_minus_a, infragranular - granular (v4)",11,-0.20592114194539057,3.0,0.0537109375,,,
+"(reported) median w_minus_a, supragranular (v4)",11,0.2184741337189544,,,,,
+"(reported) median w_minus_a, granular (v4)",11,0.4302959210828009,,,,,
+"(reported) median w_minus_a, infragranular (v4)",11,0.10675338688165181,,,,,
+"N4 full_p_tau2, supragranular - granular (v4)",11,-26.290574754667514,0.0,0.0009765625,,,
+"N4 full_p_tau2, infragranular - granular (v4)",11,-1.8572256557188567,5.0,0.5771484375,,,
+"(reported) median full_p_tau2, supragranular (v4)",11,12.499991846938578,,,,,
+"(reported) median full_p_tau2, granular (v4)",11,41.355857645515634,,,,,
+"(reported) median full_p_tau2, infragranular (v4)",11,37.13348898922559,,,,,
+"N4 w_minus_a_full, supragranular - granular (v4)",11,-0.11969175258554815,4.0,0.1015625,,,
+"N4 w_minus_a_full, infragranular - granular (v4)",11,-0.20299409977071198,3.0,0.0537109375,,,
+"(reported) median w_minus_a_full, supragranular (v4)",11,0.21395002310656186,,,,,
+"(reported) median w_minus_a_full, granular (v4)",11,0.4273721774219447,,,,,
+"(reported) median w_minus_a_full, infragranular (v4)",11,0.10675582221844937,,,,,
+"N4 gain_delay, supragranular - granular (v4)",11,-0.6761479803654862,0.0,0.0009765625,,,
+"N4 gain_delay, infragranular - granular (v4)",11,-0.12883581607351946,0.0,0.0009765625,,,
+"(reported) median gain_delay, supragranular (v4)",11,0.6488787603032214,,,,,
+"(reported) median gain_delay, granular (v4)",11,1.3664701403053134,,,,,
+"(reported) median gain_delay, infragranular (v4)",11,1.1107361064779795,,,,,
+"N4 gain_weight, supragranular - granular (v4)",11,-0.0036556157276819916,5.0,0.8984375,,,
+"N4 gain_weight, infragranular - granular (v4)",11,-0.0360281173961069,3.0,0.0322265625,,,
+"(reported) median gain_weight, supragranular (v4)",11,0.07565637586446126,,,,,
+"(reported) median gain_weight, granular (v4)",11,0.07704757040107395,,,,,
+"(reported) median gain_weight, infragranular (v4)",11,0.009618125467449853,,,,,
+"N4 gain_cond, supragranular - granular (v4)",11,0.03096934630496076,9.0,0.123046875,,,
+"N4 gain_cond, infragranular - granular (v4)",11,-7.063410655740764e-06,4.0,0.2060546875,,,
+"(reported) median gain_cond, supragranular (v4)",11,0.039101979100558897,,,,,
+"(reported) median gain_cond, granular (v4)",11,0.014663922215303788,,,,,
+"(reported) median gain_cond, infragranular (v4)",11,-6.46562257921788e-07,,,,,

@@ -121,7 +121,7 @@ def tier1_csd(ax, cax, monkey="J"):
     im = ax.pcolormesh(t, grid, A, cmap=fs.CSD_CMAP, vmin=-lim, vmax=lim, shading="nearest", rasterized=True)
     ax.set_xlim(-10, 120)
     ax.set_ylim(grid[0], grid[-1])
-    for y, lab in ((1.24, "top of cortex"), (0.59, "top of layer 4"), (0.0, "layer 4C/5")):
+    for y, lab in ((1.24, "top of cortex"), (0.59, "top of layer 4"), (0.0, "layer 4C/5")):     # scaled heights
         ax.axhline(y, color=fs.INK, lw=0.7, ls=(0, (3, 2)))
         ax.text(117, y + 0.03, lab, ha="right", va="bottom", fontsize=6, color=fs.INK,
                 bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85))
