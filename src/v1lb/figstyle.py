@@ -43,7 +43,7 @@ ADDED_SOFT = LinearSegmentedColormap.from_list("added_soft", ["#dcdbd6", "#efeee
 
 # the figures' shared reading (docs/11, 2026-11-02): the response the other eye adds vs what summation predicts
 SUM_LS = (0, (3, 1.5))                                   # linear-summation prediction / reference: grey dashed
-SUM = "if the contrasts add"
+SUM = "contrast summation"                              # the eyes' weighted contrasts add (Blake, V4 comment)
 ALONE = "dominant eye alone"
 LINEARITY = "linearity index\n(share of the other eye's contrast added)"
 

@@ -94,10 +94,10 @@ def example_cell(ax, pop, meta, cd, co):
                      (f"dominant eye alone, {fs.contrast_label(cd)}", fs.COND["dominant"], "-")],
                 x=0.5, y=0.76, dy=0.1, length=0.06)
     i0 = int(np.argmax(b))
-    ax.annotate("more than\nsummation", (x[i0] + 4, (b[i0] + p[i0]) / 2), xytext=(x[i0] + 16, b[i0] * 0.98),
+    ax.annotate("above contrast\nsummation", (x[i0] + 4, (b[i0] + p[i0]) / 2), xytext=(x[i0] + 16, b[i0] * 0.98),
                 fontsize=5.5, color=fs.INK2, va="center", linespacing=1.05,
                 arrowprops=dict(arrowstyle="-", color=fs.INK2, lw=0.5, shrinkA=1, shrinkB=0))
-    ax.text(112, 0.13, "less than summation", fontsize=5.5, color=fs.INK2, va="top")
+    ax.text(112, 0.13, "below contrast summation", fontsize=5.5, color=fs.INK2, va="top")
     ax.annotate("", (118, 0.27), xytext=(118, 0.14),
                 arrowprops=dict(arrowstyle="-", color=fs.INK2, lw=0.5, shrinkA=0, shrinkB=0))
     win = {k: (float(np.mean((b - p)[(x >= w0) & (x < w1)]))) for k, (_, (w0, w1)) in WIN.items()}
@@ -124,7 +124,7 @@ def by_other(ax, Q, T, Tr):
     ax.set_xticks(range(len(CO)), [f"{100 * c:g}" for c in CO])
     ax.set_xlim(-0.35, 3.25)
     ax.set_xlabel("other eye's contrast (%)")
-    ax.set_ylabel("both eyes − if the contrasts add\n(% of dominant-eye peak)")
+    ax.set_ylabel("both eyes − contrast summation\n(% of dominant-eye peak)")
     ax.set_title("all cells, by the other eye's contrast", fontsize=6.5, loc="left", pad=11)
     q, r = T.loc["Q late shortfall, other eye stronger (c_O > c_D)"], \
         Tr.loc["R late shortfall, other eye stronger (c_O > c_D)"]
@@ -174,8 +174,8 @@ def matrices(axs, cax, Q):
     cb.outline.set_visible(False)
     cb.ax.tick_params(labelsize=5.5, length=0)
     cb.ax.set_yticklabels([f"{t:+g}".replace("-", "−") if t else "0" for t in cb.get_ticks()])
-    cb.set_label("both eyes − if the contrasts add\n(% of dominant-eye peak)", fontsize=6)
-    cax.text(14, 1.0, "outlined: matched\ncontrasts\n\nhatched: summation\npredictable in fewer\nthan 10 penetrations",
+    cb.set_label("both eyes − contrast summation\n(% of dominant-eye peak)", fontsize=6)
+    cax.text(14, 1.0, "outlined: matched\ncontrasts\n\nhatched: contrast\nsummation predictable\nin fewer than 10\npenetrations",
              fontsize=5.2, color=fs.INK2, transform=cax.transAxes, va="top", ha="left", linespacing=1.1)
     return pd.DataFrame(rows)
 

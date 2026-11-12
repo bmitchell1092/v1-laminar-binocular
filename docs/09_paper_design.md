@@ -2522,3 +2522,38 @@ main set. Legend caveat for Fig 2: part of the 0–20 ms surplus reflects the bi
 earlier (shifting the prediction 1 ms earlier halves it), so the text says "at or above summation at onset", not
 "supra-additive". The older supplementary figures (S1–S8) still use the linearity index and alignment v2 in places
 and need rebuilding before submission.
+
+### Blake's comments on draft V4 (2026-11-11) and check Z
+
+Six comments; all handled in `manuscript/draft_v5.docx`, each answered in its thread.
+* **"Summation" was ambiguous** (Blake: "do you mean linear summation?"). It meant the eyes' weighted contrasts add
+  before the compressive contrast-response function, R_D(c_D + a·c_O), not the sum of the two monocular responses
+  (which predicts AI = 1 against 0.62 at 45%). The text now says **contrast summation** throughout and defines it
+  once against linear summation of responses; the figure label `figstyle.SUM` is now "contrast summation".
+* **Caption bold:** only the "Figure N. Title." sentence is bold (the V4 build had bolded whole captions).
+* **Fig 3a busy:** replaced by three traces in bands of five contacts each (0.5–1.0 mm above the boundary; the
+  0.5 mm above it, holding the earliest sink; the 0.5 mm below), on Blake's suggestion of above / at / below the
+  sink matched in contacts. Bands from the boundary, not the sink, so panel a uses the same reference as b and c;
+  the input band holds the earliest sink in 17/22 penetrations. 30–100 ms: AI 0.49 / 0.52 / 0.55 against contrast
+  summation 0.63 / 0.66 / 0.60 (19 / 22 / 21 penetrations). The ridgeline moved to Supplementary Fig S2
+  (`figS_ridgeline.py`). Fig 3c marks the median depth of the earliest sink.
+* **CSD beyond the earliest sink:** nothing in the paper depends on it. The sink-current analysis (old Supplementary
+  Fig S2, `figS7_input_current.py`; "spiking led the current by 2–3 ms") is dropped from the paper; the earliest sink
+  remains a marker for the depth reference.
+* **"for every depth reference we tried"** dropped from the Discussion (the limitations already say it).
+* **"Responses began earliest 0.1–0.5 mm below the boundary"** (Blake: reviewers will expect the input layers first;
+  does the earliest sink still mark the initial input, with spiking fastest below it?) → check Z.
+
+**Check Z (descriptive, not registered; run after the question; `scripts/z_onset_sink.py`, docs/qc/z_onset_sink.csv,
+z_onset_profile.csv).** Onsets of check X (first sheet, v3), relative to the earliest monocular sink.
+* **Z1:** the earliest sink lies a median 0.20 mm above the boundary (IQR 0.28 above to 0.00), inside the input
+  group in 17/22 penetrations. By construction the boundary sits near sink + 0.3 mm where the sink is used.
+* **Z2 (within penetrations, minus onset at the sink ± 0.15 mm):**
+  * 0.2–0.4 mm below: dominant eye 90% +0.19 ms (earlier in 10/21, p = .84); both eyes 45% +0.51 ms (p = .92).
+  * 0.5–0.8 mm below: −1.1 ms (14/20, p = .14); both eyes 45% −1.7 ms (13/20, p = .31); dominant 45% −2.1 ms
+    (p = .33); same sign in both halves, not significant.
+  * 0.2–0.4 mm above: −0.1 ms (p = .59). 0.5–0.8 mm above: +4.0 ms (3/19 earlier, p < .001); both eyes +4.4 ms.
+* **Reading:** spiking begins as early at the earliest sink as anywhere; onsets form a plateau from the sink to
+  ~0.7 mm below the boundary and are later above the sink. The "earliest 0.1–0.5 mm below the boundary" of V4 was a
+  1–2 ms dip in population medians that the within-penetration comparison does not support. The text now reports
+  the plateau, with deep channels responding as early as (not earlier than) the input layers.

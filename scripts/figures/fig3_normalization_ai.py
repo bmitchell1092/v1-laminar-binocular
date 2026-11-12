@@ -7,16 +7,18 @@ Usage: .venv\\Scripts\\python scripts\\figures\\fig3_normalization_ai.py
 Additivity index AI = both eyes / (dominant eye + other eye); the dashed reference is the index that summation of the
 two eyes' contrasts predicts: the dominant eye's response at c_D + a c_O over the same denominator (each channel's or
 penetration's eye weight a). Time from each channel's response onset.
-(a) AI over time at 45% in each eye, one trace per 0.2 mm depth bin from the input/deep boundary of laminar
-    alignment v3 (docs/09 X; population: mean over penetrations of the channel means; ratio of the means; >= 10
-    penetrations; 5 ms running mean); grey where the index falls below the summation reference; the thin rule under
-    each trace is AI = 0.5;
+(a) AI over time at 45% in each eye in three bands of five contacts (0.5 mm) from the input/deep boundary of laminar
+    alignment v3: 0.5-1.0 mm above, the 0.5 mm above (which holds the earliest sink in 17/22 penetrations, check Z1)
+    and the 0.5 mm below (Blake, comment on V4, 2026-11-11: three traces matched in contacts instead of the
+    ridgeline, which moved to figS_ridgeline.py); population: mean over penetrations (>= 2 channels in the band) of
+    the channel means, ratio of the means, 5 ms running mean; grey where the index falls below contrast summation;
 (b) AI 30-100 ms after onset per penetration and depth group (superficial / input, 0.5 mm above the boundary /
     deep, to 0.7 mm below), data and summation reference; medians and interquartile ranges; check X2 (deep - input,
     one-sided Wilcoxon);
 (c) the first 50 ms at each depth: MUA for both eyes at 45% each, each depth bin scaled to its own peak (0-100 ms),
     with the median onset at each depth for both eyes, the dominant eye alone and the other eye alone at 45%
-    (fig2_latency_drive.laminar_onset; checks G, X3, X4), stimulus clock.
+    (fig2_latency_drive.laminar_onset; checks G, X3, X4), stimulus clock; tick, the median depth of the earliest
+    sink (check Z1, docs/qc/z_onset_sink.csv).
 `sink` as argument: the earlier version, depth relative to the earliest sink (groups above / at / below; check V2).
 Inputs: x_depth_v3.py (spacetime_v3.npz, docs/qc/x_depth_v3.csv, x_groups.csv) or spacetime_data.py (spacetime.npz;
 docs/qc/v4_V.csv, v4_V_groups.csv); for (c) <out_root>/binocular/x_latency.parquet (v4_G_channels.parquet for
@@ -59,12 +61,26 @@ DEPTH = {
                  test="V2 (AI - AI_sum) below - at the sink > 0, 45%, 30-100 ms", contrast="below − at sink"),
 }
 CS4 = (0.11, 0.225, 0.45, 0.9)
-POS = {"a": (20, 10, 62, 86), "b": (104, 58, 40, 36), "c": (104, 10, 50, 34), "ccb": (157, 10, 2, 34)}
+# (a) three bands of five contacts each (Blake, comment on V4: one trace above, at and below the sink, matched in
+# contacts); the input band holds the earliest sink in 17 of 22 penetrations (check Z1). mm from the boundary, (lo, hi]
+BANDS = {"superficial": (-1.0, -0.5, "0.5–1.0 mm above the boundary"),
+         "input": (-0.5, 0.0, "0.5 mm above the boundary (earliest sink)"),
+         "deep": (0.0, 0.5, "0.5 mm below the boundary")}
+MIN_CH = 2                                       # channels per penetration in a band
+POS = {"a0": (20, 68, 62, 24), "a1": (20, 39, 62, 24), "a2": (20, 10, 62, 24),
+       "b": (104, 58, 40, 36), "c": (104, 10, 50, 34), "ccb": (157, 10, 2, 34)}
+
+
+POS_A_SINK = (20, 10, 62, 86)
+
+
+def axes_box(fig, x, y, w, h):
+    W, H = fig.get_size_inches() / fs.MM
+    return x / W, y / H, w / W, h / H
 
 
 def axes_mm(fig, x, y, w, h):
-    W, H = fig.get_size_inches() / fs.MM
-    return fig.add_axes((x / W, y / H, w / W, h / H))
+    return fig.add_axes(axes_box(fig, x, y, w, h))
 
 
 def depth_ai(X, meta, cfg, c=0.45):
@@ -88,6 +104,56 @@ def depth_ai(X, meta, cfg, c=0.45):
     den = M["D"] + M["O"]
     ok = den > 0.12
     return np.array(z), np.where(ok, M["B"] / den, np.nan), np.where(ok, M["P"] / den, np.nan)
+
+
+def band_ai(X, meta, lo, hi, c=0.45):
+    """AI and its summation reference over time for one depth band: ratio of the population means (over penetrations
+    with >= MIN_CH channels in the band) of channel means, 5 ms running mean."""
+    i, j = list(CONTRASTS).index(c), CS4.index(c)
+    rel = np.round(meta.rel_anchor_mm.to_numpy(), 3)
+    sel = (rel > lo) & (rel <= hi)
+    pen = meta.penetration.to_numpy()
+    pens = [p for p in np.unique(pen[sel]) if np.sum(sel & (pen == p)) >= MIN_CH]
+    P = np.stack([response_at(X[q, :6], c * (1 + meta.a.iloc[q])) for q in range(len(meta))])
+    M = {}
+    for name, x in zip("DOBP", (X[:, i], X[:, 6 + j], X[:, 10 + j], P)):
+        M[name] = fs.smooth(np.nanmean([np.nanmean(x[sel & (pen == p)], axis=0) for p in pens], axis=0)[None])[0]
+    den = M["D"] + M["O"]
+    ok = den > 0.12
+    n_ch = np.median([np.sum(sel & (pen == p)) for p in pens])
+    return np.where(ok, M["B"] / den, np.nan), np.where(ok, M["P"] / den, np.nan), len(pens), n_ch
+
+
+def bands(axs, X, meta, rel):
+    """(a) one trace per band: measured index (solid), contrast-summation reference (dashed), grey where below."""
+    t_sel = (rel >= 0) & (rel <= 150)
+    t = rel[t_sel]
+    d = (rel >= 30) & (rel < 100)
+    rows = []
+    for ax, (name, (lo, hi, where)) in zip(axs, BANDS.items()):
+        AI, AS, n, n_ch = band_ai(X, meta, lo, hi)
+        a, p = AI[t_sel], AS[t_sel]
+        ax.fill_between(t, a, p, where=a < p, color=fs.INK2, alpha=0.35, lw=0)
+        ax.plot(t, p, color=fs.MUTED, lw=0.9, ls=fs.SUM_LS)
+        ax.plot(t, a, color=fs.INK, lw=1.1)
+        gap = np.nanmean(AI[d]) - np.nanmean(AS[d])
+        ax.text(0.99, 0.95, f"30–100 ms: {np.nanmean(AI[d]):.2f}; {fs.SUM}, {np.nanmean(AS[d]):.2f}",
+                transform=ax.transAxes, ha="right", va="top", fontsize=5.5, color=fs.INK2)
+        ax.set_title(f"{name}: {where}; {n} penetrations", fontsize=6.5, loc="left")
+        ax.axvspan(30, 100, color=fs.RULE, alpha=0.3, lw=0, zorder=0)
+        ax.set_xlim(0, 150)
+        ax.set_ylim(0.35, 1.05)
+        ax.set_yticks([0.4, 0.6, 0.8, 1.0])
+        ax.set_ylabel("additivity index")
+        if ax is not axs[-1]:
+            ax.tick_params(labelbottom=False)
+        rows.append(dict(band=name, n_pen=n, channels_median=n_ch, AI_dip=np.nanmean(AI[d]), AI_sum_dip=np.nanmean(AS[d]),
+                         gap=gap, AI_early=np.nanmean(AI[(rel >= 0) & (rel < 20)]),
+                         AI_sum_early=np.nanmean(AS[(rel >= 0) & (rel < 20)])))
+    axs[-1].set_xlabel("time from response onset (ms)")
+    fs.line_key(axs[0], [("measured, both eyes 45%", fs.INK, "-")], x=0.0, y=1.36, dy=0.13, length=0.08)
+    fs.line_key(axs[0], [(fs.SUM, fs.MUTED, fs.SUM_LS)], x=0.52, y=1.36, dy=0.13, length=0.08)
+    return pd.DataFrame(rows)
 
 
 def ridgeline(ax, rel, z, AI, AS, label, gap=0.5):
@@ -176,19 +242,36 @@ def main():
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")
     ax = {k: axes_mm(fig, *v) for k, v in POS.items()}
-    z, AI, AS = depth_ai(Z["onset"], meta, cfg)
-    ridgeline(ax["a"], Z["rel"], z, AI, AS, cfg["label"])
+    if version == "v3":
+        Ab = bands([ax["a0"], ax["a1"], ax["a2"]], Z["onset"], meta, Z["rel"])
+    else:                                                   # the sink version keeps the ridgeline
+        for k in ("a1", "a2"):
+            ax[k].remove()
+        ax["a"] = ax.pop("a0")
+        ax["a"].set_position(ax["a"].get_position().from_bounds(*np.array(axes_box(fig, *POS_A_SINK))))
+        z, AI, AS = depth_ai(Z["onset"], meta, cfg)
+        ridgeline(ax["a"], Z["rel"], z, AI, AS, cfg["label"])
+        Ab = None
     B = by_group(ax["b"], G, V, cfg)
     oc = ONSET_DEPTH[version]
     Zs = np.load(out_root() / "figures" / "data" / f"{oc['data']}.npz")
     ms = pd.read_parquet(out_root() / "figures" / "data" / f"{oc['data']}_meta.parquet")
     O = laminar_onset(ax["c"], ax["ccb"], Zs, ms, oc)
     ax["c"].set_ylabel(cfg["label"].replace(" (mm;", "\n(mm;"))
-    for k, x in (("a", -0.2), ("b", -0.32), ("c", -0.32)):
-        fs.panel_label(ax[k], k, x=x)
+    if version == "v3":                                     # median depth of the earliest sink (check Z1)
+        zs = pd.read_csv(QC / "z_onset_sink.csv").set_index("test").iloc[0]["median"]
+        ax["c"].plot([0, 3], [zs, zs], color=fs.INK, lw=1.2, clip_on=False, zorder=5)
+        ax["c"].text(3.8, zs, "earliest sink (median)", fontsize=5.5, va="center", color=fs.INK2)
+    pa = "a0" if version == "v3" else "a"
+    for k, lab, x in ((pa, "a", -0.2), ("b", "b", -0.32), ("c", "c", -0.32)):
+        fs.panel_label(ax[k], lab, x=x)
     print(fs.save(fig, "fig3_normalization_ai" + ("" if version == "v3" else "_sink")))
     pd.set_option("display.width", 200)
     rel = Z["rel"]
+    if Ab is not None:
+        print("(a) bands:")
+        print(Ab.round(3).to_string(index=False))
+        return
     for k in range(len(z)):
         e, d = (rel >= 0) & (rel < 20), (rel >= 30) & (rel < 100)
         print(f"(a) {z[k]:+.1f} mm: 0-20 ms {np.nanmean(AI[k, e]):.2f} (sum {np.nanmean(AS[k, e]):.2f}); "
