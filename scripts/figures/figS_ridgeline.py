@@ -27,7 +27,7 @@ from v1lb import figstyle as fs  # noqa: E402
 from v1lb.config import metadata_dir, out_root  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from ad_compartments_v4 import load_spacetime, relabel  # noqa: E402
+from ad_compartments_v4 import alignment, load_spacetime, relabel  # noqa: E402
 
 warnings.filterwarnings("ignore")
 
@@ -42,7 +42,7 @@ def main():
         keep = (meta.grp != "").to_numpy()
         X, meta, rel, sign, label = Z["onset"][keep], meta[keep].reset_index(drop=True), Z["rel"], 1, cfg["label"]
     else:
-        V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
+        V = alignment()
         V = V[V.s.notna()]
         on, _, M, rel, _ = load_spacetime(V)
         M = M.assign(_i=np.arange(len(M)))
@@ -50,7 +50,9 @@ def main():
         meta = meta[meta.coarse != ""].reset_index(drop=True)
         X = on[meta._i.to_numpy()]
         meta["depth_v4"] = -meta.h_scaled                      # binned as depth (+ deeper), shown as height
-        cfg = dict(rel="depth_v4", per_contact=10, edges=np.arange(-14, 7, 2))
+        cfg = dict(rel="depth_v4", per_contact=10, edges=np.arange(-14, 9, 2))
+        import fig3_normalization_ai as F3
+        F3.MIN_PEN = 8                                            # 10 penetrations in the main set (v5): >= 8 per bin
         sign, label = -1, "height above the layer 4C/5 boundary (mm, scaled)"
     fig = fs.figure("onehalf", 100)
     fig.set_layout_engine("none")

@@ -25,6 +25,10 @@ import pandas as pd  # noqa: E402
 
 from figS1_methods import tier1_csd  # noqa: E402
 
+import sys  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from ad_compartments_v4 import AD_PFX, ALIGN  # noqa: E402
+
 from v1lb import figstyle as fs  # noqa: E402
 
 warnings.filterwarnings("ignore")
@@ -39,9 +43,9 @@ def axes_mm(fig, x, y, w, h):
 
 def main():
     fs.apply()
-    G = pd.read_csv(QC / "ad_groups.csv")
+    G = pd.read_csv(QC / f"{AD_PFX[ALIGN]}groups.csv")
     G = G[(G.scheme == "fine") & G.tier.isin((1, 2))]
-    T = pd.read_csv(QC / "ad_tests.csv").set_index("test")
+    T = pd.read_csv(QC / f"{AD_PFX[ALIGN]}tests.csv").set_index("test")
     fig = fs.figure("double", 62)
     fig.set_layout_engine("none")
     c0, ccb = axes_mm(fig, 20, 10, 40, 44), axes_mm(fig, 62, 10, 2, 44)

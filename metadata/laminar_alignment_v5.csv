@@ -1,0 +1,27 @@
+penetration,monkey,orientation,spacing_mm,top_contact,anchor_contact,anchor_basis,anchor_v4_minus_v5_mm,sink_bottom,sink_peak_ms,est_sink_mm,est_flip_mm,est_crossing_mm,tier,s,top_observed,span_mm,s_top,probe_below_anchor_mm,reason,tier_v4
+221212_J_eA,J,ascending,0.1,2,15.5,"sink bottom (flip, crossing agree)",0.2,15.5,41.0,0.0,0.0,-0.14,1,1.089,True,1.35,1.089,1.7,,1
+211008_B_eA,B,ascending,0.05,3,17.5,sink bottom (crossing agree),0.25,17.5,47.0,0.0,-0.6,0.23,0,1.0,True,0.73,0.585,0.75,span 0.73 mm (s = 0.58),1
+211012_B_eA,B,descending,0.05,32,26.5,"sink bottom (flip, crossing agree)",-0.0,26.5,39.0,-0.0,-0.2,-0.06,0,1.0,False,0.28,0.222,1.3,top off the probe (span >= 0.28 mm); lower-bound span too short to check,0
+211027_B_eA,B,descending,0.1,32,28.5,sink bottom (flip agree),0.2,28.5,49.0,-0.0,-0.0,0.32,0,1.0,False,0.35,0.282,2.8,top off the probe (span >= 0.35 mm); lower-bound span too short to check,0
+211103_B_eA,B,ascending,0.1,5,13.5,"sink bottom (flip, crossing agree)",-0.1,13.5,44.0,0.0,-0.3,0.2,0,1.0,True,0.85,0.685,1.9,span 0.85 mm (s = 0.69),0
+211208_B_eA,B,ascending,0.1,1,13.5,"sink bottom (flip, crossing agree)",-0.1,13.5,42.0,0.0,-0.3,0.06,2,1.0,False,1.25,1.008,1.9,top off the probe (span >= 1.25 mm),2
+211210_B_eA,B,ascending,0.1,1,,none: no two estimates within 0.3 mm,,21.5,50.0,,,,0,,,,,,no anchor,0
+211217_B_eA,B,descending,0.1,32,22.5,sink bottom (flip agree),0.3,22.5,67.0,-0.0,0.1,-0.82,2,1.0,False,0.95,0.766,2.2,top off the probe (span >= 0.95 mm),2
+221118_J_eA,J,ascending,0.1,8,,none: no two estimates within 0.3 mm,,18.5,55.0,,,,0,,,,,,no anchor,0
+221119_J_eA,J,ascending,0.1,1,9.5,sink bottom (crossing agree),0.6,9.5,66.0,0.0,0.4,0.16,0,1.0,False,0.85,0.685,2.3,top off the probe (span >= 0.85 mm); lower-bound span too short to check,0
+221121_J_eA,J,ascending,0.1,6,16.5,"sink bottom (flip, crossing agree)",0.2,16.5,37.0,0.0,0.0,0.21,1,0.847,True,1.05,0.847,1.6,,1
+221123_J_eA,J,ascending,0.1,7,,none: no two estimates within 0.3 mm,,15.5,36.0,,,,0,,,,,,no anchor,1
+221128_J_eA,J,descending,0.1,32,25.5,sink bottom (flip agree),0.3,25.5,32.0,-0.0,0.1,,0,1.0,False,0.65,0.524,2.5,top off the probe (span >= 0.65 mm); lower-bound span too short to check,2
+221130_J_eA,J,ascending,0.1,4,16.5,sink bottom (flip agree),0.2,16.5,38.0,0.0,0.0,-0.38,1,1.008,True,1.25,1.008,1.6,,1
+221202_J_eA,J,ascending,0.1,3,23.5,sink bottom (flip agree),0.2,23.5,68.0,0.0,0.0,,0,1.0,True,2.05,1.653,0.9,span 2.05 mm (s = 1.65),0
+221202_J_eB,J,ascending,0.1,6,16.5,flip and crossing (sink disagrees),0.2,10.5,67.0,-0.6,0.0,0.02,1,0.847,True,1.05,0.847,1.6,,1
+221204_J_eB,J,ascending,0.1,3,,none: no two estimates within 0.3 mm,,15.5,54.0,,,,0,,,,,,no anchor,0
+221206_J_eA,J,ascending,0.1,4,16.5,sink bottom (crossing agree),0.3,16.5,42.0,0.0,,0.29,1,1.008,True,1.25,1.008,1.6,,1
+221209_J_eA,J,descending,0.1,32,29.5,sink bottom (crossing agree),0.2,29.5,48.0,-0.0,,0.15,0,1.0,False,0.25,0.202,2.9,top off the probe (span >= 0.25 mm); lower-bound span too short to check,0
+221209_J_eB,J,ascending,0.1,4,15.5,"sink bottom (flip, crossing agree)",0.4,15.5,49.0,0.0,0.2,-0.06,1,0.927,True,1.15,0.927,1.7,,1
+221214_J_eA,J,descending,0.1,29,24.5,sink bottom (crossing agree),0.2,24.5,48.0,-0.0,,0.02,0,1.0,False,0.45,0.363,2.4,top off the probe (span >= 0.45 mm); lower-bound span too short to check,0
+221214_J_eB,J,ascending,0.1,1,25.5,"sink bottom (flip, crossing agree)",0.3,25.5,69.0,0.0,0.1,0.3,0,1.0,False,2.45,1.976,0.7,top off the probe (span >= 2.45 mm); lower-bound span already too long,0
+211025_B_eA,B,ascending,0.1,1,13.5,sink bottom (crossing agree),0.1,13.5,67.0,0.0,-1.2,0.2,2,1.0,False,1.25,1.008,1.9,top off the probe (span >= 1.25 mm),0
+221109_J_eA,J,descending,0.1,32,26.5,sink bottom (crossing agree),0.1,26.5,35.0,-0.0,2.2,-0.2,0,1.0,False,0.55,0.444,2.6,top off the probe (span >= 0.55 mm); lower-bound span too short to check,0
+221206_J_eB,J,descending,0.1,32,,none: no two estimates within 0.3 mm,,22.5,69.0,,,,0,,,,,,no anchor,0
+221215_J_eA,J,ascending,0.1,2,13.5,flip and crossing (sink disagrees),0.2,24.5,46.0,1.1,0.0,0.15,1,0.927,True,1.15,0.927,1.9,,1

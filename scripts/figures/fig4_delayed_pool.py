@@ -171,9 +171,9 @@ def rows_panel(ax, series, groups, xlim, ref=None, ylim=(3.5, -1.4), labels=None
 def main():
     fs.apply()
     N = pd.read_parquet(out_root() / "binocular" / "y_N_groups.parquet")
-    Ne = pd.read_parquet(out_root() / "binocular" / "ae_N_groups.parquet")
-    G = pd.read_csv(QC / "ae_groups.csv")
-    A = pd.read_csv(QC / "ae_model_misses.csv").set_index("test")
+    Ne = pd.read_parquet(out_root() / "binocular" / "ae5_N_groups.parquet")
+    G = pd.read_csv(QC / "ae5_groups.csv")
+    A = pd.read_csv(QC / "ae5_model_misses.csv").set_index("test")
     curves, Cells = collect()
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")

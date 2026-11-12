@@ -30,7 +30,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from ad_compartments_v4 import load_channels, load_spacetime, relabel  # noqa: E402
+from ad_compartments_v4 import AD_PFX, ALIGN, alignment, load_channels, load_spacetime, relabel  # noqa: E402
 
 from v1lb import figstyle as fs  # noqa: E402
 from v1lb.binocular import CONTRASTS, response_at  # noqa: E402
@@ -43,7 +43,7 @@ H_MM = 104
 COARSE = (("supragranular", "supragranular (layers 2/3)"), ("granular", "granular (layer 4)"),
           ("infragranular", "infragranular (layers 5–6)"))
 SETS = {"main": (1, 2), "tier1": (1,), "all": (0, 1, 2)}
-SET_NAME = {"main": "tiers 1+2", "tier1": "tier 1", "all": "all 22"}
+SET_NAME = {"main": "tiers 1+2", "tier1": "tier 1", "all": "all anchored"}
 CS4 = (0.11, 0.225, 0.45, 0.9)
 MIN_CH, MIN_PEN, BIN_MM = 2, 8, 0.1
 ROWS = {"both": 12, "dominant": list(CONTRASTS).index(0.45), "other": 8}      # space-time rows at 45%
@@ -173,7 +173,7 @@ def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "main"
     tiers = SETS[which]
     fs.apply()
-    V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
+    V = alignment()
     V = V[V.s.notna()]
     on, stim, M, rel, t = load_spacetime(V)
     keep_idx = np.flatnonzero(M.penetration.isin(V[V.tier.isin(tiers)].penetration).to_numpy())
@@ -183,9 +183,9 @@ def main():
     on, stim, meta = on[idx], stim[idx], meta.reset_index(drop=True)
     _, L = load_channels(V)
     L = relabel(L[L.penetration.isin(meta.penetration.unique())], V)
-    G = pd.read_csv(QC / "ad_groups.csv")
+    G = pd.read_csv(QC / f"{AD_PFX[ALIGN]}groups.csv")
     G = G[(G.scheme == "coarse") & G.tier.isin(tiers)]
-    T = pd.read_csv(QC / "ad_tests.csv")
+    T = pd.read_csv(QC / f"{AD_PFX[ALIGN]}tests.csv")
     fig = fs.figure("double", H_MM)
     fig.set_layout_engine("none")
     ax = {k: axes_mm(fig, *v) for k, v in POS.items()}

@@ -17,4 +17,4 @@ from Mitchell et al. 2023 and checked against the recordings' MonkeyLogic config
 base for V6.
 
 V6 starts from Blake's comments on the V5 clean copy (`draft_v5_clean.docx` as he commented it), with the changes tracked on that copy.
-* `draft_v7.docx` (2026-11-13): Blake's commented V6 with the V6 changes accepted, plus the V7 revisions as tracked changes (author Claude) and replies in Blake's new threads: laminar analysis on alignment v4 (12 penetrations, anatomical compartments), the deep-onset claim removed, model by compartment, figure comments on Figs 1–3, new Supplementary Fig S3. The 50 µm spacing of three early B sessions is tentative.
+* `draft_v7.docx` (2026-11-13): Blake's commented V6 with the V6 changes accepted, plus the V7 revisions as tracked changes (author Claude) and replies in Blake's new threads: laminar analysis on alignment v5 (boundary at the bottom of the initial sink; 10 penetrations, anatomical compartments), the deep-onset claim removed, model by compartment, figure comments on Figs 1–3, new Supplementary Fig S3. The 50 µm spacing of three early B sessions is tentative.

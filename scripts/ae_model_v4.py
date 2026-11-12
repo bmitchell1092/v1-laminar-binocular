@@ -20,7 +20,7 @@ from scipy import stats
 
 import v4_model_groups as N_
 from aa_model_misses_v3 import MODELS, deficit
-from ad_compartments_v4 import load_channels, relabel
+from ad_compartments_v4 import AE_PFX, ALIGN, alignment, load_channels, relabel
 
 from v1lb import dynorm
 from v1lb.config import metadata_dir, out_root
@@ -33,7 +33,7 @@ REF, SUFFIX = "granular", " (v4)"
 
 
 def channel_groups():
-    V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
+    V = alignment()
     V = V[V.tier.isin((1, 2))]
     C, _ = load_channels(V)
     C = relabel(C[(C.split == "all") & np.isclose(C.c, 0.45) & (C.window == "dip")], V)
@@ -97,22 +97,22 @@ def main():
     b = out_root() / "binocular"
     nrows = [r for d, _ in done for r in d]
     N = pd.DataFrame([d[0] for d in nrows])
-    N.to_parquet(b / "ae_N_groups.parquet")
-    np.savez_compressed(b / "ae_N_pred.npz", data=np.stack([d[1] for d in nrows]),
+    N.to_parquet(b / f"{AE_PFX[ALIGN]}N_groups.parquet")
+    np.savez_compressed(b / f"{AE_PFX[ALIGN]}N_pred.npz", data=np.stack([d[1] for d in nrows]),
                         **{m.replace("=", "_eq_"): np.stack([d[2][m] for d in nrows]) for m in N_.MODELS},
                         penetration=N.penetration.to_numpy(), grp=N.grp.to_numpy(), cd=N_.CD[N_.NONBLANK],
                         cn=N_.CN[N_.NONBLANK], t=N_.T)
     Pg = pd.DataFrame([d[0] for _, ds in done for d in ds])
-    Pg.to_parquet(b / "ae_P_groups.parquet")
+    Pg.to_parquet(b / f"{AE_PFX[ALIGN]}P_groups.parquet")
     Tn = N_.tests(N, GROUPS, REF, SUFFIX)
-    Tn.to_csv(QC / "ae_N.csv", index=False)
+    Tn.to_csv(QC / f"{AE_PFX[ALIGN]}N.csv", index=False)
     A = N.merge(Pg[["penetration", "grp"] + [c for c in Pg.columns if c.startswith(("cv_", "org_", "2stage_"))]],
                 on=["penetration", "grp"])
     Tp = N_.tests_p(A, GROUPS, REF, SUFFIX)
-    Tp.to_csv(QC / "ae_P.csv", index=False)
-    G, R = misses(Pg, np.load(b / "ae_N_pred.npz", allow_pickle=True))
-    G.to_csv(QC / "ae_groups.csv", index=False)
-    R.to_csv(QC / "ae_model_misses.csv", index=False)
+    Tp.to_csv(QC / f"{AE_PFX[ALIGN]}P.csv", index=False)
+    G, R = misses(Pg, np.load(b / f"{AE_PFX[ALIGN]}N_pred.npz", allow_pickle=True))
+    G.to_csv(QC / f"{AE_PFX[ALIGN]}groups.csv", index=False)
+    R.to_csv(QC / f"{AE_PFX[ALIGN]}model_misses.csv", index=False)
     pd.set_option("display.width", 250)
     pd.set_option("display.max_columns", 20)
     print(f"{N.penetration.nunique()} penetrations, {len(N)} groups: {N.grp.value_counts().to_dict()}")

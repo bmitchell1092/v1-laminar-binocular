@@ -1,7 +1,8 @@
 """Check AD: laminar results on alignment v4 tiers, coarse and fine compartments (docs/09, registered 2026-11-12).
 
 Usage: .venv\\Scripts\\python scripts\\ad_compartments_v4.py
-Relabels check X's channels (x_channels.parquet, x_latency.parquet) with metadata/laminar_alignment_v4.csv: height
+Relabels check X's channels (x_channels.parquet, x_latency.parquet) with metadata/laminar_alignment_{ALIGN}.csv (v5
+since 2026-11-13: anchor at the bottom of the initial sink; v4 outputs kept as ad_*.csv, v5 as ad5_*.csv): height
 above the v4 anchor from contact numbers and the probe's spacing, h = -sign (contact - anchor) * spacing, scaled by the
 penetration's squish factor s (tier 1; 1 otherwise); first-sheet contacts only (at or below the top of cortex).
 Probes with 50 um spacing (docs/05 C18) reach contacts X never measured, so their channels are recomputed with X's
@@ -23,6 +24,14 @@ from x_depth_v3 import SPLITS, ai_groups, penetration, shortfall_groups, wil
 REPO = Path(__file__).resolve().parents[1]
 QC = REPO / "docs" / "qc"
 COARSE = ("supragranular", "granular", "infragranular")
+ALIGN = "v5"          # laminar alignment for AD, AE and the laminar figures (2026-11-13; v4 results kept as ad_*/ae_*)
+AD_PFX = {"v4": "ad_", "v5": "ad5_"}
+AE_PFX = {"v4": "ae_", "v5": "ae5_"}
+
+
+def alignment(version=ALIGN):
+    """The laminar alignment table (metadata/laminar_alignment_{version}.csv)."""
+    return pd.read_csv(metadata_dir() / f"laminar_alignment_{version}.csv")
 FINE = ("L2/3", "L4A/B", "L4C", "L5", "L6")
 
 
@@ -156,18 +165,18 @@ def groups(C, L):
 
 
 def main():
-    V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
+    V = alignment()
     V = V[V.s.notna()]
     C0, L0 = load_channels(V)
     C, L = relabel(C0, V), relabel(L0, V)
-    sets = {"tier 1": (1,), "tiers 1+2": (1, 2), "all 22": (0, 1, 2)}
+    sets = {"tier 1": (1,), "tiers 1+2": (1, 2), "all anchored": (0, 1, 2)}
     R = []
     for name, tiers in sets.items():
         R += tests(C[C.tier.isin(tiers)], L[L.tier.isin(tiers)], name)
     R = pd.DataFrame(R)
-    R.to_csv(QC / "ad_tests.csv", index=False)
+    R.to_csv(QC / f"{AD_PFX[ALIGN]}tests.csv", index=False)
     G = groups(C, L).merge(V[["penetration", "tier", "s"]], on="penetration")
-    G.to_csv(QC / "ad_groups.csv", index=False)
+    G.to_csv(QC / f"{AD_PFX[ALIGN]}groups.csv", index=False)
     pd.set_option("display.width", 250)
     pd.set_option("display.max_columns", 20)
     print(R.drop(columns=[c for c in ("n_channels",) if c in R]).round(4).to_string(index=False))

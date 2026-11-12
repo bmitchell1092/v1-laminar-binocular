@@ -2967,3 +2967,81 @@ the v4 anchor (the phase flip) lies too deep. **Not registered;** run after Blak
 * **CSD colours:** red = sink, blue = source from now on, as in the Maier lab's papers (`figstyle.CSD_CMAP`).
 * **Proposed (for Blake):** alignment v5 anchored on the bottom of the initial sink, cross-checked against the flip
   (−0.25 mm) and the crossing. Then rerun the thickness tiers and AD, AE, Fig 3, S2, S3 and the V7 text.
+
+## Laminar alignment v5 and the reruns AD5/AE5 (registered internally 2026-11-13, before running; Blake: "I think we need to do this because it fits the entirety of the evidence better")
+
+**Not blind:** AD, AE (v4) and AF are known. v5 uses laminar markers and monocular responses only.
+* **Anchor (the 4C/5 boundary): the bottom of the initial monocular sink** (AF's rule: at the time of the initial
+  sink's peak, 20–70 ms, from the earliest-sink contact down to the first source contact; the boundary between the
+  two).
+* **Cross-checks:** the phase flip and the alpha/beta–gamma crossing, each shifted by its median offset from the sink
+  bottom over the 14 clear flips (|step| ≥ 1 rad, as in W).
+* **Rule:** the sink bottom if the flip estimate or the crossing estimate lies within 0.3 mm of it. Otherwise (a
+  failed sink), the flip estimate if the crossing estimate agrees within 0.3 mm. Otherwise no anchor.
+* **Tiers, s, compartments and fine labels as v4** (1.24 mm from the evoked-MUA top to the 4C/5 border; s in
+  0.75–1.35; at least 0.49·s mm of probe below; tier 2 if the top is off the probe and the lower bound is
+  consistent). Per-probe spacing as in C18.
+* **Reruns, as registered for AD and AE, on v5:**
+  * AD on tier 1, tiers 1 + 2 (main) and all anchored penetrations;
+  * AE on the main set;
+  * Fig 3, S2 and S3 (the CSD average aligned to the v5 anchor);
+  * the V7 text.
+* **Predictions:**
+  * as AD: infragranular − granular > 0 in the shortfall and the index;
+  * onsets (AD3): supragranular later than granular;
+  * fine labels, from AF: L5 later than L4C (one-sided); L6 two-sided.
+* **Outputs:** `metadata/laminar_alignment_v5.csv`; `docs/qc/ad5_*.csv`, `ae5_*.csv`. The v4 outputs are kept as
+  recorded.
+
+**v5 freeze (2026-11-13; `scripts/freeze_laminar_alignment_v5.py`).**
+* **Offsets** over the 14 clear flips: the sink bottom lies 0.20 mm above the flip and 0.02 mm above the crossing. The
+  crossing marks the sink bottom, as Mendoza-Halliday et al. place it.
+* **Anchors:** 21 of 26. 19 sit on the sink bottom; 2 (221202_J_eB, 221215_J_eA, failed sinks) on the flip and
+  crossing. 221123_J_eA lost its anchor (sink bottom and crossing 0.35 mm apart).
+* **Rule fix before any binocular use:** a tier-2 lower bound must lie inside the plausible span (S_MAX too). The
+  registered word was "consistent", and no v4 tier-2 penetration is affected; it removed 221214_J_eB (≥ 2.45 mm).
+* **Tiers:** tier 1, 7 (all J); tier 2, 3 (211025_B, 211208_B, 211217_B). Main set 10 (3 B, 7 J).
+  * 211008_B drops out: at 50 µm its span is 0.73 mm (s = 0.58); at 100 µm it would be 1.45 mm and tier 1. The
+    spacing question (C18) matters here.
+  * 221128_J falls to tier 0 (lower bound 0.65 mm).
+* **Sensitivity of the anchor rule:** the bottom of the initial sink on its rising phase (the 5 ms from its half-peak,
+  25% of the sink-contact value) lies a median 0.05 mm above the v5 anchor. It is 0.1–0.3 mm higher in 221212,
+  221121, 221130 and 211208, and 0.6 mm higher in 221202_J_eB. The registered rule is kept.
+
+**AD5 results (2026-11-13; [qc/ad5_tests.csv](qc/ad5_tests.csv), [qc/ad5_groups.csv](qc/ad5_groups.csv)).**
+
+| Test | Tier 1 (7) | Tiers 1 + 2 (10, main) | All anchored (21) |
+|---|---|---|---|
+| AD1 shortfall infra − granular > 0 | +0.024, 5/7, p = .039 ✓ | **+0.023, 6/10, p = .080 ✗** (halves +0.035, +0.016) | +0.032, 15/21, p = .002 ✓ |
+| AD1 (AI − AI_sum) infra − granular > 0 | +0.056, 7/7, p = .008 ✓ | **+0.047, 8/9, p = .020 ✓** | +0.092, 18/20, p < .001 ✓ |
+| AD3 onset supra − granular > 0 | +8.3 ms, 7/7 ✓ | +7.5 ms, 10/10, p = .001 ✓ | +7.0 ms, 16/16 ✓ |
+| AD3 onset infra − granular (two-sided) | | −0.9 ms, 5/10, p = .43 | +0.4 ms, p = 1.0 |
+| AD3 fine L5 − L4C > 0 (from AF) | | +1.7 ms, 7/9, p = .064 ✗ | +1.2 ms, 15/20, p = .016 ✓ |
+| AD3 fine L4A/B − L4C > 0 | | +1.6 ms, p = .053 ✗ | +1.7 ms, p = .012 ✓ |
+| AD3 fine L6 − L4C (two-sided) | | +0.2 ms, p = .85 | +0.7 ms, p = .45 |
+| AD2 fine L6 − L4C > 0 / L5 − L4C | | +0.006 (p = .14) / −0.019 | +0.020, 17/21, p < .001 ✓ / +0.002 |
+| AD4 advance supra / granular / infra | | ✓ / ✓ / −0.2 ms ✗ (p = .10) | all ✓ (infra −0.9 ms, p = .002) |
+| AD5 slope < 0 | −0.013, p = .065 | −0.022 per mm, p = .007 ✓ | −0.019, p < .001 ✓ |
+
+* **Reading.** On v5 the direction of every laminar result is unchanged.
+  * In the main set (10), the index difference holds and the response-unit difference trends (p = .08).
+  * In tier 1 and in all 21 anchored penetrations, both hold.
+  * The weaker deep normalization sits in layer 6 (all anchored).
+  * Onsets follow the canonical sequence: 4C first, then layer 5 (+1.2 ms) and 4A/B; layer 6 as early as 4C; layers
+    2/3 last.
+  * Power is the limit in the main set: 9–10 penetrations.
+
+**AE5 results (2026-11-13; [qc/ae5_N.csv](qc/ae5_N.csv), [qc/ae5_P.csv](qc/ae5_P.csv),
+[qc/ae5_model_misses.csv](qc/ae5_model_misses.csv)).** Main set on v5, 10 penetrations, 29 compartments.
+* **Every feature helps in every compartment:**
+  * the delay: 46 / 70 / 64% less held-out error (p ≤ .002);
+  * the pool weighting: 9/10, 9/10, 9/9 (p ≤ .003);
+  * the conductance form: 3.7 / 1.0 / 0.7% (p ≤ .019);
+  * the two-stage form: 3.9 / 2.9 / 2.8% (p = .053, .005, .002); org never beats cond.
+* **w − a:** 0.21 / 0.49 / 0.18 (p ≤ .004). Infragranular − granular −0.13 (8/9 smaller, p = .039).
+* **τ2:** 16 / 42 / 43 ms.
+* **AE3, compartment averages:** data infra − granular +1.2% (6/9, p = .15); conductance +1.2% (8/9, p = .010; gap
+  p = .46); two-stage +1.4% (p = .10). The model reproduces the (smaller, in these averages) laminar difference, with a
+  smaller excess pool weight in layers 5–6.
+* **Draft V7 rebuilt on v5** (`manuscript/draft_v7.docx`; replaces the v4-based V7 of a6815ee). Zhu et al. 2026 added
+  to the references.

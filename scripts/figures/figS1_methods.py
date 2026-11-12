@@ -101,7 +101,7 @@ def tier1_csd(ax, cax, monkey="J"):
     penetrations of one monkey (laminar alignment v4), each aligned to its 4C/5 anchor, scaled by its squish factor s
     and divided by its own peak |CSD| (20-120 ms) before averaging (Blake, 2026-11-12: examples from a clean J session
     or the tier-1 average of one monkey)."""
-    V = pd.read_csv(metadata_dir() / "laminar_alignment_v4.csv")
+    V = pd.read_csv(metadata_dir() / "laminar_alignment_v5.csv")          # v5: anchor at the initial sink's bottom
     V = V[(V.tier == 1) & (V.monkey == monkey)]
     grid = np.round(np.arange(-0.6, 1.45, 0.05), 3)
     stack = []
