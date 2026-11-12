@@ -2689,3 +2689,62 @@ contrast-summation prediction; per penetration the mean over its depth groups (`
 * **Reading:** the delayed, other-eye-weighted pool reproduces the sign, timing and contrast dependence of the sequence,
   at about half its size; a pool without a delay never exceeds contrast summation; equal weights never fall short of it.
 
+
+## Check AC: deep onsets penetration by penetration (2026-11-12, descriptive, post hoc; Blake's comment on V6)
+
+**Why.** Blake: the deep group responding as early as the input group, while normalizing less, could come from
+penetrations whose boundary sits too high (the earliest sink placed too high), or from a probe crossing a second fold
+of cortex, so that a second input layer is counted as deep. Is the deep onset a per-penetration regularity, or a few
+sessions? **Not registered:** X3 (deep − input −1.35 ms, 14/22, p = .26) and Z were known. Script
+`scripts/ac_deep_onset.py`; tables [qc/ac_penetrations.csv](qc/ac_penetrations.csv),
+[qc/ac_tests.csv](qc/ac_tests.csv), [qc/ac_profiles.csv](qc/ac_profiles.csv); per-penetration panels
+`<out_root>/figures/ac_deep_onset_cards.png` (onset against depth, with the laminar audit's whole-probe monocular onset
+beyond the 0.7 mm cap). "Markers agree": the earliest monocular sink lies inside the input band (0–0.5 mm above the
+v3 boundary).
+
+* **AC1. Not a per-penetration regularity.** Deep − input onset (dominant eye, 90%): earlier in 14/22, later in 8
+  (median −1.35 ms, p = .26). Where the odd and even halves agree in sign: 11 earlier, 5 later. The later ones
+  include large delays in monkey B (211008 +8.5, 211012 +14.6 ms). 211025_B_eA has 3 input and 3 deep channels, and
+  its halves differ by 30 ms.
+* **AC3. It is a monkey J pattern and follows the markers' disagreement.**
+  * Monkey J: 11/15 earlier, median −2.2 ms (p = .018); monkey B: 3/7 earlier, median +1.4 ms (p = .38).
+  * Markers disagree (7, all J and all flip-anchored: the sink 0.55–1.05 mm above the flip in 6, 0.75 mm below it in
+    221215): 7/7 earlier, median −2.7 ms (p = .016). Markers agree (15): median +0.5 ms, 7 earlier, 8 later (p = .85).
+    Four of the 7 have the sink one contact above the input band (0.55 mm), so the split depends partly on the band
+    edge. As a continuous measure, the higher the sink above the boundary, the earlier deep is than input
+    (Spearman ρ = −0.38, p = .085, n = 22).
+  * With the sink-based groups (input = the 5 contacts at the sink), deep − input is +0.75 ms (15/22 later, p = .39).
+* **AC2 and the cards. No sign of a second fold.** No penetration has a second early zone separated from the first by
+  later contacts within the deep group. In J the onset falls steadily down the probe, is earliest 0.3–0.7 mm below the
+  boundary (lower deep − input −1.2 ms, 15/22; upper deep 0–0.3 mm −0.2 ms, 12/22) and becomes later beyond the cap.
+  The audit's one candidate fold (211217_B_eA, an early zone 1.75 mm below) lies beyond the cap, and its deep group is
+  later than its input group (+3.9 ms). Geometry also argues against a fold: a second sheet's layer 4C would lie
+  beneath this sheet's layers 5–6, the white matter and the second sheet's 6 and 5, well beyond 0.7 mm.
+* **AC4. The early deep channels do not normalize like the input group.** Deep channels with onsets at or before
+  their input group's median fall short of contrast summation by less than the input group (+0.035, 16/21, p = .002;
+  later deep channels +0.042, 15/17). Across penetrations, deep − input onset and deep − input shortfall are
+  unrelated (ρ = 0.01). In the 7 where the markers disagree, the contacts 0.3–0.7 mm below the boundary are the
+  earliest (−3.7 ms relative to the penetration) and barely fall short (A − P ≈ 0), while the input band falls short
+  (−0.05). The normalization change sits at the boundary in both subsets.
+* **The normalization result does not depend on these penetrations.**
+
+  | deep − input | markers agree (15) | markers disagree (7) | B (7) | J (15) |
+  |---|---|---|---|---|
+  | X1 shortfall | +0.056, 14/15, p = .0002 | +0.048, 4/7, p = .11 | +0.035, 6/7, p = .023 | +0.056, 12/15, p = .0008 |
+  | X2 AI − AI_sum | +0.127, 13/14, p = .0006 | +0.061, 5/7, p = .039 | +0.095, 5/6, p = .078 | +0.110, 13/15, p = .0004 |
+  | X3 onset (ms) | +0.5, 8/15 later, p = .85 | −2.7, 0/7 later, p = .016 | +1.4, 4/7, p = .38 | −2.2, 4/15, p = .018 |
+
+* **Reading.**
+  * "Deep channels respond as early as the input layer" is not a general finding. Deep onsets do not differ from input
+    onsets where the laminar markers agree, are later in several B penetrations, and are earlier in monkey J, most
+    where the earliest sink sits well above the phase flip.
+  * In those J penetrations the earliest spiking lies 0.3–0.7 mm below the flip and 0.6–1.5 mm below the earliest
+    sink (audit W: sink and MUA disagree in J). These contacts could be layer 6 with direct geniculate input, or the
+    bottom of a layer 4C that both markers place too high. Latency alone cannot tell which. Either way, they do not
+    normalize like the input band above them.
+  * The deeper normalization result holds where the markers agree (the stronger subset) and in each monkey, so it does
+    not come from misplaced boundaries. A misplaced input layer counted as deep would, if anything, shrink the
+    difference.
+* **For the paper (proposed):** drop "deep channels respond as early" from the Fig 3 title, the Results and the
+  Discussion. Report the superficial delay (5 ms), and that deep onsets did not differ consistently from input onsets
+  (earlier in monkey J, not in B). Add the markers-agree subset as a sensitivity line for X1/X2.

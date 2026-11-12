@@ -1,0 +1,24 @@
+test,n,median,n_negative,n_positive,p,alternative,median_odd,median_even
+"AC1 deep - input onset, all 22 (ms)",22,-1.3502128173977113,14.0,8.0,0.2615199089050293,two-sided,-0.6990995952918695,-1.1939743408701773
+"AC1 deep - input onset, penetrations whose halves agree in sign",16,-2.132046115249933,11.0,5.0,0.17535400390625,two-sided,,
+AC2 upper deep - input onset,22,-0.23398202768612109,12.0,10.0,0.6788630485534668,two-sided,-0.6714736169246525,-0.6780595423722033
+AC2 lower deep - input onset,22,-1.1680105016088334,15.0,7.0,0.1761918067932129,two-sided,-1.5497072057974357,-1.7867829890608036
+"AC3 X1 shortfall (A - P), deep - input, monkey B",7,0.03484757562839037,1.0,6.0,0.0234375,greater,,
+"AC3 X1 shortfall (A - P), deep - input, monkey J",15,0.05574816067361066,3.0,12.0,0.000762939453125,greater,,
+"AC3 X1 shortfall (A - P), deep - input, markers agree",15,0.05616579899074474,1.0,14.0,0.000152587890625,greater,,
+"AC3 X1 shortfall (A - P), deep - input, markers disagree",7,0.0477272947273628,3.0,4.0,0.109375,greater,,
+"AC3 X2 AI - AI_sum, deep - input, monkey B",6,0.09493530234022074,1.0,5.0,0.078125,greater,,
+"AC3 X2 AI - AI_sum, deep - input, monkey J",15,0.11021634036257721,2.0,13.0,0.00042724609375,greater,,
+"AC3 X2 AI - AI_sum, deep - input, markers agree",14,0.12698271993793692,1.0,13.0,0.0006103515625,greater,,
+"AC3 X2 AI - AI_sum, deep - input, markers disagree",7,0.06119626136299994,2.0,5.0,0.0390625,greater,,
+"AC3 X3 onset dominant eye 90%, deep - input, monkey B",7,1.3664989950836173,3.0,4.0,0.375,two-sided,,
+"AC3 X3 onset dominant eye 90%, deep - input, monkey J",15,-2.1937913131789237,11.0,4.0,0.01806640625,two-sided,,
+"AC3 X3 onset dominant eye 90%, deep - input, markers agree",15,0.5436912792295239,7.0,8.0,0.846923828125,two-sided,,
+"AC3 X3 onset dominant eye 90%, deep - input, markers disagree",7,-2.7192831151997936,7.0,0.0,0.015625,two-sided,,
+"AC3 sink height vs deep - input onset (Spearman), all",22,-0.37578696279553764,,,0.08479182898265185,,,
+"AC3 sink height vs deep - input shortfall (Spearman), all",22,-0.15537898921101861,,,0.48990328589949494,,,
+"AC3 sink height vs deep - input onset (Spearman), without 221215_J_eA (sink below the boundary)",21,-0.3683696835001544,,,0.1003645322480852,,,
+"AC3 sink height vs deep - input shortfall (Spearman), without 221215_J_eA (sink below the boundary)",21,-0.09491326980274249,,,0.6823634827098181,,,
+AC4 deep - input onset vs deep - input shortfall (Spearman),22,0.011857707509881424,,,0.9582317578505689,,,
+AC4 early deep channels' shortfall - input's,21,0.034851297420382454,5.0,16.0,0.0018587112426757812,two-sided,,
+AC4 later deep channels' shortfall - input's,17,0.04163416472197555,2.0,15.0,0.0003814697265625,two-sided,,
