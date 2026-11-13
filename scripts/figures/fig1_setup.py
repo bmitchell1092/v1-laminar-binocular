@@ -164,7 +164,7 @@ def design(ax, kax):
         kax.text(0.14, y, lab, va="center", fontsize=5.5, color=fs.INK)
     kax.text(0.0, 0.62, "~30 presentations per\ncondition, random order", va="top", fontsize=5.5, color=fs.INK2,
              linespacing=1.0)
-    kax.text(0.0, 0.38, "analysed per channel as\ndominant eye (the eye that\ndrives it more) × other eye",
+    kax.text(0.0, 0.38, "analyzed per channel as\ndominant eye (the eye that\ndrives it more) × other eye",
              va="top", fontsize=5.5, color=fs.INK2, linespacing=1.0)
 
 
