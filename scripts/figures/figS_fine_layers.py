@@ -52,7 +52,7 @@ def main():
     fig.set_layout_engine("none")
     c0, ccb = axes_mm(fig, 18, 10, 34, 44), axes_mm(fig, 54, 10, 2, 44)
     info = tier1_csd(c0, ccb, "J")
-    c0.set_title(f"monkey J, mean of {info['n']} tier-1 penetrations", fontsize=6, loc="left")
+    c0.set_title(f"monkey J, mean of {info['n']} penetrations", fontsize=6, loc="left")
     a, b, d = axes_mm(fig, 76, 10, 28, 44), axes_mm(fig, 112, 10, 26, 44), axes_mm(fig, 148, 10, 24, 44)
     rows = []
     for k, comp in enumerate(FINE):
